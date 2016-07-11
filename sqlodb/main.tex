@@ -8,7 +8,7 @@
 
 \usepackage{babel}
 \usepackage{csquotes}
-%\MakeAutoQuote{«}{»} %% "
+\MakeOuterQuote{"}
 
 %\usepackage[backend=biber,style=numeric-comp]{biblatex}
 %\bibliography{references}
@@ -17,13 +17,15 @@
 \usepackage{MnSymbol}
 
 \usepackage[svgnames]{xcolor}
-\usepackage{todonotes}
+%\usepackage{todonotes}
+%\presetkeys{todonotes}{inline}{}
+\usepackage[subject={TODO}]{pdfcomment}
+\newcommand{\todo}[2][]{\pdfmargincomment[author={#1}]{#2}}
 
 %\usepackage{makecell}
 \usepackage{ctable}
 
 
-%% === Code Listings ======================================
 \usepackage{listings}
 
 \newcommand{\lineref}[2]{\hyperref[#1]{line~\ref*{#1:#2}}}
@@ -111,8 +113,8 @@
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
-\title{Tracing And Recorded Data In Stored Procedures }
-\subtitle{subtitle}
+\title{TARDISP: Bringing back-in-time debugging to the database}
+\subtitle{(TARDISP is a placeholder for the actual name)}
 %
 % You need the command \numberofauthors to handle the 'placement
 % and alignment' of the authors beneath the title.
@@ -169,12 +171,10 @@ one who did all the really hard work.}\\
 
 \maketitle
 \begin{abstract}
-  Omniscient debuggers can greatly improve developer productivity.
-	Not only do they allow for more efficient navigation in the execution of a program,
-	they can be used as a foundation for dynamic analyses that further help the developer to identify relevant parts of code.
-	We present an approach of bringing omniscient debugging and advanced analysis algorithms to stored procedures.
-	Our prototype allows omniscient debugging of SQLScript that handles large amounts of data, while creating only a small overhead by using an insert-only approach.
-	Furthermore, we present an extension to SQL that allows the developer to express queries that cover a period of execution time.
+  Omniscient debuggers allow developers to explore what happened before a failure and so supports them in finding failure causes more efficiently. 
+	We present an approach for bringing omniscient debugging to stored procedures that allows to step backwards and query the database at previous points in time.
+  Furthermore, we introduce an extension to SQL that allows to express queries covering a period of execution time within a debug session.
+	Our prototype implementation is able to debug procedures handling large amounts of data with little overhead on performance and memory.
 \end{abstract}
 
 %
@@ -218,86 +218,116 @@ one who did all the really hard work.}\\
 
 \section{Introduction}
 
-Debugging is important, ODB in particular
+Finding defects in code is a frequent task for every programmer and is often difficult even with a deep understanding of the system.
+Back-in-time debuggers simplify the debugging process \todo{cite} by making it easier to follow causal chains from the failure to the defect.
 
-tool support for code in db is needed more than ever
+With the rise of big-data applications, performance requirements demand code to move closer to the database\todo{cite}.
+The increasing complexity of application code in the database creates a greater need for better debugging tools.
+Alas, even though back-in-time debuggers exist for many object-oriented programming languages\todo{cite}, there are none that run on databases and support SQL or SQL Script.
+
+Back-in-time debuggers typically create a significant overhead on performance and memory consumption.
+Thus, it seems unfeasible to use a back-in-time debugger on top of a database script that processes billions of records.
+Nevertheless, such scripts need to be debugged and, in particular for scripts with writing operations, the existing tools are often not adequate for this task.
+Better tools can speed-up develoment and reduce maintenance cost of database scripts.
+
+In this paper, we bring the concept of back-in-time debugging to the database and present \emph{TARDISP}, an implementation of our approach.
+The contributions of this paper are as follows:
+\begin{itemize}
+	\item \emph{TARDISP} is an omniscient debugger for stored procedures which can be installed in the SAP HANA in-memory database and programming platform.
+		Using TARDISP, developers can move freely through the execution time of a stored procedure and inspect control flow, variables, and intermediate results.
+	
+	\item \emph{TARDISQL} is an extension to SQL allowing to submit arbitrary queries against previous states of the database 
+		and to compare multiple points in time with one query.
+		The TARDISP provides a console for developers to submit TARDISQL queries which use variables or points in time from the current debug session.
+
+	\item \emph{Very low overhead} when recording run-time data and the efficient querying of past database states allow developers to use TARDISP as the default tool for debugging database scripts even on larger data sets.
+		First interviews with developers have indicated that bugs in stored procedures can be investigated more efficiently with TARDISP than with a regular debugger.
+	
+\end{itemize}
+
+The remainder of this paper is structured as follows:
+Our approach and our prototype implementation is described in \cref{sec:prototype}.
+In \cref{sec:ttqueries}, we explain back-in-time queries.
+
+
 
 \section{Related Work}
 
-\section{Omniscient Debugger Prototype}
+\section{Omniscient Debugging}
+\label{sec:prototype}
 
 - typical problem: much data \\
 - backend: HANA xs-engine \\
 - frontend: HTML5 \\
 
-\todo[inline]{screenshot}
 
 \subsection{Data Model}
 
-To reproduce the execution of a stored procedure, we need to trace a sequence of execution steps.
-Each step represents an instruction that has side effects or returns some result to the procedure.
-
 A typical limitation for omniscient debuggers is the large amount of trace data generated when processing large data sets, which typically exceeds the program data by orders of magnitude.
 Since our debugger is supposed to work with large databases, using an even bigger database just to manage debug sessions is not feasible.
-
 Instead, we take advantage of the fact that all instructions handling large data sets, i.e., SQL statements, are declarative and reproducible as long as the underlying data does not change.
-Thus, SQL queries don't have to be traced at all, although for some purposes it will be helpful to record some meta information, such as the execution time or the number of results.
+%Thus, SQL queries don't have to be traced at all, although for some purposes it will be helpful to record some meta information, such as the execution time or the number of results.
 
-\todo[inline]{Diagram}
-- Traces \\
-- Steps \\
-- Queries \\
-- QueryArgs \\
+To reproduce the execution of a stored procedure, we need to trace a sequence of execution steps.
+Each step represents an instruction that has side effects or returns some result to the procedure.
+As there is, conceptually, no concurrency in a stored procedure, we use simple numbering to track the order of steps.
+All trace data is stored in a relational database.
+
+The debugger distinguishes between 8 types of steps:
+three types of control flow steps, for calling, entering and exiting stored procedures;
+four kinds of variable assignments for atomic values, query results, cursors, and cursor rows;
+and statements with side-effects.
+If applicable, the step has a target name, i.e. the name of a variable or stored procedure, and a string representation of the value, which is shown to the user in the debug view.
+
+If the step involves a database statement, we don't trace any details of the execution but only record the name of a view than can be used to later reproduce the query result.
+Additionally, we store the number of rows in the result set and timestamps from before and after the execution.
+
+%- Traces \\
+%- Steps \\
+%- Queries \\
+%- QueryArgs \\
 
 \subsection{Tracing}
 
 With a debugger fully integrated in its database, we would expect the stored procedure execution engine to trace the execution steps.
 However, for our prototype this level of integration was out of scope.
 
-Instead, we wrote a Java program that parses a stored procedure and inserts INSERT statements around every instruction to fill the trace tables.
+Instead, we wrote a pre-processor in Java that parses a stored procedure and inserts °INSERT° statements around every instruction to collect the required trace data.
+To obtain a trace, the debugger then has to run the traced code once instead of the original procedure.
 
-\todo[inline]{example}
-\todo[inline]{also: generates functions/views for variables}
+In addition to the tracing code, the pre-processor also generates SQL functions that will be used to obtain variable values at given points in time.
+For atomic variables, it is simply a search for its most recent step.
+
+For variables containing result tables, a separate function is generated for each query that assigns to that variable.
+Each function contains the original code of its query.
+Variables used as parameters by the query are initialized using their respective value functions.
+On top of that, a master function is generated that chooses the appropriate query function based on the requested step and the recorded step data.
+
+\todo{example}
+\todo{also: generates functions/views for variables}
 
 %% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 %% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 \subsection{Reproducing Query Results}
 
-By tracing all variables, the debugger has enough information available to re-execute any query.
+With the recorded trace data, the debugger has enough information available to re-execute any query.
 However, the query will only yield the same results as long as the underlying data has not changed.
 
 In general, one can expect that debugging will take place on a development machine where no other data manipulation occurs.
-However, in cases where this assumption doesn't hold, the debugger might end up showing wrong or misleading data the developer, which can make the tool outright harmful.
+However, in cases where this assumption doesn't hold, the debugger might end up showing wrong or misleading data the developer.
 Furthermore, the debugged stored procedure itself may change the data, which will cause a query to return different results at different points in time.
 
-We have identified three strategies of dealing with data changes, each with its own advantages and disadvantages.
-
-\paragraph{Temporary Tables}
-Auxiliary tables can be used to track all data changes.
-Values of deleted tuples and modified attributes have to be recorded, as well as timestamps of the manipulation events.
-To re-execute a query, it has to be rewritten to include this additional data.
-
-An advantage of this approach is that it allows to efficiently analyze the modifications that were applied by the stored procedure.
-Disadvantages are that copying data to auxiliary tables greatly increases the tracing overhead, and that rewritten queries are much more complex and thus may take longer to execute.
-
-\paragraph{Transactions}
-If the whole debug session runs in a single database transaction, it is automatically protected from concurrent modifications.
-Nested transactions can be used to rollback changes done by the debugged code.
-
-This approach requires only little effort by the debugger, as it builds upon existing features of the database.
-However, to re-execute a single query, the whole stored procedure has to be re-executed up until that point, which can create a significant overhead.
-Furthermore, depending on how transactions are implemented, the developer might accidentally lock the database for everyone else.
-
-\paragraph{Insert-Only}
-In systems that are relevant to accounting, such as ERP, finance, and CRM systems, data is never deleted.
-Such behavior often even is a legal requirement.
+We ensure consistency over time by following the insert-only approach of our in-memory database.
 If we require for all tables that data can never be changed or deleted and annotate all tuples with timestamps of when they have been created and invalidated, we can reconstruct the state of the database of any point in time.
-
-Especially in in-memory databases, the overhead can be less than expected due to compression, and it may even improve the performance as inserts can be faster than updates or deletes.
-Finally, adding timestamp filters to select queries does not cause a significant slowdown.
+Adding timestamp filters to select queries does not cause a significant slowdown.
 Our prototype was built using this approach.
+
+\todo{HANA hat seit neustem "History tables" die das direkt können, wir benutzen aber explizite timestamps weil das momentan noch praktischer ist }
+
+
 \section{Time-travel Queries}
+\label{sec:ttqueries}
 
 In our set-up, the debugger trying to recreate intermediate results of a stored procedure is just a special use case for the ability to submit arbitrary queries against the database of any previous point in time.
 
@@ -324,7 +354,7 @@ First, all variables are replaced with corresponding functions or views.
 For variables containing atomic values, a function is generated that returns the variable's value at a given step.
 For variables containing query results, a view is generated for each query.
 These views are identified by the target variable name and the line number and expect a step number and all parameters that the actual query took.
-\todo[inline]{explain variable functions}
+\todo{explain variable functions}
 In our example, °:selected_projects° might be replaced with °VAR_selected_projects_7(1055, 'Research')° when it was last set at step 1055 in code line 7 and called with the respective argument.
 
 Second, a time-stamp filter is added for all tables that are referenced in the query. 
@@ -360,7 +390,7 @@ For this example, she debugs a stored procedure that processes the payments for 
 By stepping into the procedure, she has three defined points in time: °^before^°, at the beginning of the procedure; °^now^°, at the current instruction; and °^after^°, at the end of the execution.
 
 Now she wants to compose a query that selects all projects that will go over budget and the orders that were processed.
-\todo[inline]{explain query rewriting}
+\todo{explain query rewriting}
 The query is shown in \cref{lst:tdiff}.
 \begin{lstlisting}[language=HanaSQL,float=b,caption={Example of a time-diff query: "Select all projects that will go over budget and their respective purchase orders"},label=lst:tdiff]
 	SELECT pr.id, pr.name, pr.budget, SUM(po.total), po2.id, po2.status, po2.total
@@ -415,17 +445,15 @@ Clicking on value allows the developer to jump to the °UPDATE° or °INSERT° s
 - Stored procedure: calculate revenue and margin per week of current and last year \\
 - Exec time: approx. 3 seconds; with tracing: no measurable overhead \\
 - °SELECT * FROM :result°: 1.5 seconds \\
-- \todo[inline]{time-diff queries}?
+- \todo{time-diff queries}?
 
 % bug-tracker 
-% 
-
 
 \subsection{Limitations}
 
 Currently, our approach has two major limitations.
 
-First, time-diff queries can only be executed on tables that have clearly defined primary keys, for key attributes are required to track a tuple's versions over time.
+First, time-diff queries can only be executed on tables that have clearly defined primary keys, for key attributes are required to track a tuple's versions over time.b
 For a query like "Sum budgets per project category", it has to be clear that categories are the entities that keep their identity over time.
 Here, an additional syntax extension could be used to convey this kind of information.
 
@@ -433,6 +461,10 @@ Second, it is currently not possible to use time qualifiers outside of the °WHE
 
 
 \section{Conclusion}
+
+
+
+Future work
 
 %
 % The following two commands are all you need in the

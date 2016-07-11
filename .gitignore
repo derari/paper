@@ -178,3 +178,5 @@ TSWLatexianTemp*
 
 # KBibTeX
 *~[0-9]*
+/sqlodb/main.pdf
+/sqlodb/main.tcp
