@@ -1,0 +1,263 @@
+﻿%% ======================== SETUP =========================
+%% Full documentation on all packages can be found at http://google.com or with `texdoc <packagename>`
+
+
+%% === Tools ==============================================
+\usepackage{iftex}
+\usepackage{savesym}
+%%   - Silence -
+%% Disable warnings that don't cause problems
+\usepackage{silence}
+\WarningFilter{balance}{You have called \balance in second column}
+\WarningFilter{caption}{Unsupported document class}
+\WarningFilter{caption}{Unused \captionsetup}
+\WarningFilter{relsize}{Failed to get list}
+
+
+%% === Encoding ===========================================
+\ifXeTeX
+  \usepackage{fontspec}
+\else
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+  \input glyphtounicode			%% Copyable unicode in pdf
+  \pdfgentounicode=1
+\fi
+
+
+%%% === ACM Template =======================================
+%%% Depending on font, may look better with `relayout`
+%\usepackage[relayout]{myacm}
+%\usepackage{balance}
+%%%   - Default font, choose one -
+%\usepackage{txfonts}			%% Times Roman, as requested by style guide, creates smaller documents
+%%\usepackage[lighttt]{lmodern}	%% Latin Modern, with light typewriter, looks almost like default setting
+
+
+%% === article Template ===================================
+%%   - Font -
+\usepackage[lighttt]{lmodern}	%% Latin Modern with light typewriter
+
+
+%% === Fonts ==============================================
+%%   - Other -
+%\savesymbol{iint}					%% Better math font
+%\savesymbol{iiint}				%
+%\savesymbol{iiiint}				%
+%\savesymbol{idotsint}			%
+%\usepackage{MnSymbol}			%% /Better math font
+\usepackage[babel=true]{microtype} %% Better kerning
+
+
+%% === Language ===========================================
+\usepackage{babel} 							%% Select language in \documentclass
+\usepackage[babel]{csquotes}		%% \enquote, \blockquote
+%%   - Quotes -
+%% Options for english: british -> '', american -> ""
+\ExecuteQuoteOptions{french=guillemets,german=quotes,english=american}
+\newcommand\q[1]{\enquote{#1}}	%% Quote with \q{}
+\MakeAutoQuote{>}{<} %% {«}{»}
+\MakeOuterQuote{"}
+
+
+%% === Page Format ========================================
+%\usepackage{fancyhdr}			%% more header and footer configuration
+%\usepackage{pdflscape}			%% \begin{landscape} ... \end{landscape}
+
+
+%% === Bibliography =======================================
+%% use biblatex if you know what you're doing
+\usepackage[
+		%backend=bibtex, 			%% bibtex, no utf-8 support
+		backend=biber,				%% biber backend
+		style=numeric-comp,		%% [1]
+		%style=alphabetic, 		%% [Auth99]
+		%citestyle=authortitle-tcomp,
+		%bibstyle=verbose,
+		%backref=true,
+		defernumbers=true,
+		]{biblatex}
+		
+		
+%% === Images =============================================
+\usepackage{graphicx}			%% \includegraphics
+\usepackage{subfig}				%% Sub-figures
+\DeclareGraphicsExtensions{.pdf,.png,.jpg,.ai}
+\DeclareGraphicsRule{.ai}{pdf}{*}{}
+
+
+%% === Colors =============================================
+\usepackage{color}
+%\usepackage{colortbl}					%% Colors for tables
+\usepackage[svgnames,table]{xcolor}		%% more colors and \rowcolors
+
+
+%% === Tables =============================================
+%\usepackage{ctable}				%% \ctable command
+%%  - Table Style -
+%% colored rows, requires xcolor
+%\newcommand{\insidetable}{\rowcolors*{2}{WhiteSmoke}{white}}
+%\setupctable{doinside=\insidetable}
+
+
+%% === Code Listings ======================================
+\usepackage{listings}
+%%   - Basic Looks -
+\lstset{
+	captionpos=b, 
+	xleftmargin=1cm,
+	basicstyle=\smaller\ttfamily, 
+	showstringspaces=false, 
+	columns=fixed, 
+	basewidth={0.5em,0.45em}, 
+	upquote=true,
+	tabsize=2, 
+	gobble=2,
+	escapeinside={/*@}{@*/},
+	numberbychapter=false,
+}
+%%   - Linebreaks -
+\lstset{
+	breaklines=true, 
+	breakatwhitespace=true,
+	%prebreak=\raisebox{0ex}[0ex][0ex]{\emptyaccsupp{\small\ensuremath{\rhookswarrow}}},
+	postbreak=\raisebox{0ex}[0ex][0ex]{\emptyaccsupp{\small\ensuremath{\:\!\\rcurvearrowse\space}}},
+}
+%%   - Line Numbers -
+\lstset{
+	numbers=left, 
+	numberstyle=\tiny\emptyaccsupp, 
+	numbersep=5pt,
+	numberfirstline=false, 
+	firstnumber=auto, 
+	stepnumber=5,
+}
+%%   - Copy&Paste -
+\lstset{keepspaces=true}
+\ifXeTeX
+\else
+  \makeatletter
+  \def\lst@outputspace{{\ifx\lst@bkgcolor\empty\color{white}\else\lst@bkgcolor\fi\lst@visiblespace}}
+  \makeatother
+	\pdfglyphtounicode{visiblespace}{A0}
+	\pdfglyphtounicode{blank}{A0}
+	\pdfglyphtounicode{visualspace}{A0}
+	\pdfglyphtounicode{uni2423}{A0}
+\fi
+%%   - Languages -
+\lstdefinelanguage{JavaScript}{
+	keywords={break, case, catch, continue, debugger, default, delete, do, else, finally, for, function, if, in, instanceof, new, return, switch, this, throw, try, typeof, var, void, while, with},
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]',
+	morestring=[b]",
+	sensitive=true,
+}
+\lstdefinelanguage{HanaSQL}[]{SQL}{
+	morekeywords={replace,string,if,daysbetween,secondsbetween,weekday,adddays,addseconds,double},
+}
+\lstdefinelanguage{algorithm}{
+	keywords={break, case, catch, continue, dec, default, delete, do, each, else, end, error, exists, finally, for, function, if, inc, is, new, return, switch, then, this, throw, try, typeof, until, var, void, while, with},
+	morestring=[b]",
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	moredelim=[is][\slshape]{'}{'},
+	moredelim=[is][\bfseries]{''}{''},
+	style=algorithmStyle,
+}
+\lstdefinestyle{algorithmStyle}{
+  literate= % replace with math symbols
+			{:=}{{\(\gets\)}}2 {~}{{\(\:\!\!\neg\)}}1
+			{<=}{{\(\leq\)}}1 {>=}{{\(\geq\)}}1 
+			{!=}{{\(\neq\)}}1 {=}{{\(=\)}}1
+			{&&}{{\(\wedge\)}}1 {||}{{\(\vee\)}}1 
+			{\{\}}{{\(\emptyset\)}}1
+			{\\in}{{\(\in\)}}1
+			{\\notin}{{\(\notin\)}}1
+			{\\exists}{{\(\exists\)}}1
+			{\\nsubseteq}{{\(\subseteq\)}}1
+			{<<}{{\(\ll\)}}2
+			% escape with \
+			{\\:=}{{:=}}2 {\\~}{{\textasciitilde}}1
+			{\\<=}{{<=}}2 {\\>=}{{>=}}2 
+			{\\!=}{{!=}}2  {\\=}{{=}}1
+			{\\&&}{{\&\&}}2 {\\||}{{||}}2 
+			{\\\{\}}{{\{\}}}2
+			{\\bs}{{\textbackslash}}1 
+			{\\'}{{'}}1 
+}
+%%   - Styles -
+\lstdefinestyle{EclipseStyle}{
+	keywordstyle=\bfseries\color{Purple},
+	stringstyle=\color{Blue},
+	commentstyle=\color{Grey},
+}
+\lstdefinestyle{BWStyle}{
+	keywordstyle=\bfseries,
+	stringstyle=\color{DimGray},
+	commentstyle=\slshape,
+}
+\lstset{style=BWStyle,language=Java}
+\lstMakeShortInline[basicstyle=\ttfamily,language={}]´
+
+
+%% === More Tools =========================================
+%% no changes here
+\usepackage{xspace} 			%% \xspace, automatic spaces for custom macros
+\usepackage{float}				%% custom floats
+\usepackage{mparhack}			%% marginpar hack
+\usepackage{fixltx2e}			%% latex bugs
+\usepackage{relsize}			%% \smaller
+\usepackage[space=true]{accsupp}
+\newcommand\emptyaccsupp[1]{\BeginAccSupp{ActualText={}}#1\EndAccSupp{}}
+
+
+%% === Misc ===============================================
+\usepackage[printonlyused]{acronym}	%% Acronyms
+\renewcommand*{\acsfont}[1]{\textsc{#1}}
+%% pdfcomments, load before hyperref
+\usepackage{pdfcomment}
+%% Exclude footnote links from copy&paste
+\renewcommand{\thefootnote}{\protect\BeginAccSupp{ActualText={}}\arabic{footnote}\protect\EndAccSupp{}}
+
+
+%% === Links and Captions =================================
+\usepackage{hyperref}
+\hypersetup{
+%	draft,						%% disable all
+	%% better set this as document option
+	%colorlinks, 				%% color links, instead of bordered
+	hidelinks,					%% for print version
+%% - link colors -
+	linkcolor=Navy,				%% internal, default red
+	citecolor=Navy,				%% citations, default green
+	urlcolor=Purple,			%% URLs, default cyan
+	filecolor=Purple,			%% files, default magenta
+%
+	plainpages=false,
+}
+
+\usepackage[nameinlink, noabbrev]{cleveref}	%% \cref commands
+\newcommand{\lineref}[2]{\hyperref[#1]{line~\ref*{#1:#2}}}
+\newcommand{\linerefn}[2]{\hyperref[#1]{line~#2}}
+\newcommand{\Lineref}[2]{\hyperref[#1]{Line~\ref*{#1:#2}}}
+\newcommand{\Linerefn}[2]{\hyperref[#1]{Line~#2}}
+
+%\usepackage[all]{hypcap}
+\usepackage{caption}
+\captionsetup[table]{position=t}
+\captionsetup[subtable]{position=t}
+
+
+%% === Misc 2 ============================================
+\usepackage[xspace]{ellipsis}	%% \dots, load after hyperref
+
+
+%% === Pdf Options =======================================
+\hypersetup{
+	bookmarksopen,
+	bookmarksnumbered,
+%	pdfstartview={Fit},					%% Fit page
+%	pdfstartview={FitH},				%% Fit width
+	pdfstartview={XYZ null null 1.0},	%% 100% zoom
+}
