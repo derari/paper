@@ -10,7 +10,7 @@
 
 
 \hypersetup{
-	pdftitle={Interactive Dynamic Slicing},
+	pdftitle={Interactive Dynamic Slicing with the Slice Navigator},
 	pdfauthor={Author 1, Author 2},
 	pdfsubject={},
 }
@@ -56,7 +56,7 @@ A performance evaluation shows the feasibility of our approach for larger progra
 \section{Introduction}
 \label{sec:introduction}
 
-In many cases, software bugs don't cause the software to fail, i.e. to deviate from expected behavior, immediately.
+In many cases, software bugs don't cause the software to fail, i.e., to deviate from expected behavior, immediately.
 To actually find the bug, the developer has to follow the chain of erroneous state from the observed failure backwards to the bug.
 Many approaches exist to support this process.
 
@@ -72,13 +72,26 @@ This often requires a high familiarity with the code, which is not always given.
 
 Weiser has shown that programmers think not only in modules, but in related statements \cite{weiser_programmers_1982}.
 Slicing is a technique to produce subsets of a program relevant to a given criterion.
-Dynamic slicing also considers the program input, which allows to identify more irrelevant instructions.
+Dynamic slicing also considers the program input, which allows to remove more irrelevant instructions.
 It has been shown that slicing can improve developer productivity, however, it suffers from the same problem as debugging does:
 every time the developer's question changes the tool has to be restarted, which can interrupt the developer's flow even if it only takes a few seconds.
+Furthermore, every time developers need to switch between slicer and debugger, another interruption occurs.
+
+
+The contributions of this paper are threefold:
+\begin{itemize}
+	\item The integration of dynamic analyses directly in the debugger reduces interruptions in developer flow by minimizing context switches between tools and shortens waiting time as recorded runtime data can be re-used.
+	\item A new dynamic slicing algorithm allows quick and iterative refinement of the slicing criteria to adapt the slice to changing developer questions.
+		Based on previous work, developers can formulate their question by selecting different dependency types that will change the outcome of the slice.
+	\item The \emph{Slice Navigator} 
+		
+\end{itemize}
 
 We propose a new approach that combines omniscient debugging and dynamic slicing.
-While the developer omnisciently debugs a dynamic slice, at any point she can adjust the slicing criterion and changes are applied instantly, without interrupting the debug session.
+While developers omnisciently debugs a dynamic slice, at any point they can adjust the slicing criterion and changes are applied instantly, without interrupting the debug session.
 A new UI component, the Slice Navigator, provides a unique view on the execution by combining relevant information from both the ODB and the slicing subsystem.
+
+
 
 \todo{our architecture}
 %In this paper, we present a new debugging workflow, based on omniscient debugging and dynamic slicing, using the Slice Navigator.
