@@ -41,7 +41,7 @@
 
 
 % \lstset{captionpos=b, xleftmargin=1cm}
-% \lstset{basicstyle=\small\ttfamily, showstringspaces=false, columns=flexible, keepspaces=true}
+\lstset{basicstyle=\small\ttfamily}
 \lstset{showstringspaces=false, columns=flexible, keepspaces=true}
 \lstset{tabsize=2, gobble=2}
 %\lstset{upquote=true}
@@ -246,9 +246,9 @@ The contributions of this paper are as follows:
 \end{itemize}
 
 The remainder of this paper is structured as follows:
-Our approach and our prototype implementation is described in \cref{sec:prototype}.
-In \cref{sec:ttqueries}, we explain back-in-time queries.
-
+\Cref{sec:prototype} presents our approach and prototype implementation of back-in-time debugging in the database.
+\Cref{sec:ttqueries} discusses querying past database states and introduces and extension to SQL.
+\Cref{sec:evaluation} evaluates our approach before \cref{sec:conclusion} discusses future work and concludes the paper.
 
 
 \section{Related Work}
@@ -501,6 +501,7 @@ Clicking on value allows the developer to jump to the °UPDATE° or °INSERT° s
 
 
 \section{Evaluation}
+\label{sec:evaluation}
 
 - Test system: 2 billion records of point of sales data \\
 - Stored procedure: calculate revenue and margin per week of current and last year \\
@@ -522,7 +523,7 @@ Second, it is currently not possible to use time qualifiers outside of the °WHE
 
 
 \section{Conclusion}
-
+\label{sec:conclusion}
 
 
 Future work
