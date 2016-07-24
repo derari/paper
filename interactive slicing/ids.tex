@@ -1,23 +1,26 @@
 ﻿\documentclass[
       english,
-      ]{llncs}
+			conference,
+      ]{IEEEtran}
 
 \input{setup}
 \bibliography{references}
 
-\title{Interactive Dynamic Slicing}
+\title{The Slice Navigator: Interactive Dynamic Slicing something-something}
 \author{Arian Treffer}
 
 
 \hypersetup{
-	pdftitle={Interactive Dynamic Slicing with the Slice Navigator},
+	pdftitle={Interactive Dynamic Slicing},
 	pdfauthor={Author 1, Author 2},
 	pdfsubject={},
 }
 
 %% remove in final version
-\usepackage[colorinlistoftodos]{todonotes}
+%\usepackage[colorinlistoftodos]{todonotes}
 %\renewcommand{\todo}[2][\empty]{\pdfmargincomment[color=orange,icon=Note,subject=TODO,#1]{#2}}
+\usepackage{pdfcomment}
+\newcommand{\todo}[2][]{\pdfmargincomment[color=orange,icon=Note,subject={TODO},author={#1}]{#2}}
 
 \begin{document}
 
@@ -41,11 +44,10 @@
 %new: fast and interactive
 
 Slicing is a technique to reduce the amount of code that needs to be analyzed for a given problem.
-Omniscient debuggers are debuggers that allow developers to move freely through execution time.
 
-In this paper, we present the Slice Navigator, a debugging tool for Java programs that combines dynamic slicing with omniscient debugging data to support the debugging process in multiple ways.
+In this paper, we present the Slice Navigator, a debugging tool for Java programs that combines dynamic slicing with back-in-time debugging data to support the debugging process in multiple ways.
 Firstly, it supports the developer's short term memory by providing a summary of relevant program state and context for the current instruction.
-Secondly, it provides a better alternative to breakpoints as it can be used to control the debugger to jump to related instructions, such as the latest change of a variable.
+Secondly, it provides an alternative to breakpoints as it can be used to control the debugger to jump to related instructions, such as the last change of a variable.
 Thirdly, it allows to directly reconfigure the slicing criteria, enabling the developer to minimize the search space of active code without interrupting the debugging workflow.
 
 The paper focuses on the UI and implementation of the Slice Navigator view and how it changes the debugging workflow.
@@ -56,12 +58,13 @@ A performance evaluation shows the feasibility of our approach for larger progra
 \section{Introduction}
 \label{sec:introduction}
 
+% Context: debugging and slicing
 In many cases, software bugs don't cause the software to fail, i.e., to deviate from expected behavior, immediately.
 To actually find the bug, the developer has to follow the chain of erroneous state from the observed failure backwards to the bug.
 Many approaches exist to support this process.
 
 Debuggers allow to inspect the state of a running program and to understand its impact on the program's behavior.
-Omniscient debuggers (ODBs) even make it possible to follow the infection chain backwards through time, removing the overhead of frequently restarting the debug session \cite{lewis_debugging_2003}.
+Back-in-time, or "omniscient" debuggers (ODBs) even make it possible to follow the infection chain backwards through time, removing the overhead of frequently restarting the debug session \cite{lewis_debugging_2003}.
 However, the developer still needs to manually identify the relation between states without spending too much time in irrelevant parts of code.
 This often requires a high familiarity with the code, which is not always given.
 %
@@ -72,39 +75,46 @@ This often requires a high familiarity with the code, which is not always given.
 
 Weiser has shown that programmers think not only in modules, but in related statements \cite{weiser_programmers_1982}.
 Slicing is a technique to produce subsets of a program relevant to a given criterion.
-Dynamic slicing also considers the program input, which allows to remove more irrelevant instructions.
-It has been shown that slicing can improve developer productivity, however, it suffers from the same problem as debugging does:
-every time the developer's question changes the tool has to be restarted, which can interrupt the developer's flow even if it only takes a few seconds.
-Furthermore, every time developers need to switch between slicer and debugger, another interruption occurs.
+Dynamic slicing also considers the program input, which allows to remove even more irrelevant instructions.
 
+% Problem: tool integration
+Slicing suffers from a similar problem as debugging:
+every time the developer's question changes the tool has to be restarted, which can interrupt the developer's flow even if it only takes a few seconds.
+For many slicing implementations this is unavoidable as information unrelated to the given slicing criteria is immediately discarded\todo{cite}.
+Furthermore, every time developers need to switch between slicer and debugger, another interruption occurs.
+This tool barrier discourages many developers from using slicing at all.
+
+% Significance
+It has been shown that slicing can \todo{qualify} improve developer productivity\todo{cite}, especially for developers dealing with very complex or unfamiliar code.
+
+We present a new approach that combines omniscient debugging and dynamic slicing.
+While developers omnisciently debug a dynamic slice, at any point they can add or adjust the slicing criteria and changes are applied instantly, without interrupting the debug session.
+A new UI component, the Slice Navigator, provides a unique view on the execution by combining relevant information from both the ODB and the slicing subsystem.
+
+\begin{figure}
+  % picture on first page :)
+	\centering
+		\includegraphics[width=0.80\linewidth]{slice1.png}
+	\caption{The slice navigator view, for the program halted at \linerefn{lst:example}{6}.}
+	\label{fig:slice1}
+\end{figure}
 
 The contributions of this paper are threefold:
 \begin{itemize}
-	\item The integration of dynamic analyses directly in the debugger reduces interruptions in developer flow by minimizing context switches between tools and shortens waiting time as recorded runtime data can be re-used.
+	\item The integration of dynamic analyzes directly in the debugger reduces interruptions in developer flow by minimizing context switches between tools and shortens waiting time as recorded run-time data can be re-used.
 	\item A new dynamic slicing algorithm allows quick and iterative refinement of the slicing criteria to adapt the slice to changing developer questions.
 		Based on previous work, developers can formulate their question by selecting different dependency types that will change the outcome of the slice.
-	\item The \emph{Slice Navigator} 
+	\item The \emph{Slice Navigator} is a UI component that bundles access to the debugger and the slicer.
+		It shows parts of the slice relevant to the current instruction, allows developers to modify the slicing criteria, and serves as an alternative to breakpoints and stepping.
+		\todo{mention the improved debugging workflow}.
 		
 \end{itemize}
 
-We propose a new approach that combines omniscient debugging and dynamic slicing.
-While developers omnisciently debugs a dynamic slice, at any point they can adjust the slicing criterion and changes are applied instantly, without interrupting the debug session.
-A new UI component, the Slice Navigator, provides a unique view on the execution by combining relevant information from both the ODB and the slicing subsystem.
-
-
-
-\todo{our architecture}
-%In this paper, we present a new debugging workflow, based on omniscient debugging and dynamic slicing, using the Slice Navigator.
-
-
-%paper shows new workflow\\
-%present prototype implementation and algorithm\\
-%discuss ui elements\\
-
 The remainder of this paper is structured as follows:
-In \cref{sec:workflow}, we explain the Slice Navigator user interfaces and how it allows for an improved debugging workflow.
-Details of the implementation of our prototype will be described in \cref{sec:impl}.
-In \cref{sec:eval}, we will show the feasibility of our approach with a small evaluation, before we conclude in \cref{sec:conclusion}.
+\Cref{sec:workflow} explains the Slice Navigator user interface and how it allows for an improved debugging workflow.
+\Cref{sec:impl} discusses relevant details of the implementation and the slicing algorithm.
+\Cref{sec:eval} evaluates the feasibility of our approach.
+\Cref{sec:conclusion} concludes.
 
 \section{Related Work}
 
@@ -151,35 +161,35 @@ For a complex program, the initial slice can still be too large to allow an effi
 In this case, the developer can now use the slice navigator to get an overview of the execution and to iteratively adjust the slicing criteria.
 
 \begin{lstlisting}[numberfirstline=true,firstnumber=1,label=lst:example,caption={Example program with a failing test case}]
-  	class Square implements Shape2D {
-  	  private double length;
-  	  public Square(double length) { this.length = length; }
-  	  
-  	  @Override
-  	  public double getArea() { 
-			  return length * length; 
-			}
+	class Square implements Shape2D {
+		private double length;
+		public Square(double length) { this.length = length; }
+		
+		@Override
+		public double getArea() { 
+			return length * length; 
 		}
-  	
-  	class Pyramid implements Shape3D {
-  	  private Shape2D base;
-  	  private double height;
-  	  public Pyramid(Shape2D baseShape, double tipHeight) {
-  	    base = baseShape;
-  	    height = height;
-  	  }
-  	  
-  	  @Override
-  	  public double getVolume() { 
-  	    return base.getArea() * height / 3; 
-  	  }
-  	}
-  	
-    @Test
-    public void test_getVolume() {
-      Shape3D shape = new Pyramid(new Square(2), 6);
-      assertEquals(8, shape.getVolume());
-    }
+	}
+	
+	class Pyramid implements Shape3D {
+		private Shape2D base;
+		private double height;
+		public Pyramid(Shape2D baseShape, double tipHeight) {
+			base = baseShape;
+			height = height;
+		}
+		
+		@Override
+		public double getVolume() { 
+			return base.getArea() * height / 3; 
+		}
+	}
+	
+	@Test
+	public void test_getVolume() {
+		Shape3D shape = new Pyramid(new Square(2), 6);
+		assertEquals(8, shape.getVolume());
+	}
 \end{lstlisting}
 
 \subsection{The Slice Navigator}
@@ -190,13 +200,6 @@ It provides a quick overview over previous and upcoming events, and how they rel
 "Previous Steps" lists all past events that the curent or future events depend on.
 Likewise, "Next Steps" shows all events that depend on the current or previous events.
 Events that are not directly related to the current step are shown in gray.
-
-\begin{figure}
-	\centering
-		\includegraphics[width=0.60\textwidth]{slice1.png}
-	\caption{The slice navigator view, for the program halted at \linerefn{lst:example}{6}.}
-	\label{fig:slice1}
-\end{figure}
 
 Using this event list, the developer can obtain different kinds of information about the current state of the execution.
 Firstly, simply by looking at the previous and next steps, the developer can understand at a glace how the current instruction fits into the grander scheme.
@@ -233,7 +236,7 @@ It is also possible to remove all dependencies of an event, for instance if it i
 
 \begin{figure}
 	\centering
-		\includegraphics[width=0.60\textwidth]{slice2.png}
+		\includegraphics[width=0.80\linewidth]{slice2.png}
 	\caption{The program halted at \linerefn{lst:example}{21}, after \lstinline{getArea()} was removed from the slice.}
 	\label{fig:slice2}
 \end{figure}
@@ -288,7 +291,7 @@ The basic structure is of the slicing algorithm is fairly simple and shown in \c
 		
 	function add_to_slice(slice, event)
 	  if event \in slice || event.is_negative_criterion then return
-		'add' event 'to' slice
+		slice += event
 		static_dependency_graph := event.method.dependency_graph
 		static_dependencies := static_dependency_graph.get(event.instruction)
 		for each instruction \in static_dependencies do ''in parallel''

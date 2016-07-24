@@ -45,7 +45,7 @@
 %\savesymbol{iiint}				%
 %\savesymbol{iiiint}				%
 %\savesymbol{idotsint}			%
-%\usepackage{MnSymbol}			%% /Better math font
+\usepackage{MnSymbol}			%% /Better math font
 \usepackage[babel=true]{microtype} %% Better kerning
 
 
@@ -105,7 +105,7 @@
 %%   - Basic Looks -
 \lstset{
 	captionpos=b, 
-	xleftmargin=1cm,
+	xleftmargin=0.35cm,
 	basicstyle=\smaller\ttfamily, 
 	showstringspaces=false, 
 	columns=fixed, 
@@ -121,7 +121,7 @@
 	breaklines=true, 
 	breakatwhitespace=true,
 	%prebreak=\raisebox{0ex}[0ex][0ex]{\emptyaccsupp{\small\ensuremath{\rhookswarrow}}},
-	postbreak=\raisebox{0ex}[0ex][0ex]{\emptyaccsupp{\small\ensuremath{\:\!\\rcurvearrowse\space}}},
+	postbreak=\raisebox{0ex}[0ex][0ex]{\emptyaccsupp{\small\ensuremath{\rcurvearrowse\space}}},
 }
 %%   - Line Numbers -
 \lstset{
@@ -206,7 +206,7 @@
 \usepackage{xspace} 			%% \xspace, automatic spaces for custom macros
 \usepackage{float}				%% custom floats
 \usepackage{mparhack}			%% marginpar hack
-\usepackage{fixltx2e}			%% latex bugs
+% \usepackage{fixltx2e}			%% latex bugs
 \usepackage{relsize}			%% \smaller
 \usepackage[space=true]{accsupp}
 \newcommand\emptyaccsupp[1]{\BeginAccSupp{ActualText={}}#1\EndAccSupp{}}
