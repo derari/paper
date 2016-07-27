@@ -196,9 +196,9 @@ I.e., gray "previous steps" have dependency links to "next steps", and vice vers
 Simply by looking at the previous and next steps, the developer can understand at a glace how the current instruction fits into the greater scheme.
 This is particularly useful if the current instruction was reached via a breakpoint, in which case it is not always obvious at which point in time it was hit.
 
-To obtain this kind of information with a regular debugger, the developer needs to analyze the execution stack and maybe even inspect lower stack frames.
+To obtain this kind of information with a regular debugger, developers need to analyze the execution stack and maybe even inspect lower stack frames.
 But even then it is not always obvious which of the state that is still reachable is actually used again.
-Unlike a typical debugger's variable view, the slice navigator only shows relevant variables, and also shows relevant object fields on the first level.
+Unlike a typical debugger's variable view, the Slice Navigator only shows relevant variables, and also shows relevant object fields on the first level.
 
 Further, the slice navigator shows details about the dependency graph that was used to compute the current slice.
 Small icons indicate how the events of the slice are related.
@@ -276,12 +276,12 @@ We currently support HSQLDB, MySql, and SAP Hana, but in principle any relationa
 The omniscient debugger consists of a set of views that allow to debug a Java application based on the data from the database.
 It is a post-mortem debugger, i.e., it simulates a debug session while the actual program has already terminated.
 
-\subsection{Slicing algorithm}
+\subsection{Initial slice computation}
 
 \todo{The slicing component is based on previous work [xxx].}
-The basic structure is of the slicing algorithm is fairly simple and shown in \cref{lst:slicealgo}.
+The basic structure is of the algorithm for building the initial slice is fairly simple and shown in \cref{lst:slicealgo}.
 
-\begin{lstlisting}[numberfirstline=true,float,language=algorithm,firstnumber=1,label=lst:slicealgo,caption={Algorithm for building the slice}]
+\begin{lstlisting}[float=t,language=algorithm,label=lst:slicealgo,caption={Simplified algorithm for building the slice}]
 	function build_slice(criteria)
 		slice := {}
 		for each event \in criteria do ''in parallel''
@@ -292,10 +292,11 @@ The basic structure is of the slicing algorithm is fairly simple and shown in \c
 	  if event \in slice || event.is_negative_criterion then return
 		slice += event
 		static_dependency_graph := event.method.dependency_graph
-		static_dependencies := static_dependency_graph.get(event.instruction)
+		static_dependencies := static_dependency_graph.get( event.instruction, event.dependency_flags)
 		for each instruction \in static_dependencies do ''in parallel''
 			prev_event := find_last_previous_event(instruction)
-			if prev_event 'exists' then
+			if prev_event ''exists'' then
+			  prev_event.inherit_dependency_flags(event)
 				add_to_slice(slice, prev_event)
 \end{lstlisting}
 
@@ -330,30 +331,36 @@ For each candidate instruction, the latest occurrence is looked up in the event 
 For variable assignments the look up is limited to the current method invocation, for events like field assignments the scope is not limited.
 If an event was found, it will be added to the slice next.
 
+Every event carries flags that indicate which types of its dependencies the slice should include.
+If the dependency flags are empty, the event is considered a negative criterion and is removed entirely from the slice (cf.~\linerefn{lst:slicealgo}{8}).
+If the dependency flags of an event were not configured directly by the user, they are inherited from the depending events (cf.~\linerefn{lst:slicealgo}{15}).
+
+\subsection{Incremental slicing}
+
+Adding another event to the slicing criteria works similarly to building a new slice, the major difference being that the slice is not initially empty.
+
+When developers want to remove an event from the slice, we need to know when to cascade the removal to its dependencies.
+As the dependency graph is acyclic, we can use reference counting for this.
+However, we need to independently count the references for each dependency type.
+When the counter for one of the dependency types reaches zero, dependencies of that type are unlinked respectively.
+
+Changing the dependency type of an event, e.g., from value to reachability, is a combination of removing and adding an event.
 
 \subsection{Filling the Slice Navigator}
 
+iterate over slice starting at current step \\
+events at current step always collected \\
+if one of dependencies was before current step, event is collected as "next steps" \\
+dependencies before current collected at "previous steps" \\
+events with direct connection to current step are flagged as such
 
+special case: reachability only \\
+to prevent entire stack in "previous steps" and entire variable history in "next steps", \\
+events are not collected if the only overarching dependency is of reachability type.
 
-%soot-based analysis for static dependency graph, cached as needed\\
-%for every event: map to statement, find dependency statements, map to event\\
-%improved user exp: intermediate result twice per second.\\
-
-%The slice configuration contains two kind of information.
-%First, the slicing criterion, which is a list of initial events.
-
-
-
-
-%if event is encountered, only configured dependency types are followed\\
-  %if none configured, configuration is inherited\\
-  %on multi inheritance, flags are `or`-ed.\\
-  %changes are propagated to previous events\\
-  %
-%due to parallel nature of algorithm, change via user or algorithm similar \\
-%except user may remove dependency types\\
-%after a change, dependencies are added or removed accordingly\\
-%on remove, reference counting to decide if event is removed entirely\\
+second special case: transparent classes\\
+classes of the jdk are flagged as transparent\\
+all internal events, ie all except direct accesses from non-transparent classes, are resolved immediately and never appear in the navigator.
 
 \section{Evaluation}
 \label{sec:eval}
