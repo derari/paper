@@ -44,12 +44,12 @@ A performance evaluation shows the feasibility of our approach for larger progra
 
 % Context: debugging and slicing
 In many cases, software bugs don't cause the software to fail, i.e., to deviate from expected behavior, immediately.
-To actually find the bug, the developer has to follow the chain of erroneous state from the observed failure backwards to the bug.
+To actually find the bug, developers have to follow the chain of erroneous state from the observed failure backwards to the bug.
 Many approaches exist to support this process.
 
 Debuggers allow to inspect the state of a running program and to understand its impact on the program's behavior.
 Back-in-time, or "omniscient" debuggers (ODBs) even make it possible to follow the infection chain backwards through time, removing the overhead of frequently restarting the debug session \cite{lewis_debugging_2003}.
-However, the developer still needs to manually identify the relation between states without spending too much time in irrelevant parts of code.
+However, developers still need to manually identify the relation between states without spending too much time in irrelevant parts of code.
 This often requires a high familiarity with the code, which is not always given.
 %
 %when programmer needs better understanding, turns to debugger\\
@@ -79,7 +79,7 @@ A new UI component, the Slice Navigator, provides a unique view on the execution
   % picture on first page :)
 	\centering
 		\includegraphics[width=0.80\linewidth]{slice1.png}
-	\caption{The Slice Navigator view shows context for the current debug step. Instructions directly related to the current step are listed in black, instructions with overarching dependencies in gray. Small icons indicate the dependency types.}
+	\caption{The Slice Navigator shows context for the current debug step. Steps directly related to the current step are listed in black, steps with overarching dependencies in gray. Small icons indicate how the steps are related.}
 	\label{fig:slice1}
 \end{figure}
 
@@ -89,7 +89,7 @@ The contributions of this paper are threefold:
 	\item A new dynamic slicing algorithm allows quick and iterative refinement of the slicing criteria to adapt the slice to changing developer questions.
 		Based on previous work, developers can formulate their question by choosing from different dependency types that will change the outcome of the slice.
 	\item The \emph{Slice Navigator} is a UI component that bundles access to the debugger and the slicer.
-		It provides context for the current instruction by showing relevant parts of the sliceinstruction, allows developers to modify the slicing criteria, and serves as an alternative to breakpoints and stepping.
+		It provides context for the current instruction by showing relevant parts of the slice, allows developers to iteratively refine the slicing criteria, and serves as an alternative to breakpoints and stepping.
 		\todo{mention the improved debugging workflow}.
 		
 \end{itemize}
@@ -159,7 +159,7 @@ In this case, the developer can now use the slice navigator to get an overview o
 	class Pyramid implements Shape3D {
 		private Shape2D base;
 		private double height;
-		public Pyramid(Shape2D baseShape, double tipHeight) {
+		public Pyramid(Shape2D baseShape, double height) {
 			base = baseShape;
 			height = height;
 		}
@@ -348,6 +348,7 @@ Changing the dependency type of an event, e.g., from value to reachability, is a
 
 \subsection{Filling the Slice Navigator}
 
+
 iterate over slice starting at current step \\
 events at current step always collected \\
 if one of dependencies was before current step, event is collected as "next steps" \\
@@ -365,9 +366,46 @@ all internal events, ie all except direct accesses from non-transparent classes,
 \section{Evaluation}
 \label{sec:eval}
 
-performance\\
+One of the main advantages of the Slice Navigator is that it integrates into the debugging workflow.
+As such, it is crucial that results are produced in a timely manner, as a waiting time of even a few seconds may interrupt developers in their flow.
 
-example\\
+To evaluate the performance of our approach on real-world code, we measured the computation of several slices on JUnit tests of Camunda's open-source BPMN engine\footnote{\todo{link to camunda}}.
+All tests were run on a 2.0 GHz Intel i7 Processor with 4 cores and and 8 GB RAM, running Windows 8.1.
+A MySql database was used to store the trace data.
+We repeated every measurement 10 times, all charts show the average values.
+
+\begin{figure}
+	\centering
+		\includegraphics[width=\linewidth, clip, trim={20mm 26mm 20mm 26mm}]{chart-initial.pdf}
+	\caption{Time for computing the initial slice}
+	\label{fig:chartinitial}
+\end{figure}
+
+We previously observed that our approach differs from other slicing implementations insofar as that the run-time of the algorithm does not depend on the total run-time of the sliced program, but only on the size of the resulting slice\todo{cite}.
+
+\Cref{fig:chartinitial} shows the time for computing the initial slice in seconds, depending on size of the resulting slice.
+Times are given in total, and divided into static code analysis and the dynamic analysis of the event data.
+
+As can be seen, the static analysis taking slightly more time on average.
+It should be noted that the total time is less than the sum of the static and dynamic analysis times, as both can, to some extend, run in parallel.
+
+
+\begin{figure}
+	\centering
+		\includegraphics[width=\linewidth, clip, trim={20mm 26mm 20mm 26mm}]{chart-add.pdf}
+	\caption{Time for adding a slicing criterion}
+	\label{fig:chartadd}
+\end{figure}
+
+
+\begin{figure}
+	\centering
+		\includegraphics[width=\linewidth, clip, trim={20mm 26mm 20mm 26mm}]{chart-rem.pdf}
+	\caption{Time for computing the initial slice}
+	\label{fig:chartinitial}
+\end{figure}
+
+
 
 \section{Conclusion}
 \label{sec:conclusion}
