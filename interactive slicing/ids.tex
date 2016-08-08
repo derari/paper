@@ -6,21 +6,32 @@
 \input{setup}
 \bibliography{references}
 
-\title{The Slice Navigator: Interactive Dynamic Slicing something-something}
-\author{Arian Treffer}
+\title{The Slice Navigator: Focused Debugging with Interactive Dynamic Slicing}
+
+\author{\IEEEauthorblockN{Arian Treffer}
+\IEEEauthorblockA{Hasso-Plattner-Institut\\
+Potsdam, Germany\\
+Email: arian.treffer@hpi.de}
+\and
+\IEEEauthorblockN{Matthias Uflacker}
+\IEEEauthorblockA{Hasso-Plattner-Institut\\
+Potsdam, Germany\\
+Email: matthias.uflacker@hpi.de}
+}
+
 
 
 \hypersetup{
 	pdftitle={Interactive Dynamic Slicing},
-	pdfauthor={Author 1, Author 2},
+	pdfauthor={Arian Treffer, Matthias Uflacker},
 	pdfsubject={},
 }
 
 %% remove in final version
 %\usepackage[colorinlistoftodos]{todonotes}
 %\renewcommand{\todo}[2][\empty]{\pdfmargincomment[color=orange,icon=Note,subject=TODO,#1]{#2}}
-\usepackage{pdfcomment}
-\newcommand{\todo}[2][]{\pdfmargincomment[color=orange,icon=Note,subject={TODO},author={#1}]{#2}}
+%\usepackage{pdfcomment}
+%\newcommand{\todo}[2][]{\pdfmargincomment[color=orange,icon=Note,subject={TODO},author={#1}]{#2}}
 
 \begin{document}
 
@@ -59,17 +70,16 @@ This often requires a high familiarity with the code, which is not always given.
 
 Weiser has shown that programmers think not only in modules, but in related statements \cite{weiser_programmers_1982}.
 Slicing is a technique to produce subsets of a program relevant to a given criterion.
-Dynamic slicing also considers the program input, which allows to remove even more irrelevant instructions\todo{cite}.
+Dynamic slicing also considers the program input, which allows to remove even more irrelevant instructions \cite{agrawal_dynamic_1990}.
 
 % Problem: tool integration
 Slicing suffers from a similar problem as debugging:
-every time the developer's question changes the tool has to be restarted, which can interrupt the developer's flow even if it only takes a few seconds.
-For many slicing implementations this is unavoidable as information unrelated to the given slicing criteria is immediately discarded\todo{cite}.
+every time the developer's question changes the slice has to be recomputed, which can interrupt the developer's flow even if it only takes a few seconds.
 Furthermore, every time developers need to switch between slicer and debugger, another interruption occurs.
 This tool barrier discourages many developers from using slicing at all.
 
 % Significance
-It has been shown that slicing can \todo{qualify} improve developer productivity\todo{cite}, especially for developers dealing with very complex or unfamiliar code.
+It has been shown that slicing can be useful to improve developer productivity \cite{weiser_programmers_1982, agrawal_dynamic_1990}, especially for developers dealing with very complex or unfamiliar code.
 
 We present a new approach that combines omniscient debugging and dynamic slicing.
 While developers omnisciently debug a dynamic slice, at any point they can add or adjust the slicing criteria and changes are applied instantly, without interrupting the debug session.
@@ -85,13 +95,11 @@ A new UI component, the Slice Navigator, provides a unique view on the execution
 
 The contributions of this paper are threefold:
 \begin{itemize}
-	\item The integration of dynamic analyzes directly in the debugger reduces interruptions in developer flow by minimizing context switches between tools and shortens waiting time as recorded run-time data can be re-used.
 	\item A new dynamic slicing algorithm allows quick and iterative refinement of the slicing criteria to adapt the slice to changing developer questions.
-		Based on previous work, developers can formulate their question by choosing from different dependency types that will change the outcome of the slice.
+		Based on previous work, developers can formulate their question by choosing from different dependency types that will change the outcome of the slice \cite{treffer_dynamic_2014}.
 	\item The \emph{Slice Navigator} is a UI component that bundles access to the debugger and the slicer.
 		It provides context for the current instruction by showing relevant parts of the slice, allows developers to iteratively refine the slicing criteria, and serves as an alternative to breakpoints and stepping.
-		\todo{mention the improved debugging workflow}.
-		
+	\item The integration of dynamic analyzes directly in the debugger not only reduces interruptions in developer flow by minimizing context switches between tools and shortens waiting time as recorded run-time data can be re-used; it also allows for a new debugging workflow where developers can isolate a bug by iteratively slicing away correct code.
 \end{itemize}
 
 The remainder of this paper is structured as follows:
@@ -102,22 +110,28 @@ The remainder of this paper is structured as follows:
 
 \section{Related Work}
 
-relevance of debugger\\
+The concept of slicing was introduced by Weiser and initially only built on static analysis \cite{weiser_programmers_1982, weiser_program_1981}.
+Later, Korel and Laski \cite{korel_dynamic_1990} and Agrawal and Horgan \cite{agrawal_dynamic_1990} introduced dynamic slicing by proposing different ways of extending the concept to the run-time.
 
-backwards debugging\\
-omniscient debugging\\
+The idea of being able to debug backwards in time dates back to the 1960s with EXDAMS, a debugger for FORTRAN \cite{balzer_exdams:_1969}.
+Since then, debuggers with back-in-time capabilities have been implemented for many programming languages \cite{agrawal_debugging_1993, feldman_igor:_1988, lieberman_zstep_1995}.
 
-slicing weiser \cite{weiser_programmers_1982} \\
-dynamic slicing\\
-see soot paper\\
+In 2003, Lewis introduced the concept of "omniscient debugging", a debugger that can not only rewind time, but has instant access to every point in past and future \cite{lewis_debugging_2003}.
+Later work on omniscient debugging focused mostly on handling the large amounts of data such a debugger creates \cite{pothier_scalable_2007, lienhard_practical_2008}.
+
+Perscheid et al. combined omniscient debugging and dynamic code analysis similar to slicing to automatically identify likely locations for code defects by analyzing a suite of unit tests with passing and failing test cases \cite{perscheid_test-driven_2012}.
+
+SPYDER is a debugger with slicing and back-and-time capabilites \cite{agrawal_debugging_1993}.
+With SPYDER, Agrawal et al. also proposed a new debugging workflow that is similar to our approach.
+However, while Agrawal et al. proposed to create a new slice every time the programmers question changed, our approach focuses on iteratively modifying a single slice.
+Furthermore, we present a new way of presenting aspects of the slice to developers.
 
 \section{A New Debugging Workflow}
 \label{sec:workflow}
 
-Both omniscient debugging (ODB) and (dynamic) slicing changed the way how developers approach fault localization.
+Both omniscient debugging and (dynamic) slicing changed the way how developers approach fault localization.
 In this section, we use a simple example to demonstrate how we integrated existing and new tools to an improved debugging workflow.
-
-\todo{we describe ui, info and control}
+We also describe the user interface of the Slice Navigator, how it presents information about the slice, and how it can be used to control the debugger.
 
 \subsection{Getting Started}
 
@@ -213,7 +227,7 @@ However, using the Slice Navigator developers can not only control the debugger,
 
 \subsection{Interactive Slice Configuration}
 
-The slicing component is based on previous work \todo{[xxx]}.
+The slicing component is based on previous work \cite{treffer_dynamic_2014}.
 When building the dependency graph between instructions, the algorithm distinguishes between three types of dependencies.
 
 \emph{Value dependencies} occur when the the value of an instruction is derived from another instruction's value.
@@ -221,8 +235,8 @@ In the slice navigator, they are represented with a red equality sign.
 
 Instructions that determine if another instruction can be reached are \emph{reachability dependencies}, indicated by a yellow arrow.
 Typically, these are method invocations and instruction in conditional statements.
-Sometimes, a value depends on only one of multiple candidate values. 
 
+Sometimes, a value depends on only one of multiple candidate values. 
 A \emph{control dependency} determines which of these candidates is used.
 More formally, control dependencies are reachability dependencies of value candidates that are not also reachability dependencies of all other candidates.
 In the navigator, they are indicated by a blue "X".
@@ -247,11 +261,6 @@ As mentioned before, instructions and states not belonging to the slice are stil
 However, it might also happen that a value or instruction outside of the slice catches a developers attention.
 In this case, they can choose to add it as another slicing criterion and the slice is immediately expanded.
 Again, this happens without interrupting the developer's work.
-
-\todo{move this to evaluation}
-%In the worst case, expanding the slice takes as long as creating a new slice for only that event.
-%The developer might notice how new events are added to the slice in the background.
-%Generally, this should not be an impediment, as events that are closest to the current instruction are added first.
 
 \section{Implementation}
 \label{sec:impl}
@@ -278,7 +287,6 @@ It is a post-mortem debugger, i.e., it simulates a debug session while the actua
 
 \subsection{Initial slice computation}
 
-\todo{The slicing component is based on previous work [xxx].}
 The basic structure is of the algorithm for building the initial slice is fairly simple and shown in \cref{lst:slicealgo}.
 
 \begin{lstlisting}[float=t,language=algorithm,label=lst:slicealgo,caption={Simplified algorithm for building the slice}]
@@ -323,7 +331,7 @@ The basic structure is of the algorithm for building the initial slice is fairly
 The slicing criterion is a set of events, the slice is initially an empty set.
 For each event that is added to the slice, the static dependency graph of the event's method is obtained.
 
-If the graph is not initialized yet, it will be created by a code analysis using the Soot framework \todo{cite}.
+If the graph is not initialized yet, it will be created by a code analysis using the Soot framework\footnote{\url{https://sable.github.io/soot/}}.
 The dependency graph contains every instruction's static dependencies and distinguishes between three dependency types, as described in the previous section.
 Dependency instruction candidates are looked up in the graph by the event's instruction.
 
@@ -334,6 +342,15 @@ If an event was found, it will be added to the slice next.
 Every event carries flags that indicate which types of its dependencies the slice should include.
 If the dependency flags are empty, the event is considered a negative criterion and is removed entirely from the slice (cf.~\linerefn{lst:slicealgo}{8}).
 If the dependency flags of an event were not configured directly by the user, they are inherited from the depending events (cf.~\linerefn{lst:slicealgo}{15}).
+
+As can be seen, the algorithm is designed to follow all dependency links concurrently.
+This allows to use parallelization to improve the performance of the slicer.
+The amount of concurrency is only limited by the theoretical maximum level of concurrency in the original program.
+This is to be expected as the slicer is, in some sense, just evaluating the program backwards.
+
+However, we also let the slicing run concurrently to the user interface.
+Twice per second, we update the different debugging views, such as variable and trace explorer, to use the latest intermediate result.
+This we, not only don't have to freeze the user interface, but we can allow developers to continue working even if computing the whole slice takes several seconds.
 
 \subsection{Incremental slicing}
 
@@ -348,20 +365,21 @@ Changing the dependency type of an event, e.g., from value to reachability, is a
 
 \subsection{Filling the Slice Navigator}
 
+To fill the Slice Navigator, we iterate over the events in the slice, ordered by step number, beginning at the current step, and collect all events that will be shown in the view.
+Events directly related to the current step will be flagged as such, so that they can be highlighted.
 
-iterate over slice starting at current step \\
-events at current step always collected \\
-if one of dependencies was before current step, event is collected as "next steps" \\
-dependencies before current collected at "previous steps" \\
-events with direct connection to current step are flagged as such
+Events at the current step and their dependencies are always collected.
+For events in the future, it is first determined if they have direct dependencies that are in the past.
+If such dependencies exist, they are collected together with their respective future event.
 
-special case: reachability only \\
-to prevent entire stack in "previous steps" and entire variable history in "next steps", \\
-events are not collected if the only overarching dependency is of reachability type.
+However, our collection algorithm considers two special cases:
 
-second special case: transparent classes\\
-classes of the jdk are flagged as transparent\\
-all internal events, ie all except direct accesses from non-transparent classes, are resolved immediately and never appear in the navigator.
+First, reachability dependencies are not collected except for the current step.
+This measure is taken to prevent the entire method stack from appearing in "previous steps" and all future variable changes in "next steps".
+
+The second special case are transparent classes.
+Classes of the JDK are flagged as transparent, and all their internal events, i.e., all events except direct accesses from non-transparent classes, are resolved immediately and never appear in the navigator.
+
 
 \section{Evaluation}
 \label{sec:eval}
@@ -369,7 +387,7 @@ all internal events, ie all except direct accesses from non-transparent classes,
 One of the main advantages of the Slice Navigator is that it integrates into the debugging workflow.
 As such, it is crucial that results are produced in a timely manner, as a waiting time of even a few seconds may interrupt developers in their flow.
 
-To evaluate the performance of our approach on real-world code, we measured the computation of several slices on JUnit tests of Camunda's open-source BPMN engine\footnote{\todo{link to camunda}}.
+To evaluate the performance of our approach on real-world code, we measured the computation of several slices on JUnit tests of an open-source BPMN engine\footnote{\url{https://github.com/camunda/camunda-bpm-platform}}.
 All tests were run on a 2.0 GHz Intel i7 Processor with 4 cores and and 8 GB RAM, running Windows 8.1.
 A MySql database was used to store the trace data.
 We repeated every measurement 10 times, all charts show the average values.
@@ -381,7 +399,7 @@ We repeated every measurement 10 times, all charts show the average values.
 	\label{fig:chartinitial}
 \end{figure}
 
-We previously observed that our approach differs from other slicing implementations insofar as that the run-time of the algorithm does not depend on the total length or run-time of the sliced program, but only on the size of the resulting slice\todo{cite}.
+We previously observed that our approach differs from other slicing implementations insofar as that the run-time of the algorithm does not depend on the total length or run-time of the sliced program, but only on the size of the resulting slice\cite{treffer_dynamic_2014}.
 Our current measurements confirm that slicing time is linear to the result size.
 
 \Cref{fig:chartinitial} shows the time for computing the initial slice in seconds, depending on size of the resulting slice.
@@ -401,6 +419,7 @@ The chart shows that in our setup the algorithm was able to process approximatel
 When adding additional elements to the slice, previously computed dependency graphs can be reused.
 As \cref{fig:chartadd} shows, the time for dynamic analysis remains constant per event.
 The time for static analysis, on the other hand, shows great variation and depends on how much new code was included by the broadened slicing criteria.
+In the worst case, expanding the slice takes as long as creating a new slice for only that event.
 
 \begin{figure}
 	\centering
@@ -409,12 +428,48 @@ The time for static analysis, on the other hand, shows great variation and depen
 	\label{fig:chartrem}
 \end{figure}
 
-Removing events from the slice by narrowing the slicing criteria is significantly faster, as no actual analysis has to be performed.
+\Cref{fig:chartrem} shows that removing events from the slice by narrowing the slicing criteria is significantly faster, as no actual analysis has to be performed.
+Likewise, adding those events again by reverting the slicing criteria change is fast, as previously computed dependency graphs can be reused.
 
+\medskip
 
+From the results in \cref{fig:chartinitial}, it seems as if the slicing algorithm is too slow to be of practical use to a developer.
+A single second of execution can produce several hundreds of thousands of events and it is generally not feasible to wait multiple minutes for the slicing to complete.
+However, due to parallelization and the way the algorithm works, developers experience a delay of only a few seconds.
+
+As described above, the debugging user interface is updated with an intermediate slicing result twice per second.
+The slicing algorithm works its way backwards, beginning at the slicing criteria.
+Then, previous events are processed not ordered by their absolute position in the execution, but by their distance in the dependency graph.
+As a result, both the near past and long-running overarching method invocations are processed first.
+
+This allows developers to begin debugging almost immediately. 
+From this point on, the slicer only needs to be faster than the developer moving backwards, which is generally given.
+
+For interactive changes of slicing criteria, our experiments have shown that the incremental slicing algorithm is fast enough to not interrupt the developers flow.
+In particular, the most common operation -- removing events by narrowing the slicing criteria -- completes in less than a second even for large numbers of events.
+From this we conclude that our debugging approach, based on the Slice Navigator and on iterative slice refinements, is generally feasible.
 
 \section{Conclusion}
 \label{sec:conclusion}
+
+Many tools and approaches have been developed to help developers to find bugs in code.
+However, in practice few debugging tools are used that have features beyond symbolic debugging.
+We believe that one of the reasons for this is that developers don't like to switch tools while they are in the process of hunting a bug.
+Short-term memory is limited and important insights are quickly forgotten if attention has to be divided to managing tools.
+
+We presented the Slice Navigator, a UI component that directly integrates into the debugging workflow and uses a complementary tool, a dynamic slicer, to enrich the debugging experience.
+Slicing data is used to summarize relevant program state and allows to reach points of interest in the execution history easier than with breakpoints.
+Iterative refinement of slicing criteria allows developers to "forget" about parts of the program that are not of interest.
+
+Combined, these features allow for a new debugging workflow that allows to narrow down the cause of a fault efficiently by reducing the required amount of guesswork.
+An evaluation has shown that our algorithms perform fast enough to be usable in practice.
+
+For future work, an improved semantic model for well defined interfaces (such as collections in the JDK) can be used to improve the quality of slices. 
+For example, if an add-operation causes the internal array of an array list to be resized, all future gets will depend on that add, even though conceptually only one value was touched.
+
+Furthermore, we wish to bring slicing to database applications.
+With the increasing relevance of "big data", better debugging tools are needed for database applications.
+We expect that slicing can reduce not only the amount of code, but also the amount of data that needs to be analyzed to identify bugs in a program.
 
 
 \printbibliography
