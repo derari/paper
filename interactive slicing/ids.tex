@@ -381,14 +381,15 @@ We repeated every measurement 10 times, all charts show the average values.
 	\label{fig:chartinitial}
 \end{figure}
 
-We previously observed that our approach differs from other slicing implementations insofar as that the run-time of the algorithm does not depend on the total run-time of the sliced program, but only on the size of the resulting slice\todo{cite}.
+We previously observed that our approach differs from other slicing implementations insofar as that the run-time of the algorithm does not depend on the total length or run-time of the sliced program, but only on the size of the resulting slice\todo{cite}.
+Our current measurements confirm that slicing time is linear to the result size.
 
 \Cref{fig:chartinitial} shows the time for computing the initial slice in seconds, depending on size of the resulting slice.
 Times are given in total, and divided into static code analysis and the dynamic analysis of the event data.
 
-As can be seen, the static analysis taking slightly more time on average.
+As can be seen, the static analysis takes slightly more time on average.
 It should be noted that the total time is less than the sum of the static and dynamic analysis times, as both can, to some extend, run in parallel.
-
+The chart shows that in our setup the algorithm was able to process approximately 1000 events per second.
 
 \begin{figure}
 	\centering
@@ -397,13 +398,18 @@ It should be noted that the total time is less than the sum of the static and dy
 	\label{fig:chartadd}
 \end{figure}
 
+When adding additional elements to the slice, previously computed dependency graphs can be reused.
+As \cref{fig:chartadd} shows, the time for dynamic analysis remains constant per event.
+The time for static analysis, on the other hand, shows great variation and depends on how much new code was included by the broadened slicing criteria.
 
 \begin{figure}
 	\centering
 		\includegraphics[width=\linewidth, clip, trim={20mm 26mm 20mm 26mm}]{chart-rem.pdf}
-	\caption{Time for computing the initial slice}
-	\label{fig:chartinitial}
+	\caption{Time for removing events from the slice}
+	\label{fig:chartrem}
 \end{figure}
+
+Removing events from the slice by narrowing the slicing criteria is significantly faster, as no actual analysis has to be performed.
 
 
 
