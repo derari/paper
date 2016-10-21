@@ -80,7 +80,7 @@
 }
 
 \lstset{language=HanaSQL}
-%\lstMakeShortInline[basicstyle=\ttfamily,language={Inline},breaklines=true]°
+\lstMakeShortInline[basicstyle=\ttfamily,language={Inline},breaklines=true]°
 
 
 \begin{document}
@@ -229,11 +229,11 @@ These tools provide full access to past events so that developers can directly e
 Even though back-in-time debuggers exist for many object-oriented programming languages\todo{cite}, there are none that run on databases and support SQL or SQLScript.
 Back-in-time debuggers typically create a significant overhead on performance and memory consumption\todo{cite}.
 Thus, it seems unfeasible to use a back-in-time debugger on top of a database script that processes billions of records.
-Furthermore, current back-in-time debugging concepts cannot handle side-effects outside their system that usually happen while writing operations during INSERT and UPDATES. 
+Furthermore, current back-in-time debugging concepts cannot handle side-effects outside their system that usually happen in writing operations during INSERT and UPDATE statements. 
 
 %Significance: Especially, in business software much development is based on database scripts. 
 Nevertheless, we argue that back-in-time debugging is also able to speed-up development and reduce maintenance cost of database scripts.
-Especially, the high performance requirements of big data and business applications demand code to move closer to the database-level\todo{cite}.
+Especially the high performance requirements of big data and business applications demand code to move closer to the database-level\todo{cite}.
 With more and more database code, there is also a need to handle the increasing complexity with better debugging tools.
 As the existing tools\todo{which one?} are often not adequate because XXX\todo{why}, back-in-time debugging is able to close this gap and supports developers in developing and maintaining SQL statements more efficiently. 
 
@@ -261,40 +261,87 @@ The remainder of this paper is structured as follows:
 \Cref{sec:ttqueries} discusses querying past database states and introduces and extension to SQL.
 \Cref{sec:evaluation} evaluates our approach before \cref{sec:conclusion} discusses future work and concludes the paper.
 
-
 \section{Related Work}
 
-\section{Omniscient Debugging}
+\section{Back-in-time Debugging for Stored Procedures}
 \label{sec:prototype}
 
-- typical problem: much data \\
-- backend: HANA xs-engine \\
-- frontend: HTML5 \\
+With a regular debugger, developers have only one way to go back in time, which is to restart the execution.
+Tools can be used to automate this approach\todo{cite} and some modern debuggers even allow to restart execution at the method level\todo{cite}.
+However, this approach fails if the code has side effects, as it can no longer be guaranteed to execute in the same way.
+Furthermore, if the execution is too slow, developers will spend much time waiting for re-execution, which discourages the use of backwards stepping.
+
+A different way to examine a program's behavior over time is to record a trace of the program's actions.
+After the program terminated, the trace can be examined in a post-mortem analysis.
+This works well for special purpose tools that only analyze a specific aspect of a program, such as profilers.
+
+A post-mortem debugger, on the other hand, would have to trace virtually everything to be able to replay the program execution.
+Debugger implementations using this approach exist for different programming languages.
+
+In our work, we focused on stored procedures as database programs, as stored procedures are executed closer to the database and thus more efficient at handling large data sets.
+This does not limit the ... of our results, as all code that uses a database creates two challenges for a tracing debugger: 
+First, the program's behavior strongly depends on external state, and second, much of the data processing happens outside of the program's scope.
+Stored procedures add the additional challenge that results of a query can be used in subsequent database statements without having been fetched into the program.
+Thus, data that is crucial for understanding the program is effectively invisible, sometimes only for a few instructions, other times for the entire length of the program.
+Furthermore, as trace data usually exceeds program data by orders of magnitude, we expect that tracing the processing of every tuple in a large database is not feasible.
 
 
-\subsection{Data Model}
+Both approaches can and have been mixed to create a tradeoff between performance and overhead\todo{cite}.
 
-A common limitation for omniscient debuggers is the large amount of trace data generated when processing large data sets, which typically exceeds the program data by orders of magnitude.
-Since our debugger is supposed to work with large databases, using an even bigger database just to manage debug sessions is not feasible.
-Instead, we take advantage of the fact that all instructions handling large data sets, i.e., SQL statements, are declarative and reproducible as long as the underlying data does not change.
+
+
+
+For programs running on an in-memory database, ...
+
+Firstly, the database persists state beyond the program execution.
+Even post-mortem, the state can be directly accessed by the debugger.
+
+Secondly, all instructions handling large data sets (i.e., SQL statements), are declarative and reproducible as long as the underlying data does not change.
 Thus, SQL queries don't have to be traced at all, although for some purposes it will be helpful to record some meta information, such as the execution time or the number of results.
+
+Thirdly, in-memory databases with insert-only storage automatically retain old data for some time.
+With insert-only, older versions of the database can be easily reproduced.
+For regular database, insert-only can be achieved by adding validity columns.
+For many business applications, the columns already exist as no data may be deleted for legal reasons.
+
+\subsection{Trace Data Model}
 
 To reproduce the execution of a stored procedure, we need to trace a sequence of execution steps.
 Each step represents an instruction that has side effects on the database or returns some result to the procedure.
 As there is, conceptually, no concurrency in a stored procedure, we can use simple numbering to track the order of steps.
-All trace data is stored in a relational database.
+We chose to store all trace data is stored in a relational database.
 
 The debugger distinguishes between 8 types of steps:
 three types of control flow steps, for calling, entering and exiting stored procedures;
 four kinds of variable assignments for atomic values, query results, cursors, and cursor rows;
-and one type for all statements with side-effects.
-If applicable, the step has a target name, e.g., the name of a variable or stored procedure, and a string representation of the value, which is shown to the user in the debug view.
+and one type for all SQL statements with side-effects.
+If applicable, the step has a target name, e.g., the name of a variable or stored procedure, and a string representation of the value, which can be shown to the user in the debug view.
 
-If the step involves a database statement, we store the number of rows in the result set and timestamps from before and after the execution, and atomic argument values, if given.
+If the step involves a database statement, we store the number of rows in the result set and timestamps from before and after the execution, and atomic argument values, if any.
 We never trace any details of the query execution but only record the name of a view than can be used to later reproduce the query result.
 The view was specifically generated by the debugger, as will be explained in the next subsection.
 
-\subsection{Tracing Code Generation}
+\subsection{Reproducing Query Results}
+
+With the recorded trace data, the debugger has enough information available to re-execute any query.
+However, the query will only yield the same results as long as the underlying data has not changed.
+
+In general, one can expect that debugging will take place on a development machine where no other data manipulation occurs.
+However, in cases where this assumption doesn't hold, the debugger might end up showing wrong or misleading data the developer.
+Furthermore, the debugged stored procedure itself may change the data, which will cause a query to return different results at different points in time.
+
+We ensure consistency over time by following the insert-only approach of our in-memory database.
+If we require for all tables that data can never be changed or deleted and annotate all tuples with timestamps of when they have been created and invalidated, we can reconstruct the state of the database of any point in time.
+Adding timestamp filters to select queries does not cause a significant slowdown.
+Our prototype was built using this approach.
+
+\todo{HANA hat seit neustem "History tables" die das direkt können, wir benutzen aber explizite timestamps weil das momentan noch praktischer ist }
+
+
+\subsection{Prototype and Tracing Code Generation}
+
+- backend: HANA xs-engine \\
+- frontend: HTML5 \\
 
 With a debugger fully integrated in its database, we would expect the stored procedure execution engine to trace the execution steps.
 However, for our prototype this level of integration was out of scope.
@@ -376,26 +423,6 @@ On top of that, a master view is generated that chooses the appropriate query vi
 					   OR p.valid_until > __ts);
 	END;
 \end{lstlisting}
-
-
-%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-%% ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-\subsection{Reproducing Query Results}
-
-With the recorded trace data, the debugger has enough information available to re-execute any query.
-However, the query will only yield the same results as long as the underlying data has not changed.
-
-In general, one can expect that debugging will take place on a development machine where no other data manipulation occurs.
-However, in cases where this assumption doesn't hold, the debugger might end up showing wrong or misleading data the developer.
-Furthermore, the debugged stored procedure itself may change the data, which will cause a query to return different results at different points in time.
-
-We ensure consistency over time by following the insert-only approach of our in-memory database.
-If we require for all tables that data can never be changed or deleted and annotate all tuples with timestamps of when they have been created and invalidated, we can reconstruct the state of the database of any point in time.
-Adding timestamp filters to select queries does not cause a significant slowdown.
-Our prototype was built using this approach.
-
-\todo{HANA hat seit neustem "History tables" die das direkt können, wir benutzen aber explizite timestamps weil das momentan noch praktischer ist }
 
 
 \section{Time-travel Queries}
@@ -509,7 +536,6 @@ This value is needed for two reasons: first, it is necessary to distinguish betw
 
 In the UI, the before and after values are only shown if they differ from the now value.
 Clicking on value allows the developer to jump to the °UPDATE° or °INSERT° statement that caused the change.
-
 
 \section{Evaluation}
 \label{sec:evaluation}
