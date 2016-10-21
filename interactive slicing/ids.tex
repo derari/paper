@@ -4,7 +4,7 @@
       ]{IEEEtran}
 
 \input{setup}
-\bibliography{references}
+%\bibliography{references}
 
 \title{The Slice Navigator: Focused Debugging with Interactive Dynamic Slicing}
 
@@ -22,7 +22,7 @@ Email: matthias.uflacker@hpi.de}
 
 
 \hypersetup{
-	pdftitle={Interactive Dynamic Slicing},
+	pdftitle={The Slice Navigator: Focused Debugging with Interactive Dynamic Slicing},
 	pdfauthor={Arian Treffer, Matthias Uflacker},
 	pdfsubject={},
 }
@@ -99,10 +99,11 @@ The contributions of this paper are threefold:
 		Based on previous work, developers can formulate their question by choosing from different dependency types that will change the outcome of the slice \cite{treffer_dynamic_2014}.
 	\item The \emph{Slice Navigator} is a UI component that bundles access to the debugger and the slicer.
 		It provides context for the current instruction by showing relevant parts of the slice, allows developers to iteratively refine the slicing criteria, and serves as an alternative to breakpoints and stepping.
-	\item The integration of dynamic analyzes directly in the debugger not only reduces interruptions in developer flow by minimizing context switches between tools and shortens waiting time as recorded run-time data can be re-used; it also allows for a new debugging workflow where developers can isolate a bug by iteratively slicing away correct code.
+	\item The integration of dynamic analyses directly in the debugger not only reduces interruptions in developer flow by minimizing context switches between tools and shortens waiting time as recorded run-time data can be re-used; it also allows for a new debugging workflow where developers can isolate a bug by iteratively slicing away correct code.
 \end{itemize}
 
 The remainder of this paper is structured as follows:
+The next section summarizes related work.
 \Cref{sec:workflow} explains the Slice Navigator user interface and how it allows for an improved debugging workflow.
 \Cref{sec:impl} discusses relevant details of the implementation and the slicing algorithm.
 \Cref{sec:eval} evaluates the feasibility of our approach.
@@ -116,8 +117,8 @@ Later, Korel and Laski \cite{korel_dynamic_1990} and Agrawal and Horgan \cite{ag
 The idea of being able to debug backwards in time dates back to the 1960s with EXDAMS, a debugger for FORTRAN \cite{balzer_exdams:_1969}.
 Since then, debuggers with back-in-time capabilities have been implemented for many programming languages \cite{agrawal_debugging_1993, feldman_igor:_1988, lieberman_zstep_1995}.
 
-In 2003, Lewis introduced the concept of "omniscient debugging", a debugger that can not only rewind time, but has instant access to every point in past and future \cite{lewis_debugging_2003}.
-Later work on omniscient debugging focused mostly on handling the large amounts of data such a debugger creates \cite{pothier_scalable_2007, lienhard_practical_2008}.
+In 2003, Lewis introduced the concept of "omniscient debugging", a debugger that can not only rewind time, but has instant access to every point in past and future~\cite{lewis_debugging_2003}.
+Later work on omniscient debugging focused mostly on handling the large amounts of data such a debugger creates~\cite{pothier_scalable_2007, lienhard_practical_2008}.
 
 Perscheid et al. combined omniscient debugging and dynamic code analysis similar to slicing to automatically identify likely locations for code defects by analyzing a suite of unit tests with passing and failing test cases \cite{perscheid_test-driven_2012}.
 
@@ -140,7 +141,8 @@ Using an omniscient debugger, developers halt the execution at the failing line 
 From here, they want to backtrack the erroneous state.
 However, they quickly realize that the code contains many other side effects making it hard to follow the state of interest.
 
-Using a pure omniscient debugger, developers would now have to track the relation of states to identify the infection chain. In short, they have to manually create a dynamic dependency graph using only their short-term memory.
+Using a pure omniscient debugger, developers would now have to track the relation of states to identify the infection chain. 
+In other words, they have to manually create a dynamic dependency graph using only their short-term memory.
  
 Using our approach, the developer right-clicks the erroneous state in the debugger's variables view and chooses slicing from the context menu.
 This will set the variable or field as a slicing criterion and start the slice computation.
@@ -211,7 +213,7 @@ Simply by looking at the previous and next steps, the developer can understand a
 This is particularly useful if the current instruction was reached via a breakpoint, in which case it is not always obvious at which point in time it was hit.
 
 To obtain this kind of information with a regular debugger, developers need to analyze the execution stack and maybe even inspect lower stack frames.
-But even then it is not always obvious which of the state that is still reachable is actually used again.
+But even then it is not always obvious which part of the program state that is still reachable is actually used again.
 Unlike a typical debugger's variable view, the Slice Navigator only shows relevant variables, and also shows relevant object fields on the first level.
 
 Further, the slice navigator shows details about the dependency graph that was used to compute the current slice.
@@ -239,7 +241,7 @@ Typically, these are method invocations and instruction in conditional statement
 Sometimes, a value depends on only one of multiple candidate values. 
 A \emph{control dependency} determines which of these candidates is used.
 More formally, control dependencies are reachability dependencies of value candidates that are not also reachability dependencies of all other candidates.
-In the navigator, they are indicated by a blue "X".
+In the navigator, they are indicated by a blue~"X".
 
 Developers can now combine these different dependency types to adjust the slice for specific purposes.
 Clicking on an event's dependency symbol brings up a dialog that allows to choose which dependencies of that event to include.
@@ -298,11 +300,11 @@ The basic structure is of the algorithm for building the initial slice is fairly
 		
 	function add_to_slice(slice, event)
 	  if event \in slice || event.is_negative_criterion then return
-		slice += event
+		slice +=  {event}
 		static_dependency_graph := event.method.dependency_graph
 		static_dependencies := static_dependency_graph.get( event.instruction, event.dependency_flags)
 		for each instruction \in static_dependencies do ''in parallel''
-			prev_event := find_last_previous_event(instruction)
+			prev_event := last_previous_event(event, instruction)
 			if prev_event ''exists'' then
 			  prev_event.inherit_dependency_flags(event)
 				add_to_slice(slice, prev_event)
@@ -350,7 +352,7 @@ This is to be expected as the slicer is, in some sense, just evaluating the prog
 
 However, we also let the slicing run concurrently to the user interface.
 Twice per second, we update the different debugging views, such as variable and trace explorer, to use the latest intermediate result.
-This we, not only don't have to freeze the user interface, but we can allow developers to continue working even if computing the whole slice takes several seconds.
+This way, we not only don't have to freeze the user interface, but we can allow developers to continue working even if computing the whole slice takes several seconds.
 
 \subsection{Incremental slicing}
 
@@ -387,7 +389,7 @@ Classes of the JDK are flagged as transparent, and all their internal events, i.
 One of the main advantages of the Slice Navigator is that it integrates into the debugging workflow.
 As such, it is crucial that results are produced in a timely manner, as a waiting time of even a few seconds may interrupt developers in their flow.
 
-To evaluate the performance of our approach on real-world code, we measured the computation of several slices on JUnit tests of an open-source BPMN engine\footnote{\url{https://github.com/camunda/camunda-bpm-platform}}.
+To evaluate the performance of our approach on real-world code, we measured the computation of several slices on JUnit tests of an open-source business-process engine\footnote{\url{https://github.com/camunda/camunda-bpm-platform}}.
 All tests were run on a 2.0 GHz Intel i7 Processor with 4 cores and and 8 GB RAM, running Windows 8.1.
 A MySql database was used to store the trace data.
 We repeated every measurement 10 times, all charts show the average values.
@@ -399,14 +401,14 @@ We repeated every measurement 10 times, all charts show the average values.
 	\label{fig:chartinitial}
 \end{figure}
 
-We previously observed that our approach differs from other slicing implementations insofar as that the run-time of the algorithm does not depend on the total length or run-time of the sliced program, but only on the size of the resulting slice\cite{treffer_dynamic_2014}.
+We previously observed that our approach differs from other slicing implementations insofar as that the run-time of the algorithm does not depend on the total length or run-time of the sliced program, but only on the size of the resulting slice~\cite{treffer_dynamic_2014}.
 Our current measurements confirm that slicing time is linear to the result size.
 
 \Cref{fig:chartinitial} shows the time for computing the initial slice in seconds, depending on size of the resulting slice.
 Times are given in total, and divided into static code analysis and the dynamic analysis of the event data.
 
 As can be seen, the static analysis takes slightly more time on average.
-It should be noted that the total time is less than the sum of the static and dynamic analysis times, as both can, to some extend, run in parallel.
+It should be noted that the total time is less than the sum of the static and dynamic analysis times, as both can, to some extent, run in parallel.
 The chart shows that in our setup the algorithm was able to process approximately 1000 events per second.
 
 \begin{figure}
@@ -442,7 +444,7 @@ The slicing algorithm works its way backwards, beginning at the slicing criteria
 Then, previous events are processed not ordered by their absolute position in the execution, but by their distance in the dependency graph.
 As a result, both the near past and long-running overarching method invocations are processed first.
 
-This allows developers to begin debugging almost immediately. 
+This allows developers to begin debugging the slice almost immediately. 
 From this point on, the slicer only needs to be faster than the developer moving backwards, which is generally given.
 
 For interactive changes of slicing criteria, our experiments have shown that the incremental slicing algorithm is fast enough to not interrupt the developers flow.
@@ -472,6 +474,7 @@ With the increasing relevance of "big data", better debugging tools are needed f
 We expect that slicing can reduce not only the amount of code, but also the amount of data that needs to be analyzed to identify bugs in a program.
 
 
-\printbibliography
+\bibliographystyle{IEEEtran}
+\bibliography{references}
 
 \end{document}

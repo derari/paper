@@ -67,17 +67,17 @@
 
 %% === Bibliography =======================================
 %% use biblatex if you know what you're doing
-\usepackage[
-		%backend=bibtex, 			%% bibtex, no utf-8 support
-		backend=biber,				%% biber backend
-		style=numeric-comp,		%% [1]
-		%style=alphabetic, 		%% [Auth99]
-		%citestyle=authortitle-tcomp,
-		%bibstyle=verbose,
-		%backref=true,
-		defernumbers=true,
-		doi=false,isbn=false,url=false,
-		]{biblatex}
+%\usepackage[
+		%%backend=bibtex, 			%% bibtex, no utf-8 support
+		%backend=biber,				%% biber backend
+		%style=numeric-comp,		%% [1]
+		%%style=alphabetic, 		%% [Auth99]
+		%%citestyle=authortitle-tcomp,
+		%%bibstyle=verbose,
+		%%backref=true,
+		%defernumbers=true,
+		%doi=false,isbn=false,url=false,
+		%]{biblatex}
 		
 		
 %% === Images =============================================
@@ -223,20 +223,20 @@
 
 
 %% === Links and Captions =================================
-\usepackage{hyperref}
-\hypersetup{
-%	draft,						%% disable all
-	%% better set this as document option
-	%colorlinks, 				%% color links, instead of bordered
-	hidelinks,					%% for print version
-%% - link colors -
-	linkcolor=Navy,				%% internal, default red
-	citecolor=Navy,				%% citations, default green
-	urlcolor=Purple,			%% URLs, default cyan
-	filecolor=Purple,			%% files, default magenta
-%
-	plainpages=false,
-}
+%\usepackage{hyperref}
+%\hypersetup{
+%%	draft,						%% disable all
+	%%% better set this as document option
+	%%colorlinks, 				%% color links, instead of bordered
+	%hidelinks,					%% for print version
+%%% - link colors -
+	%linkcolor=Navy,				%% internal, default red
+	%citecolor=Navy,				%% citations, default green
+	%urlcolor=Purple,			%% URLs, default cyan
+	%filecolor=Purple,			%% files, default magenta
+%%
+	%plainpages=false,
+%}
 
 \usepackage[nameinlink, noabbrev]{cleveref}	%% \cref commands
 \newcommand{\lineref}[2]{\hyperref[#1]{line~\ref*{#1:#2}}}
@@ -245,9 +245,9 @@
 \newcommand{\Linerefn}[2]{\hyperref[#1]{Line~#2}}
 
 %\usepackage[all]{hypcap}
-\usepackage{caption}
-\captionsetup[table]{position=t}
-\captionsetup[subtable]{position=t}
+%\usepackage{caption}
+%\captionsetup[table]{position=t}
+%\captionsetup[subtable]{position=t}
 
 
 %% === Misc 2 ============================================
@@ -256,9 +256,10 @@
 
 %% === Pdf Options =======================================
 \hypersetup{
-	bookmarksopen,
-	bookmarksnumbered,
-%	pdfstartview={Fit},					%% Fit page
-%	pdfstartview={FitH},				%% Fit width
-	pdfstartview={XYZ null null 1.0},	%% 100% zoom
+	draft
+	%bookmarksopen,
+	%bookmarksnumbered,
+%%	pdfstartview={Fit},					%% Fit page
+%%	pdfstartview={FitH},				%% Fit width
+	%pdfstartview={XYZ null null 1.0},	%% 100% zoom
 }
