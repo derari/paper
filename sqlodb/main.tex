@@ -231,17 +231,16 @@ Back-in-time also known as omniscient debuggers simplify the debugging process \
 These tools provide full access to past events so that developers can directly experiment with the entire infection chain. 
 
 %Problem: Back-in-time debugger missing for database-level
-Even though back-in-time debuggers exist for many object-oriented programming languages\todo{cite}, there are none that run on databases and support SQL or SQLScript.
-Back-in-time debuggers typically create a significant overhead on performance and memory consumption\todo{cite}.
-Thus, it seems unfeasible to use a back-in-time debugger on top of a database script that processes billions of records.
-Furthermore, current back-in-time debugging concepts cannot handle side-effects outside their system that usually happen in writing operations during INSERT and UPDATE statements. 
+Even though back-in-time debuggers exist for many object-oriented programming languages\todo{cite}, there are none to the best of our knowledge that run on databases and support SQL or SQLScript\footnote{SQLScript is a proprietary SQL extension for SAP HANA that allows developers to implement imperative code directly at the database level.}.
+This is mainly because of two reasons. 
+First, back-in-time debuggers typically create a significant overhead on performance and memory consumption\todo{cite}.
+It seems unfeasible to use a back-in-time debugger on top of a database script that processes billions of records.
+Second,current back-in-time debugging concepts cannot handle side-effects outside their system that usually happen in writing operations during INSERT and UPDATE statements. 
 
 %Significance: Especially, in business software much development is based on database scripts. 
-Nevertheless, we argue that back-in-time debugging is also able to speed-up development and reduce maintenance cost of database scripts.
-Especially the high performance requirements of big data and business applications demand code to move closer to the database-level\todo{cite}.
-With more and more database code, there is also a need to handle the increasing complexity with better debugging tools.
-As the existing tools\todo{which one?} are often not adequate because XXX\todo{why}, back-in-time debugging is able to close this gap and supports developers in developing and maintaining SQL statements more efficiently. 
-
+Due to high performance requirements of handling big data in business applications, SAP as not only a strong demand to move code closer to data~\cite{plattner2015memory} but also the need to improve development tools at the database-level. 
+As existing tools mostly work on the application level, are limited to specific points in time, or work only on a query plan, developers are often left alone when it comes to debug and understand the results of their SQL and SQLScripts.
+We argue that a back-in-time debugger at the bottom of the technology stack is able to close this gap and would support developers in developing and maintaining their queries more efficiently. 
 
 %Solution
 In this paper, we bring the concept of back-in-time debugging to the database and present \emph{\tool} as an implementation of our approach.
@@ -252,14 +251,14 @@ The contributions of this paper are as follows:
 	
 	\item \emph{\SQLextension} is an extension to SQL allowing to submit arbitrary queries against previous states of the database 
 		and to compare multiple points in time with one query.
-		The \tool\, provides a console for developers to submit \SQLextension\, queries which use variables or points in time from the current debug session.
+		\tool\, provides a console for developers to submit \SQLextension\, queries which use variables or points in time from the current debug session.
 
 	\item \emph{Very low overhead} when recording run-time data and the efficient querying of past database states allow developers to use \tool\, as the default tool for debugging database scripts even on larger data sets.
 	
 \end{itemize}
 
-We evaluated \tool\, within an internal software development project within SAP. \todo{add some more words to project and number of developers}
-First interviews with developers indicate that bugs in stored procedures can be investigated more efficiently with \tool\, than with a regular debugger or other database development tools.
+We evaluated \tool\, with the help our SAP colleagues who worked on a project called \emph{Point of Sales Explorer}~\cite{plattner2015memory} which makes heavy use of SQLScript. 
+The interviews indicated that bugs in stored procedures can be investigated more efficiently with \tool\, than with existing other database development tools.
 
 The remainder of this paper is structured as follows:
 \Cref{sec:prototype} presents our approach and prototype implementation of back-in-time debugging in the database.
