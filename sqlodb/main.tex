@@ -293,7 +293,7 @@ This increases the amount of "invisible" state, sometimes only for a few instruc
 Furthermore, as trace data usually exceeds program data by orders of magnitude, we expect that tracing the processing of every tuple in a large database is not feasible.
 
 In our work, we focused on stored procedures as database programs, as stored procedures are executed closer to the database and thus more efficient at handling large data sets.
-This does not limit the ...\todo{} of our results, as a stored procedures debugger faces all of the problems described above.
+This does not limit the general validity of our results, as a stored procedures debugger faces all of the problems described above.
 
 \subsection{The Execution Model}
 
@@ -312,9 +312,7 @@ With insert-only, older versions of the database can be easily reproduced.
 For regular database, insert-only can be achieved by adding validity columns.
 For many business applications, the columns already exist as no data may be deleted for legal reasons.
 
-
-
-To reproduce the execution of a stored procedure, we need to trace a sequence of execution steps.
+Thus, all that is needed to reproduce the execution of a stored procedure is a sequence of execution steps.
 Each step represents an instruction that has side effects on the database or returns some result to the procedure.
 As there is, conceptually, no concurrency in a stored procedure, we can use simple numbering to track the order of steps.
 We chose to store all trace data is stored in a relational database.
