@@ -171,10 +171,15 @@ Matthias Uflacker\\
 
 \maketitle
 \begin{abstract}
-  Back-in-time debuggers allow developers to explore what happened before a failure and so supports them in finding failure causes more efficiently. 
-	We present an approach for bringing back-in-time debugging to stored procedures that allows to step backwards and query the database at previous points in time.
-  Furthermore, we introduce an extension to SQL that allows to express queries covering a period of execution time within a debug session.
-	Our prototype implementation is able to debug procedures handling large amounts of data with little overhead on performance and memory.
+Back-in-time debuggers allow developers to explore what happened before a failure and so supports them in finding failure causes more efficiently. 
+However, if failure causes leave a specific application layer, it is difficult to further follow infections down to the real defect.
+Especially at the database-level, developers have no such debugging tools to understand unexpected behavior comprehensively.
+
+In this paper, we present an approach for bringing back-in-time debugging down to SQL and stored procedures of the SAP HANA in-memory database.
+Our \tool\, debugger allows developers to step queries backwards and inspecting the database at previous and arbitrary points in time.
+With the help of a SQL extension, we can easily express queries covering a period of execution time within a debugging session and handle large amounts of data with low overhead on performance and memory.
+The entire approach has been evaluated within a development project at SAP and shows promising results with respect to the gathered developer feedback.
+
 \end{abstract}
 
 %
