@@ -82,6 +82,10 @@
 \lstset{language=HanaSQL}
 \lstMakeShortInline[basicstyle=\ttfamily,language={Inline},breaklines=true]°
 
+%Macros
+\newcommand{\tool}{TARDISP}
+\newcommand{\SQLextension}{TARDISQL}
+
 
 \begin{document}
 
@@ -96,25 +100,25 @@
 
 
 % DOI
-\doi{10.475/123_4}
+\doi{TBD}
 
 % ISBN
-\isbn{123-4567-24-567/08/06}
+\isbn{TBD}
 
 %Conference
-\conferenceinfo{PLDI '13}{June 16--19, 2013, Seattle, WA, USA}
+\conferenceinfo{SANER '17}{February 20--24, 2017, Klagenfurt, Austria}
 
-\acmPrice{\$15.00}
+\acmPrice{TBD}
 
 %
 % --- Author Metadata here ---
-\conferenceinfo{WOODSTOCK}{'97 El Paso, Texas USA}
+\conferenceinfo{SANER Industry Track}{2017 Klagenfurt, Austria}
 %\CopyrightYear{2007} % Allows default copyright year (20XX) to be over-ridden - IF NEED BE.
 %\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
 % --- End of Author Metadata ---
 
-\title{TARDISP: Bringing Back-in-Time Debugging down to the Database}
-\subtitle{(TARDISP is a placeholder for the actual name)}
+\title{Bringing Back-in-Time Debugging down to the Database}
+%\subtitle{(\tool is a placeholder for the actual name)}
 %
 % You need the command \numberofauthors to handle the 'placement
 % and alignment' of the authors beneath the title.
@@ -144,26 +148,22 @@
 \author{
 % 1st. author
 \alignauthor
-Ben Trovato\titlenote{Dr.~Trovato insisted his name be first.}\\
-       \affaddr{Institute for Clarity in Documentation}\\
-       \affaddr{1932 Wallamaloo Lane}\\
-       \affaddr{Wallamaloo, New Zealand}\\
-       \email{trovato@corporation.com}
+Arian Treffer\\
+       \affaddr{Hasso-Plattner-Institut}\\
+       \affaddr{Potsdam, Germany}\\
+       \affaddr{arian.treffer@hpi.de}
 % 2nd. author
 \alignauthor
-G.K.M. Tobin\titlenote{The secretary disavows
-any knowledge of this author's actions.}\\
-       \affaddr{Institute for Clarity in Documentation}\\
-       \affaddr{P.O. Box 1212}\\
-       \affaddr{Dublin, Ohio 43017-6221}\\
-       \email{webmaster@marysville-ohio.com}
+Michael Perscheid\\
+       \affaddr{SAP Innovation Center}\\
+       \affaddr{Potsdam, Germany}\\
+       \affaddr{michael.perscheid@sap.com}
 % 3rd. author
-\alignauthor Lars Th{\o}rv{\"a}ld\titlenote{This author is the
-one who did all the really hard work.}\\
-       \affaddr{The Th{\o}rv{\"a}ld Group}\\
-       \affaddr{1 Th{\o}rv{\"a}ld Circle}\\
-       \affaddr{Hekla, Iceland}\\
-       \email{larst@affiliation.org}
+\alignauthor 
+Matthias Uflacker\\
+       \affaddr{Hasso-Plattner-Institut}\\
+       \affaddr{Potsdam, Germany}\\
+       \affaddr{matthias.uflacker@hpi.de}
 %\and  % use '\and' if you need 'another row' of author names
 }
 
@@ -212,9 +212,9 @@ one who did all the really hard work.}\\
 \ccsdesc{Computer systems organization~Robotics}
 \ccsdesc[100]{Networks~Network reliability}
 
-\printccsdesc
+%\printccsdesc
 
-\keywords{ACM proceedings; \LaTeX; text tagging}
+\keywords{Back-in-time debugging, in-memory database, SAP HANA}
 
 \section{Introduction}
 
@@ -239,22 +239,22 @@ As the existing tools\todo{which one?} are often not adequate because XXX\todo{w
 
 
 %Solution
-In this paper, we bring the concept of back-in-time debugging to the database and present \emph{TARDISP}, an implementation of our approach.
+In this paper, we bring the concept of back-in-time debugging to the database and present \emph{\tool} as an implementation of our approach.
 The contributions of this paper are as follows:
 \begin{itemize}
-	\item \emph{TARDISP} is an omniscient\todo{Either omniscient or back-in-time and then consistent; in the introduction we should write both synonyms once} debugger for stored procedures which can be installed in the SAP HANA in-memory database and programming platform.
-		Using TARDISP, developers can move freely through the execution time of a stored procedure and inspect control flow, variables, and intermediate results.
+	\item \emph{\tool} is an omniscient\todo{Either omniscient or back-in-time and then consistent; in the introduction we should write both synonyms once} debugger for stored procedures which can be installed in the SAP HANA in-memory database and programming platform.
+		Using \tool, developers can move freely through the execution time of a stored procedure and inspect control flow, variables, and intermediate results.
 	
-	\item \emph{TARDISQL} is an extension to SQL allowing to submit arbitrary queries against previous states of the database 
+	\item \emph{\SQLextension} is an extension to SQL allowing to submit arbitrary queries against previous states of the database 
 		and to compare multiple points in time with one query.
-		The TARDISP provides a console for developers to submit TARDISQL queries which use variables or points in time from the current debug session.
+		The \tool\, provides a console for developers to submit \SQLextension\, queries which use variables or points in time from the current debug session.
 
-	\item \emph{Very low overhead} when recording run-time data and the efficient querying of past database states allow developers to use TARDISP as the default tool for debugging database scripts even on larger data sets.
+	\item \emph{Very low overhead} when recording run-time data and the efficient querying of past database states allow developers to use \tool\, as the default tool for debugging database scripts even on larger data sets.
 	
 \end{itemize}
 
-We evaluated TARDISP within an internal software development project within SAP. \todo{add some more words to project and number of developers}
-First interviews with developers indicate that bugs in stored procedures can be investigated more efficiently with TARDISP than with a regular debugger or other database development tools.
+We evaluated \tool\, within an internal software development project within SAP. \todo{add some more words to project and number of developers}
+First interviews with developers indicate that bugs in stored procedures can be investigated more efficiently with \tool\, than with a regular debugger or other database development tools.
 
 The remainder of this paper is structured as follows:
 \Cref{sec:prototype} presents our approach and prototype implementation of back-in-time debugging in the database.
