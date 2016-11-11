@@ -263,7 +263,7 @@ The remainder of this paper is structured as follows:
 
 \section{Related Work}
 
-\section{Back-in-time Debugging for Stored Procedures}
+\section{Back-in-time Debugging for\\ Stored Procedures}
 \label{sec:prototype}
 
 With a regular debugger, developers have only one way to go back in time, which is to restart the execution.
@@ -275,36 +275,44 @@ A different way to examine a program's behavior over time is to record a trace o
 After the program terminated, the trace can be examined in a post-mortem analysis.
 This works well for special purpose tools that only analyze a specific aspect of a program, such as profilers.
 
-A post-mortem debugger, on the other hand, would have to trace virtually everything to be able to replay the program execution.
+A post-mortem debugger, on the other hand, has to trace virtually everything to be able to replay the program execution.
+While this approach allows developers the most freedom when stepping through the execution, it creates a large overhead on performance and memory.
 Debugger implementations using this approach exist for different programming languages.
 
-In our work, we focused on stored procedures as database programs, as stored procedures are executed closer to the database and thus more efficient at handling large data sets.
-This does not limit the ... of our results, as all code that uses a database creates two challenges for a tracing debugger: 
-First, the program's behavior strongly depends on external state, and second, much of the data processing happens outside of the program's scope.
+Both approaches can also be mixed to create a tradeoff between performance and overhead\todo{cite}.
+
+When debugging programs that run on a database, developers face two additional problems:
+First, the program's behavior strongly depends on external state.
+With live debugging, this sometimes can be mitigated by resetting the database before restarting the program, but a post-mortem analysis can not easily examine intermediate states.
+Second, much of the data processing happens outside of the program's scope.
+Sometimes, state that has impact on a query's result even remains entirely in the database and is practically invisible to analysis tools.
+The only way to examine such state is through specific database queries and has to happen before it is changed.
+
 Stored procedures add the additional challenge that results of a query can be used in subsequent database statements without having been fetched into the program.
-Thus, data that is crucial for understanding the program is effectively invisible, sometimes only for a few instructions, other times for the entire length of the program.
+This increases the amount of "invisible" state, sometimes only for a few instructions, other times for the entire length of the program.
 Furthermore, as trace data usually exceeds program data by orders of magnitude, we expect that tracing the processing of every tuple in a large database is not feasible.
 
+In our work, we focused on stored procedures as database programs, as stored procedures are executed closer to the database and thus more efficient at handling large data sets.
+This does not limit the ...\todo{} of our results, as a stored procedures debugger faces all of the problems described above.
 
-Both approaches can and have been mixed to create a tradeoff between performance and overhead\todo{cite}.
+\subsection{The Execution Model}
 
-
-
-
-For programs running on an in-memory database, ...
+While using a database to manage application state creates several problems for debugging tools, it also opens up new possibilities to simplify or improve the debugger.
 
 Firstly, the database persists state beyond the program execution.
 Even post-mortem, the state can be directly accessed by the debugger.
 
-Secondly, all instructions handling large data sets (i.e., SQL statements), are declarative and reproducible as long as the underlying data does not change.
+Secondly, all instructions handling large data sets (i.e., SQL statements), are declarative.
+This means they can be analyzed without knowing how they are physically executed and results are reproducible as long as the underlying data does not change.
 Thus, SQL queries don't have to be traced at all, although for some purposes it will be helpful to record some meta information, such as the execution time or the number of results.
 
-Thirdly, in-memory databases with insert-only storage automatically retain old data for some time.
+Thirdly, the database can be used to efficiently manage old state.
+In-memory databases with insert-only storage automatically retain old data for some time.
 With insert-only, older versions of the database can be easily reproduced.
 For regular database, insert-only can be achieved by adding validity columns.
 For many business applications, the columns already exist as no data may be deleted for legal reasons.
 
-\subsection{Trace Data Model}
+
 
 To reproduce the execution of a stored procedure, we need to trace a sequence of execution steps.
 Each step represents an instruction that has side effects on the database or returns some result to the procedure.
