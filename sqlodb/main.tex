@@ -171,8 +171,8 @@ Matthias Uflacker\\
 
 \maketitle
 \begin{abstract}
-  Omniscient debuggers allow developers to explore what happened before a failure and so supports them in finding failure causes more efficiently. 
-	We present an approach for bringing omniscient debugging to stored procedures that allows to step backwards and query the database at previous points in time.
+  Back-in-time debuggers allow developers to explore what happened before a failure and so supports them in finding failure causes more efficiently. 
+	We present an approach for bringing back-in-time debugging to stored procedures that allows to step backwards and query the database at previous points in time.
   Furthermore, we introduce an extension to SQL that allows to express queries covering a period of execution time within a debug session.
 	Our prototype implementation is able to debug procedures handling large amounts of data with little overhead on performance and memory.
 \end{abstract}
@@ -222,7 +222,7 @@ Matthias Uflacker\\
 Finding defects in code is a frequent task for every programmer and is often difficult even with a deep understanding of the system.
 To localize failure causes, they examine involved program entities and distinguish relevant from irrelevant behavior and clean from infected state. 
 However, common symbolic debuggers do not support identification of such infection chains very well because they only provide access to the last point of execution without access to the program history.
-Back-in-time debuggers simplify the debugging process \todo{cite} by making it easier to follow cause-effect chains from the observable failure back to the causing defect.
+Back-in-time also known as omniscient debuggers simplify the debugging process \todo{cite} by making it easier to follow cause-effect chains from the observable failure back to the causing defect.
 These tools provide full access to past events so that developers can directly experiment with the entire infection chain. 
 
 %Problem: Back-in-time debugger missing for database-level
@@ -242,7 +242,7 @@ As the existing tools\todo{which one?} are often not adequate because XXX\todo{w
 In this paper, we bring the concept of back-in-time debugging to the database and present \emph{\tool} as an implementation of our approach.
 The contributions of this paper are as follows:
 \begin{itemize}
-	\item \emph{\tool} is an omniscient\todo{Either omniscient or back-in-time and then consistent; in the introduction we should write both synonyms once} debugger for stored procedures which can be installed in the SAP HANA in-memory database and programming platform.
+	\item \emph{\tool} is an back-in-time debugger for stored procedures which can be installed in the SAP HANA in-memory database and programming platform.
 		Using \tool, developers can move freely through the execution time of a stored procedure and inspect control flow, variables, and intermediate results.
 	
 	\item \emph{\SQLextension} is an extension to SQL allowing to submit arbitrary queries against previous states of the database 
