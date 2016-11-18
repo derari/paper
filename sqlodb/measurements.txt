@@ -1,0 +1,249 @@
+===========================================================
+= Tracing
+===========================================================
+
+COMPONENT312
+(10408)	(10178)
+1665	1654
+1581	1692
+1583	1711
+1645	1679
+1556	1706
+------------
+1606	1688
+
+_TE_COMPONENT312
+(10408)	(10178)
+1774	1767
+1688	1807
+1685	1828
+1752	1792
+1659	1815
+------------
+1711	1802
+
+COMPONENT13
+(10408)	(10178)
+1641	1795
+1639	1682
+1598	1711
+1576	1691
+1620	1782
+------------
+1614	1732
+
+_TE_COMPONENT13
+1753	1915
+1753	1792
+1706	1823
+1682	1799
+1729	1896
+------------
+1725	1845
+
+===========================================================
+= Time Travel Queuries
+===========================================================
+1. revenue and profit per product
+1.7s vs 2.1s
+
+= Normal ==================================================
+
+SELECT
+	prods.prod_key, prods.prod_name
+	, SUM(tLog.revenue)     AS revenue
+    , SUM(tLog.profit)      AS profit
+  FROM
+    affinity2.mb_tlog       AS tLog
+    , affinity2.mst_prod    AS prods
+  WHERE
+    prods.categ_key = 10408
+    AND tLog.prod_key = prods.prod_key
+    AND tLog.time_key >= 268 AND tLog.time_key <= 869
+  GROUP BY prods.prod_key, prods.prod_name
+  ;
+
+= Time Travel =============================================
+  
+SELECT COALESCE(a.prod_key, b.prod_key, c.prod_key),
+	   a.prod_name, b.prod_name, c.prod_name,
+       a.revenue, a.profit,
+       b.revenue, b.profit,
+       c.revenue, c.profit
+FROM (
+	SELECT
+		prods.prod_key, prods.prod_name
+		, SUM(tLog.revenue)     AS revenue
+	    , SUM(tLog.profit)      AS profit
+	  FROM
+	    affinity2.mb_tlog       AS tLog
+	    , affinity2.mst_prod    AS prods
+	  WHERE
+	    prods.categ_key = 10408
+	    AND tLog.prod_key = prods.prod_key
+	    AND tLog.time_key >= 268 AND tLog.time_key <= 632
+	  GROUP BY prods.prod_key, prods.prod_name) a
+FULL OUTER JOIN (
+	SELECT
+		prods.prod_key, prods.prod_name
+		, SUM(tLog.revenue)     AS revenue
+	    , SUM(tLog.profit)      AS profit
+	  FROM
+	    affinity2.mb_tlog       AS tLog
+	    , affinity2.mst_prod    AS prods
+	  WHERE
+	    prods.categ_key = 10408
+	    AND tLog.prod_key = prods.prod_key
+	    AND tLog.time_key >= 268 AND tLog.time_key <= 747
+	  GROUP BY prods.prod_key, prods.prod_name) b
+  ON a.prod_key = b.prod_key
+FULL OUTER JOIN (
+	SELECT
+		prods.prod_key, prods.prod_name
+		, SUM(tLog.revenue)     AS revenue
+	    , SUM(tLog.profit)      AS profit
+	  FROM
+	    affinity2.mb_tlog       AS tLog
+	    , affinity2.mst_prod    AS prods
+	  WHERE
+	    prods.categ_key = 10408
+	    AND tLog.prod_key = prods.prod_key
+	    AND tLog.time_key >= 268 AND tLog.time_key <= 869
+	  GROUP BY prods.prod_key, prods.prod_name) c
+  ON a.prod_key = c.prod_key AND b.prod_key = c.prod_key
+  ;
+
+
+
+====================================================================
+
+81ms vs 100ms
+
+= Normal ===========================================================
+  SELECT
+      profile.vendor                                    AS vendor
+      , profile.profId                                  AS profId
+      , mapping.companyName                             AS companyName
+      , SUM(revenue)                                    AS revenue
+    FROM
+    (
+      SELECT
+        item.vendor                                     AS vendor
+        , nielsen.profileId                             AS profId
+        , SUM(nielsen.revenueWithoutTax)                AS revenue
+      FROM
+        affinity2.nielsen                               AS nielsen
+          JOIN affinity2.dmp_vendors                    AS item
+            ON item.itemId = nielsen.itemId AND item.vendor = 1300
+      WHERE nielsen.year = 2013
+      GROUP BY
+        item.vendor
+        , nielsen.profileId
+      ORDER BY nielsen.profileId
+    )                                                   AS profile
+      LEFT OUTER JOIN affinity2.profilemapping_detail   AS mapping
+        ON profile.profId = mapping.profileId
+    GROUP BY
+      profile.vendor
+      , profile.profId
+      , mapping.companyName
+    ORDER BY profile.vendor
+    WITH HINT (OLAP_PARALLEL_AGGREGATION);
+
+= Time Travel =======================================================
+
+SELECT
+      COALESCE(a.vendor,b.vendor,c.vendor)              AS vendor
+      , COALESCE(a.profId,b.profId,c.profId)              AS profId
+      , a.companyName AS a_companyName, b.companyName AS b_companyName, c.companyName AS c_companyName
+	  , a.revenue AS a_revenue, b.revenue AS b_revenue, c.revenue AS c_revenue
+FROM (
+  SELECT
+      profile.vendor                                    AS vendor
+      , profile.profId                                  AS profId
+      , mapping.companyName                             AS companyName
+      , SUM(revenue)                                    AS revenue
+    FROM
+    (
+      SELECT
+        item.vendor                                     AS vendor
+        , nielsen.profileId                             AS profId
+        , SUM(nielsen.revenueWithoutTax)                AS revenue
+      FROM
+        affinity2.nielsen                               AS nielsen
+          JOIN affinity2.dmp_vendors                    AS item
+            ON item.itemId = nielsen.itemId AND item.vendor = 1300
+      WHERE nielsen.year = 2013
+      GROUP BY
+        item.vendor
+        , nielsen.profileId
+      ORDER BY nielsen.profileId
+    )                                                   AS profile
+      LEFT OUTER JOIN affinity2.profilemapping_detail   AS mapping
+        ON profile.profId = mapping.profileId
+    GROUP BY
+      profile.vendor
+      , profile.profId
+      , mapping.companyName
+    ORDER BY profile.vendor) a
+FULL OUTER JOIN (
+  SELECT
+      profile.vendor                                    AS vendor
+      , profile.profId                                  AS profId
+      , mapping.companyName                             AS companyName
+      , SUM(revenue)                                    AS revenue
+    FROM
+    (
+      SELECT
+        item.vendor                                     AS vendor
+        , nielsen.profileId                             AS profId
+        , SUM(nielsen.revenueWithoutTax)                AS revenue
+      FROM
+        affinity2.nielsen                               AS nielsen
+          JOIN affinity2.dmp_vendors                    AS item
+            ON item.itemId = nielsen.itemId AND item.vendor = 1300
+      WHERE nielsen.year = 2012
+      GROUP BY
+        item.vendor
+        , nielsen.profileId
+      ORDER BY nielsen.profileId
+    )                                                   AS profile
+      LEFT OUTER JOIN affinity2.profilemapping_detail   AS mapping
+        ON profile.profId = mapping.profileId
+    GROUP BY
+      profile.vendor
+      , profile.profId
+      , mapping.companyName
+    ORDER BY profile.vendor) b
+ON a.vendor = b.vendor AND a.profId = b.profId
+FULL OUTER JOIN (
+  SELECT
+      1300                                    AS vendor
+      , profile.profId                                  AS profId
+      , mapping.companyName                             AS companyName
+      , SUM(revenue)                                    AS revenue
+    FROM
+    (
+      SELECT
+        item.vendor                                     AS vendor
+        , nielsen.profileId                             AS profId
+        , SUM(nielsen.revenueWithoutTax)                AS revenue
+      FROM
+        affinity2.nielsen                               AS nielsen
+          JOIN affinity2.dmp_vendors                    AS item
+            ON item.itemId = nielsen.itemId AND item.vendor = 3430
+      WHERE nielsen.year = 2013
+      GROUP BY
+        item.vendor
+        , nielsen.profileId
+      ORDER BY nielsen.profileId
+    )                                                   AS profile
+      LEFT OUTER JOIN affinity2.profilemapping_detail   AS mapping
+        ON profile.profId = mapping.profileId
+    GROUP BY
+      profile.vendor
+      , profile.profId
+      , mapping.companyName
+    ORDER BY profile.vendor) c
+ON (a.vendor = c.vendor AND a.profId = c.profId) OR (b.vendor = c.vendor AND b.profId = c.profId)
+    WITH HINT (OLAP_PARALLEL_AGGREGATION);
