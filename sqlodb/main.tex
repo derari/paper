@@ -590,12 +590,16 @@ These persons have written most of the SQLScript and so know all the challenges 
 Both had the chance to apply \tool\, in their daily work while we provided tool support and observed them in the background. 
 Finally, we've conducted an in-depth interview in order to receive feedback and further improve our tool.
 
-%			- Größter Pain: Query als Skript aufschreiben um Optimizer zu halten, bisher ist häufig ergebnis leer man weiß aber nicht warum
-%			- Insgesamt gut
-%			- Weitere Produkterisierung - danach detailierte Studie
+We found out that the main reason for writing SQLScript is to positively influence the optimizer of SAP HANA in order to speed up the overall user request.
+This worked very well as long as the newly written code was bug-free. 
+However, if something went wrong at the database-level, the existing tool support was not sufficient. 
+They often had to guess why a specific sub query was not as expected. 
+For that reason, they also liked our back-in-time debugger and we received a lot of positive feedback.
+For example, \tool\, could not only show formerly hidden results but also helped them to understand and follow back the reasons behind a failure cause. 
+Besides that, both developers also revealed several small bugs in our debugger and wished for some new features such as XXX \todo{please add a specific feature here}.
+With this feedback, we see a strong need for better debugging support at the database-level and are eager to further improve our approach.
 
-\subsection{Threats to Validity}
-
+%\subsection{Threats to Validity}
 
 \subsection{Limitations}
 
