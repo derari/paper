@@ -231,7 +231,7 @@ Back-in-time also known as omniscient debuggers simplify the debugging process \
 These tools provide full access to past events so that developers can directly experiment with the entire infection chain. 
 
 %Problem: Back-in-time debugger missing for database-level
-Even though back-in-time debuggers exist for many object-oriented programming languages\todo{cite}, there are none to the best of our knowledge that run on databases and support SQL or SQLScript\footnote{SQLScript is a proprietary SQL extension for SAP HANA that allows developers to implement imperative code directly at the database level.}.
+Even though back-in-time debuggers exist for many object-oriented programming languages\todo{cite}, there are none to the best of our knowledge that run on databases and support SQL or SQLScript\footnote{SQLScript is a proprietary SQL extension for stored procedures in SAP HANA~\cite{sqlScript}.}.
 This is mainly because of two reasons. 
 First, back-in-time debuggers typically create a significant overhead on performance and memory consumption\todo{cite}.
 It seems unfeasible to use a back-in-time debugger on top of a database script that processes billions of records.
