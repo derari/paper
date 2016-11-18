@@ -270,7 +270,9 @@ The remainder of this paper is structured as follows:
 \section{Back-in-time Debugging for\\ Stored Procedures}
 \label{sec:prototype}
 
-With a regular debugger, developers have only one way to go back in time, which is to restart the execution.
+
+
+With a regular debugger\todo{Add our tool name here and there in the following sections}, developers have only one way to go back in time, which is to restart the execution.
 Tools can be used to automate this approach\todo{cite} and some modern debuggers even allow to restart execution at the method level\todo{cite}.
 However, this approach fails if the code has side effects, as it can no longer be guaranteed to execute in the same way.
 Furthermore, if the execution is too slow, developers will spend much time waiting for re-execution, which discourages the use of backwards stepping.
@@ -296,22 +298,22 @@ Stored procedures add the additional challenge that results of a query can be us
 This increases the amount of "invisible" state, sometimes only for a few instructions, other times for the entire length of the program.
 Furthermore, as trace data usually exceeds program data by orders of magnitude, we expect that tracing the processing of every tuple in a large database is not feasible.
 
-In our work, we focused on stored procedures as database programs, as stored procedures are executed closer to the database and thus more efficient at handling large data sets.
+In our work, we focuse on stored procedures as database programs, as stored procedures are executed closer to the database and thus more efficient at handling large data sets.
 This does not limit the general validity of our results, as a stored procedures debugger faces all of the problems described above.
 
 \subsection{The Execution Model}
 
 While using a database to manage application state creates several problems for debugging tools, it also opens up new possibilities to simplify or improve the debugger.
 
-Firstly, the database persists state beyond the program execution.
+First, the database persists state beyond the program execution.
 Even post-mortem, the state can be directly accessed by the debugger.
 
-Secondly, all instructions handling large data sets (i.e., SQL statements), are declarative.
+Second, all instructions handling large data sets (i.e., SQL statements), are declarative.
 This means they can be analyzed without knowing how they are physically executed and results are reproducible as long as the underlying data does not change.
-Thus, SQL queries don't have to be traced at all, although for some purposes it will be helpful to record some meta information, such as the execution time or the number of results.
+Thus, SQL queries don't have to be traced at all, although for some purposes it will be helpful to record some meta information, such as the execution time or the number of results.\todo{MP: This is not clear to me, yet.}
 
-Thirdly, the database can be used to efficiently manage old state.
-In-memory databases with insert-only storage automatically retain old data for some time.
+Third, the database can be used to efficiently manage old state.
+In-memory databases with insert-only storage automatically retain old data for some time~\cite{Plattner2009Acd}.
 With insert-only, older versions of the database can be easily reproduced.
 For regular database, insert-only can be achieved by adding validity columns.
 For many business applications, the columns already exist as no data may be deleted for legal reasons.
@@ -354,7 +356,7 @@ Our prototype was built using this approach.
 - frontend: HTML5 \\
 
 With a debugger fully integrated in its database, we would expect the stored procedure execution engine to trace the execution steps.
-However, for our prototype this level of integration was out of scope.
+However, for our prototype this level of integration was out of scope.\todo{Don't start this way but rather put it into limitation discussion or next steps in summary and than call it producterization}
 
 Instead, we wrote a pre-processor in Java that parses a stored procedure and inserts °INSERT° statements around every instruction to collect the required trace data.
 To obtain a trace, the debugger then once has to run the traced code instead of the original procedure.
@@ -438,12 +440,12 @@ On top of that, a master view is generated that chooses the appropriate query vi
 \section{Time-travel Queries}
 \label{sec:ttqueries}
 
-In our set-up, the debugger trying to recreate intermediate results of a stored procedure is just a special use case for the ability to submit arbitrary queries against the database of any previous point in time.
+In our setup, the debugger tries to recreate intermediate results of a stored procedure is just a special use case for the ability to submit arbitrary queries against the database of any previous point in time.\todo{More intro needed especially for used examples. Furthermore, Listing 2 is not referenced and used from text.}
 
 \subsection{The Step Concept}
 
 The query shown in \cref{lst:ttravel} selects the total of open orders for previously selected projects.
-We will use it as an example to demonstrate how \emph{time-traveling} queries are handled by our system.
+We will use it as an example to demonstrate how \emph{time-traveling} queries are handled by our system.\todo{add our name instead our system}
 
 \begin{lstlisting}[language=HanaSQL,float,caption={Example for a time-travel query: select the current total of open orders for previously selected projects},label=lst:ttravel]
   SELECT pr.id, pr.name, pr.budget, SUM(po.total)
@@ -454,7 +456,7 @@ We will use it as an example to demonstrate how \emph{time-traveling} queries ar
 	^§AT STEP§ 1623^
 \end{lstlisting}
 
-The last line shows an extension to SQL that can be used by the developer to explicitly query a point in time, with °^1623^° being a step ID that was obtained from the debugger UI.
+The last line shows an extension to SQL that can be used by the developer to explicitly query a point in time, with °^1623^° being a step ID that was obtained from the debugger UI.\todo{Where does 1623 comes from?}
 If omitted, the current step can be derived from the context from which the query is submitted, such as an SQL console that is associated with a specific point in time or the current debug step.
 The parameter °:selected_projects° refers to a variable from the current debug session and will be populated with its current value, independently of the value of the step-clause.
 
@@ -466,7 +468,7 @@ These views are identified by the target variable name and the line number and e
 \todo{explain variable functions}
 In our example, °:selected_projects° might be replaced with °VAR_selected_projects_7(1055, 'Research')° when it was last set at step 1055 in code line 7 and called with the respective argument.
 
-Second, a time-stamp filter is added for all tables that are referenced in the query. 
+Second\todo{where is first?}, a time-stamp filter is added for all tables that are referenced in the query. 
 In our example,
 \begin{lstlisting}[language={Inline},basicstyle=\ttfamily,numbers=none]
   po.createdOn < ^1623^ AND (po.validTo IS NULL OR po.validTo > ^1623^)
@@ -494,7 +496,7 @@ Now, the query can be submitted to the database and the result is subsequently p
 				&						& \gr{-300} & \gr{0}		 &	 & \gr{paid}	&						\ML
 }
 
-To get a better overview about what happened in a piece of code, the developer might want to query multiple points in time at once and see the difference in the query result.
+To get a better overview about what happened in a piece of code, the developer might want to query multiple points in time at once and see the difference in the query result.\todo{explain example - fix gender issue by talking plural!}
 For this example, she debugs a stored procedure that processes the payments for projects, but sometimes allows projects to go over budget.
 By stepping into the procedure, she has three defined points in time: °^before^°, at the beginning of the procedure; °^now^°, at the current instruction; and °^after^°, at the end of the execution.
 
@@ -514,7 +516,7 @@ The query is shown in \cref{lst:tdiff}.
 \end{lstlisting}
 Like before, the °^AT STEP^° clause does not have to be explicitly typed in the query, but can also be derived from the context.
 A language extension allows to add filter conditions that only apply to specific points in time.
-\Cref{tab:diffresult} shows a possible result for this query, with one project that goes over budget and two associated purchases, of which one was already processed.
+\Cref{tab:diffresult} shows a possible result for this query, with one project that goes over budget and two associated purchases, of which one was already processed.\todo{Point not clear - maybe I'm lost because of missing explanation of example}
 
 To produce this result, the query has to be executed three times, once for each point in time, without the time-specific filter conditions.
 Then, to prepare the diffing of the results, they are outer-joined on the primary keys and the time-specific filters are applied.
@@ -544,7 +546,7 @@ For the final result, the key attributes are coalesced while the other attribute
 Furthermore, for each tuple its creation step is selected.
 This value is needed for two reasons: first, it is necessary to distinguish between tuples with °NULL° values and tuples completely missing from the result; second, it allows the debugger to know when the value was created or changed.
 
-In the UI, the before and after values are only shown if they differ from the now value.
+In the UI\todo{Instead of many code listing show the UI (this could also include the code)}, the before and after values are only shown if they differ from the now value.
 Clicking on value allows the developer to jump to the °UPDATE° or °INSERT° statement that caused the change.
 
 \section{Evaluation}
@@ -552,8 +554,8 @@ Clicking on value allows the developer to jump to the °UPDATE° or °INSERT° s
 
 - Test system: 2 billion records of point of sales data \\
 - Stored procedure: calculate revenue and margin per week of current and last year \\
-- Exec time: approx. 3 seconds; with tracing: no measurable overhead \\
-- °SELECT * FROM :result°: 1.5 seconds \\
+- Exec time: approx. 3 seconds; with tracing: no measurable overhead\todo{There will be overhead!!! Please measure and discuss - but maybe you can write "no significant overhead" (iff it is below 5\,\%)} \\
+- °SELECT * FROM :result°: 1.5 seconds\todo{Hasso will kill you for a select * query - please use realistic example} \\
 - \todo{time-diff queries}?
 
 % bug-tracker 
