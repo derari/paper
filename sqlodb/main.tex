@@ -570,18 +570,11 @@ Clicking on value allows the developer to jump to the °UPDATE° or °INSERT° s
 \section{Evaluation}
 \label{sec:evaluation}
 
-We evaluated \tool\, on a real-world project developed in SAP
-%Explain project in short - see book
-%We evaluated \tool\, with the help our SAP colleagues who worked on a project called \emph{Point of Sales Explorer}~\cite{plattner2015memory} which makes heavy use of SQLScript. 
-- Test system: 2 billion records of point of sales data \\
-- Stored procedure: calculate revenue and margin per week of current and last year \\
-
-
-% made performance measurements
-
-% small user study - showed our tool and interviewed later on
-
-
+We evaluated our \tool\,debugger on a real-world SAP project that has been developed in co-innovation with one of the largest European retail companies. 
+This project is called \emph{Point of Sales Explorer}~\cite{plattner2015memory} and allows category managers to see a collection of the most important key performance indicators (KPIs) for several thousands of products in a unified dashboard.
+Based on more than 2 billion records of point of sales data, this application aggregates on the fly the requested KPIs with the help of SAP HANA and allows users to further refine them by stores, vendors, or products as they like. 
+In order to implement flexible requests such as return the revenue and margin per week of current and last year, this application makes heavy use of SQLScript. 
+For that reason, it is a proper candidate to measure performance and interview its developers with respect to our \tool. 
 
 \subsection{Performance Measurements}
 % bug-tracker 
@@ -590,7 +583,10 @@ We evaluated \tool\, on a real-world project developed in SAP
 - \todo{time-diff queries}?
 
 
-\subsection{User Study}
+\subsection{Interviews}
+
+in-depth interview of SAP developers
+	worked a lot with SQLScript before and now the PAIN POINTS 
 
 %--> Industrieteil (ca. 1/2 Seite)
 %	- Case Study
