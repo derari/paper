@@ -221,6 +221,10 @@ The entire approach has been evaluated within a development project at SAP and s
 
 \keywords{Back-in-time debugging, in-memory database, SAP HANA}
 
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 \section{Introduction}
 
 %Context: Debugging and Back-in-Time
@@ -265,12 +269,19 @@ The remainder of this paper is structured as follows:
 \Cref{sec:ttqueries} discusses querying past database states and introduces and extension to SQL.
 \Cref{sec:evaluation} evaluates our approach before \cref{sec:conclusion} discusses future work and concludes the paper.
 
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 \section{Related Work}
+
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 \section{Back-in-time Debugging for\\ Stored Procedures}
 \label{sec:prototype}
-
-
 
 With a regular debugger\todo{Add our tool name here and there in the following sections}, developers have only one way to go back in time, which is to restart the execution.
 Tools can be used to automate this approach\todo{cite} and some modern debuggers even allow to restart execution at the method level\todo{cite}.
@@ -436,6 +447,9 @@ On top of that, a master view is generated that chooses the appropriate query vi
 	END;
 \end{lstlisting}
 
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 \section{Time-travel Queries}
 \label{sec:ttqueries}
@@ -549,16 +563,47 @@ This value is needed for two reasons: first, it is necessary to distinguish betw
 In the UI\todo{Instead of many code listing show the UI (this could also include the code)}, the before and after values are only shown if they differ from the now value.
 Clicking on value allows the developer to jump to the 째UPDATE째 or 째INSERT째 statement that caused the change.
 
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 \section{Evaluation}
 \label{sec:evaluation}
 
+We evaluated \tool\, on a real-world project developed in SAP
+%Explain project in short - see book
+%We evaluated \tool\, with the help our SAP colleagues who worked on a project called \emph{Point of Sales Explorer}~\cite{plattner2015memory} which makes heavy use of SQLScript. 
 - Test system: 2 billion records of point of sales data \\
 - Stored procedure: calculate revenue and margin per week of current and last year \\
+
+
+% made performance measurements
+
+% small user study - showed our tool and interviewed later on
+
+
+
+\subsection{Performance Measurements}
+% bug-tracker 
 - Exec time: approx. 3 seconds; with tracing: no measurable overhead\todo{There will be overhead!!! Please measure and discuss - but maybe you can write "no significant overhead" (iff it is below 5\,\%)} \\
 - 째SELECT * FROM :result째: 1.5 seconds\todo{Hasso will kill you for a select * query - please use realistic example} \\
 - \todo{time-diff queries}?
 
-% bug-tracker 
+
+\subsection{User Study}
+
+%--> Industrieteil (ca. 1/2 Seite)
+%	- Case Study
+%		- Projekt: Klaus Noak, SAP PoS Explorer (see HP book)
+%		- Skizzieren - Arie 
+%		- PoC gezeigt, Code ausprobiert, Feedback eingesammelt von den Entwicklern
+%			- Gr슙ter Pain: Query als Skript aufschreiben um Optimizer zu halten, bisher ist h둼fig ergebnis leer man wei� aber nicht warum
+%			- Insgesamt gut
+%			- Weitere Produkterisierung - danach detailierte Studie
+
+
+\subsection{Threats to Validity}
+
 
 \subsection{Limitations}
 
@@ -569,6 +614,10 @@ For a query like "Sum budgets per project category", it has to be clear that cat
 Here, an additional syntax extension could be used to convey this kind of information.
 
 Second, it is currently not possible to use time qualifiers outside of the 째WHERE째 clause.
+
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 \section{Conclusion}
