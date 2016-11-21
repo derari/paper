@@ -14,6 +14,7 @@
 %\bibliography{references}
 %\renewcommand{\bibliography}[1]{\printbibliography}
 
+\usepackage{lmodern}
 \usepackage{MnSymbol}
 
 \usepackage[svgnames]{xcolor}
@@ -332,7 +333,7 @@ Third, the database can be used to efficiently manage old state.
 In-memory databases with insert-only storage automatically retain old data for some time~\cite{Plattner2009Acd}.
 With insert-only, older versions of the database can be easily reproduced.
 For other database, insert-only can be achieved by adding validity columns.
-For many business applications, the columns already exist as no data may be deleted for legal reasons.
+For many business applications, such columns already exist as no data may be deleted for legal reasons.
 
 In conclusion, all that is needed to reproduce the execution of a stored procedure is a sequence of execution steps.
 Each step represents an instruction that has side effects on the database or assigns a value or result set to a variable.
@@ -389,82 +390,14 @@ On top of that, a master view is generated that chooses the appropriate query vi
 
 The user interface looks like a typical debugger.
 The largest part of the screen shows the code.
-Buttons allow the developer to step forwards and backwards.
+A toolbar contains buttons allowing developers to step forwards and backwards.
+Next to the step buttons, the current step number is shown.
 Instead of a stack trace, \tool\ shows a tree of all execution steps.
 
 Next to the code, current variable values are shown.
 Arrow buttons allow to jump to the previous or next assignment of the variable.
 For variables containing a query result, the size of the result is shown.
 Clicking the variable opens a query window that shows the variable's content and allows the developer to submit time-travel queries, which will be explained in the next section.
-
-
-%\begin{lstlisting}[language=HanaSQL,float,caption={Example procedure},label=lst:example]
-	%CREATE PROCEDURE Check_Projects_Of_Department(dep_name VARCHAR(100)) AS
-	%BEGIN
-		%DECLARE dep_id INTEGER := SELECT id FROM Deparments WHERE name = :dep_name;
-		%selected_projects := SELECT id FROM Projects WHERE deparment = :dep_id;
-		%CALL Check_Projects(:selected_projects);
-	%END
-%\end{lstlisting}
-
-%\begin{lstlisting}[language=HanaSQL,float,caption={Procedure with tracing},label=lst:example2]
-	%CREATE PROCEDURE _T__Check_Projects_Of_Department (IN __t_id INT, IN __ce_id INT, INOUT __s_id INT, dep_name VARCHAR(100)) AS
-	%BEGIN
-		%DECLARE __e_id INT := __s_id+1;
-		%DECLARE __ts TIMESTAMP;
-		%DECLARE __count INT;
-%
-		%DECLARE dep_id INTEGER := SELECT id FROM Deparments WHERE name = :dep_name;
-		%/*  1*/ INSERT INTO Quid_Accidit.Steps (trace_id,step,entry_step,type,target,value,line) VALUES (:__t_id,:__s_id+1,:__ce_id,'ENTER', 'Check_Projects_Of_Department',NULL,1);
-		%/*  1*/ INSERT INTO Quid_Accidit.Steps (trace_id,step,entry_step,type,target,value,line) VALUES (:__t_id,:__s_id+1,:__e_id,'VARIABLE', 'dep_name',:dep_name,1);
-		%/*  3*/ INSERT INTO Quid_Accidit.Steps (trace_id,step,entry_step,type,target,value,line) VALUES (:__t_id,:__s_id+2,:__e_id,'VARIABLE',  'dep_id',:dep_id,3);
-		%__s_id := __s_id + 3;
-		%/*  4*/ INSERT INTO Quid_Accidit.Steps (trace_id,step,entry_step,type,target,value,line) VALUES (:__t_id,:__s_id,:__e_id,'QUERY', 'selected_projects','selected_projects := SELECT id FROM Projects WHERE deparment = :dep_id;',4);
-		%/*   */ __ts := NOW();
-		%selected_projects := SELECT id FROM Projects WHERE deparment = :dep_id;
-		%/*   */ SELECT COUNT(*) INTO __count FROM :selected_projects;
-		%/*  4*/ INSERT INTO Quid_Accidit.Queries (trace_id,step,query,count,pre,post) VALUES (:__t_id,:__s_id, '_selected_projects_4_Check_Projects_Of_Department', __count,__ts,NOW());
-		%__s_id := __s_id + 1;
-		%/*  5*/ INSERT INTO Quid_Accidit.Steps (trace_id,step,entry_step,type,target,value,line) VALUES (:__t_id,:__s_id,:__e_id,'CALL', '?','Check_Projects',5);
-		%CALL _T__Check_Projects(__s_id, :selected_projects);
-	%END;
-%
-	%CREATE PROCEDURE _TE_Check_Projects_Of_Department (dep_name VARCHAR(100)) AS
-	%BEGIN
-		%DECLARE __t_id INT;
-		%DECLARE __s_id INT DEFAULT 0;
-		%SELECT COALESCE(MAX(id),0)+1 INTO __t_id FROM Quid_Accidit.Traces;
-		%INSERT INTO Quid_Accidit.Traces(id, name) VALUES (:__t_id, 'Check_Projects_Of_Department');
-		%CALL _T__Check_Projects_Of_Department (:__t_id, 0, __s_id, dep_name);
-	%END;
-%\end{lstlisting}
-
-%
-%\begin{lstlisting}[language=HanaSQL,float,caption={Example query in line 4 of "Check\_Projects"},label=lst:example3]
-	%selected_projects := SELECT p.id FROM Projects p WHERE p.deparment = :dep_id;
-%\end{lstlisting}
-%
-%\begin{lstlisting}[language=HanaSQL,float,caption={Query view},label=lst:example4]
-	%CREATE FUNCTION 
-			%_Q__Check_Projects_selected_projects_4_ 
-			%(IN trace_id INT, IN step INT)
-	%RETURNS TABLE(id INT) 
-			%LANGUAGE SQLSCRIPT AS
-	%BEGIN
-		%DECLARE __ts TIMESTAMP := 
-				%SELECT before FROM Queries q 
-				%WHERE q.trace_id = :trace_id 
-				  %AND q.step = :step;
-		%DECLARE dep_id INT := SELECT 
-				%_V__Check_Projects_dep_id_(:trace_id, :step) 
-				%FROM DUMMY;
-		%RETURN SELECT p.id FROM Projects p
-				%WHERE p.deparment = :dep_id
-				  %AND p.created_on < __ts
-					%AND (p.valid_until IS NULL 
-					   %OR p.valid_until > __ts);
-	%END;
-%\end{lstlisting}
 
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -478,15 +411,15 @@ We generalized this feature to enable developers to submit arbitrary queries aga
 Furthermore, we allow developers to compare query results from different points in time and even query for changes in the data.
 We defined \SQLextension, a super-set of SQL that allows developers to refer to points in execution time by introducing a new keyword and a new operator.
 
-As an example, we consider a stored procedure that processes purchase orders.
+\subsection{A SQL Clause to Query Points in Time}
+
+As an example, we consider a stored procedure that triggers the payment of purchase orders.
 Users reported a bug: projects sometimes exceed their budget, which is not supposed to happen.
 
-\todo{More intro needed especially for used examples. Furthermore, Listing 2 is not referenced and used from text.}
-
-\subsection{The Step Concept}
-
-The query shown in \cref{lst:ttravel} selects the total of open orders for previously selected projects.
-We will use it as an example to demonstrate how \emph{time-traveling} queries are handled by our system.\todo{add our name instead our system}
+Developers tasked to investigate this problem might start debugging the stored procedure with \tool.
+However, they soon realize that the number of projects is too large to continue stepping manually.
+Instead, they open \tool's SQL console to look into the °select_projects° variable, that contains ids, names, and budgets of all projects to be processed.
+To better understand the data, they also sum up the total amount of all open purchase orders for each project.
 
 \begin{lstlisting}[language=HanaSQL,float,caption={Example for a time-travel query: select the current total of open orders for previously selected projects},label=lst:ttravel]
   SELECT pr.id, pr.name, pr.budget, SUM(po.total)
@@ -497,26 +430,30 @@ We will use it as an example to demonstrate how \emph{time-traveling} queries ar
 	^§AT STEP§ 1623^
 \end{lstlisting}
 
-The last line shows an extension to SQL that can be used by the developer to explicitly query a point in time, with °^1623^° being a step ID that was obtained from the debugger UI.\todo{Where does 1623 comes from?}
-If omitted, the current step can be derived from the context from which the query is submitted, such as an SQL console that is associated with a specific point in time or the current debug step.
-The parameter °:selected_projects° refers to a variable from the current debug session and will be populated with its current value, independently of the value of the step-clause.
+\Cref{lst:ttravel} shows the query to fetch all selected projects together with the total amount of open orders.
+We will use it as an example to show how \tool\, handles time-travel queries.
 
-When submitted, our debugger applies two changes to the query before it can be submitted to the database.
-First, all variables are replaced with corresponding functions or views.
-For variables containing atomic values, a function is generated that returns the variable's value at a given step.
-For variables containing query results, a view is generated for each query.
-These views are identified by the target variable name and the line number and expect a step number and all parameters that the actual query took.
-\todo{explain variable functions}
-In our example, °:selected_projects° might be replaced with °VAR_selected_projects_7(1055, 'Research')° when it was last set at step 1055 in code line 7 and called with the respective argument.
+The last line of \cref{lst:ttravel} contains the °^AT STEP^° clause, an extension to SQL that allows developers to explicitly query a specific point in time. 
+When opening the SQL console, \tool\, automatically provides an °AT STEP° clause with the number of the current debug step, °^1623^° in this case.
+Developers can obtain numbers for other steps from the stepping toolbar or the execution tree. 
 
-Second\todo{where is first?}, a time-stamp filter is added for all tables that are referenced in the query. 
-In our example,
-\begin{lstlisting}[language={Inline},basicstyle=\ttfamily,numbers=none]
-  po.createdOn < ^1623^ AND (po.validTo IS NULL OR po.validTo > ^1623^)
-\end{lstlisting}
-would be added to the Where-clause.
+When submitted, \tool\, applies two transformations to the query before it is passed to the database.
+First, all variables are replaced with their corresponding functions or views that were generated during the pre-processing of the stored procedure.
+Each function or view receives the specified step number as an argument to be able to produce the correct value or table.
+Second, time-stamp filters on the validity columns are added for all tables that are referenced in the query. 
+This ensures that the tables appear exactly as they originally were at the specified point in time.
+
+%In our example,
+%\begin{lstlisting}[language={Inline},basicstyle=\ttfamily,numbers=none]
+  %po.createdOn < ^1623^ AND (po.validTo IS NULL OR po.validTo > ^1623^)
+%\end{lstlisting}
+%would be added to the where-clause.
 
 Now, the query can be submitted to the database and the result is subsequently presented to the user.
+
+When developers omit the step number, it is taken from the context of the debug session.
+This way, developers can step through the execution and observe how the query result changes over time.
+However, \SQLextension\, also provides an easier way to find the origin of changes in the data.
 
 \subsection{Time-diff Queries}
 
@@ -526,69 +463,66 @@ Now, the query can be submitted to the database and the result is subsequently p
 
 \ctable[star,caption={Result of a time-diff query, with multiple values in some columns},label=tab:diffresult,doinside={}]
 				{rlrrrlr}{}{
-	pr.id & pr.name 	& pr.budget & total & po2.id & po2.status & po2.total \ML
+	pr.id & pr.name 	& pr.budget  & total & po2.id & po2.status & po2.total \ML
 	
-				&					 & \red{1200} & \red{1500} &	 & \red{open} &						\NN
-	1			& Project 1 & 200				& 500 			 & 1 & paid 			& 1000			\NN
-				&						& \gr{-300} & \gr{0}		 &	 &						&						\ML
+				&					  & \red{1200} & \red{1500} &	  & \red{open} &					\NN
+	1			& Project 1 & 200			 	 & 500 			  & 1 & paid 			 & 1000			\NN
+				&						& \gr{-300}  & \gr{0}		  &	  &						 &					\ML
 
-				&					 & \red{1200} & \red{1500} &	 & 						&						\NN
-	1			& Project 1 & 200				& 500 			 & 2 & open 			& 500				\NN
-				&						& \gr{-300} & \gr{0}		 &	 & \gr{paid}	&						\ML
+				&					  & \red{1200} & \red{1500} &	  & 					 &					\NN
+	1			& Project 1 & 200				 & 500 			  & 2 & open 			 & 500			\NN
+				&						& \gr{-300}  & \gr{0}		  &	  & \gr{paid}	 &					\ML
 }
 
-To get a better overview about what happened in a piece of code, the developer might want to query multiple points in time at once and see the difference in the query result.\todo{explain example - fix gender issue by talking plural!}
-For this example, she debugs a stored procedure that processes the payments for projects, but sometimes allows projects to go over budget.
-By stepping into the procedure, she has three defined points in time: °^before^°, at the beginning of the procedure; °^now^°, at the current instruction; and °^after^°, at the end of the execution.
+To get a better overview about what happened in a piece of code, developers might want to query multiple points in time at once and see the difference in the query result.
+In our example, developers are looking for purchase orders that cause projects to exceed their budget.
+Using \tool, they identified three important points in time, which we will call "before", "now", and "after".
+"Before" is the step where the stored procedure started processing purchase orders, "now" is the current step, and "after" is the final step of the procedure.
 
-Now she wants to compose a query that selects all projects that will go over budget and the orders that were processed.
-\todo{explain query rewriting}
-The query is shown in \cref{lst:tdiff}.
+In \cref{lst:tdiff}, the query from above was extended to select individual purchase orders for each project.
+In line 10, the at-step clause now specifies all three points in time.
+This allows developers to query for changes in the data.
+\SQLextension\, introduces the exclamation mark operator that binds an identifier to a step.
+In line 6, it is used to limit the search to projects that will exceed their budget before the stored procedure ends;
+in line 7, it is used to filter for purchase orders whose status was or will be changed.
+
 \begin{lstlisting}[language=HanaSQL,float=b,caption={Example of a time-diff query: "Select all projects that will go over budget and their respective purchase orders"},label=lst:tdiff]
 	SELECT pr.id, pr.name, pr.budget, SUM(po.total), po2.id, po2.status, po2.total
 	FROM :selectedProjects pr
 	JOIN PurchaseOrders po ON po.project_id = pr.id
 	JOIN PurchaseOrders po2 ON po2.project_id = pr.id
 	WHERE po.status = 'open'
-		AND now!pr.budget > 0 AND after!pr.budget < 0
-		AND before!po2.status != after!po2.status
-	GROUP BY pr.id, pr.name, pr.budget, po2.id, po2.status, po2.total
+		AND ^now!^pr.budget > 0 AND ^after!^pr.budget < 0
+		AND ^before!^po2.status != ^after!^po2.status
+	GROUP BY pr.id, pr.name, pr.budget, 
+	         po2.id, po2.status, po2.total
 	^§AT STEP§ before=817, now=1623, after=2043^
 \end{lstlisting}
-Like before, the °^AT STEP^° clause does not have to be explicitly typed in the query, but can also be derived from the context.
-A language extension allows to add filter conditions that only apply to specific points in time.
-\Cref{tab:diffresult} shows a possible result for this query, with one project that goes over budget and two associated purchases, of which one was already processed.\todo{Point not clear - maybe I'm lost because of missing explanation of example}
 
-To produce this result, the query has to be executed three times, once for each point in time, without the time-specific filter conditions.
-Then, to prepare the diffing of the results, they are outer-joined on the primary keys and the time-specific filters are applied.
-For performance reasons, all of this happens inside a single SQL query, as shown in \cref{lst:tdifffinal}.
-The execution of the sub-queries is indicated in \linerefn{lst:tdifffinal}{6, 7, and 10}, the time-specific filters can be found in the Where-condition of \linerefn{lst:tdifffinal}{15 and 16}.
+\Cref{tab:diffresult} shows a possible result for this query, with one project that goes over budget and two associated purchases.
+The values for budget and total of outstanding payments are shown for each of the three steps.
+Of the two purchase orders, the first was already marked as "paid" before the current step, the other is about to be paid.
 
-\begin{lstlisting}[language=HanaSQL,float,caption={Parts of the time-diff query after transformation},label=lst:tdifffinal]
-	SELECT COALESCE(__before."pr.id", ...) AS "pr.id",
-	       COALESCE(__before."po.id", ...) AS "po.id",
-				 __before.createdOn as _step_0,
-				 __before."pr_name" AS "pr_name_0", ...,
-				 ...
-	FROM (SELECT ... ^§AT STEP§ before^) __before
-	FULL OUTER JOIN (SELECT ... ^§AT STEP§ now^) __now
-	    ON __before."pr.id" = __now."pr.id" 
-		 AND __before."po.id" = __now."po.id"
-	FULL OUTER JOIN (SELECT ... ^§AT STEP§ after^) __after
-	    ON (__before."pr.id" = __after."pr.id" 
-		      AND __before."po.id" = __after."po.id")
-		  OR (__now."pr.id" = __after."pr.id" 
-		      AND __now."po.id" = __after."po.id")
-	WHERE __now."pr.budget" > 0 AND __after."pr.budget" < 0
-	  AND __before."po.status" != __after."po.status"
-\end{lstlisting}
+Analyzing the data, it becomes clear that the payment of the second order is what causes the project to exceed its budget.
+Developers can now click on the green "paid" value to jump exactly to the point in time where this order is updated, knowing that at this point they are very likely to be close to the bug they are looking for.
 
-For the final result, the key attributes are coalesced while the other attributes are selected from each point in time.
-Furthermore, for each tuple its creation step is selected.
-This value is needed for two reasons: first, it is necessary to distinguish between tuples with °NULL° values and tuples completely missing from the result; second, it allows the debugger to know when the value was created or changed.
+To produce this result, the query has to be executed three times, once for each point in time, without the time-specific where-conditions.
+The partial results are outer-joined on the primary key attributes, then the time-specific filter conditions are applied.
+\tool\, rewrites the query to fit everything into a single select statement, which allows the database to compute the entire result in one request.
 
-In the UI\todo{Instead of many code listing show the UI (this could also include the code)}, the before and after values are only shown if they differ from the now value.
-Clicking on value allows the developer to jump to the °UPDATE° or °INSERT° statement that caused the change.
+The final query selects all values from each sub-query.
+In the user interface changes in the values are highlighted with red or green as shown in \cref{tab:diffresult}.
+When possible, the tuple creation timestamps are used to allow developers to jump to the point in time where the change occurred.
+
+\todo{maybe show the ui}
+
+%Then, to prepare the diffing of the results, they are outer-joined on the primary keys and the time-specific filters are applied.
+%For performance reasons, all of this happens inside a single SQL query, as shown in \cref{lst:tdifffinal}.
+%The execution of the sub-queries is indicated in \linerefn{lst:tdifffinal}{6, 7, and 10}, the time-specific filters can be found in the Where-condition of \linerefn{lst:tdifffinal}{15 and 16}.
+
+%
+%In the UI\todo{Instead of many code listing show the UI (this could also include the code)}, the before and after values are only shown if they differ from the now value.
+%Clicking on value allows the developer to jump to the °UPDATE° or °INSERT° statement that caused the change.
 
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -604,6 +538,7 @@ In order to implement flexible requests such as return the revenue and margin pe
 For that reason, it is a proper candidate to measure performance and interview its developers with respect to our \tool. 
 
 \subsection{Performance Measurements}
+
 % bug-tracker 
 - Exec time: approx. 3 seconds; with tracing: no measurable overhead\todo{There will be overhead!!! Please measure and discuss - but maybe you can write "no significant overhead" (iff it is below 5\,\%)} \\
 - °SELECT * FROM :result°: 1.5 seconds\todo{Hasso will kill you for a select * query - please use realistic example} \\
