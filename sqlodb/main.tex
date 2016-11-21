@@ -171,13 +171,13 @@ Matthias Uflacker\\
 
 \maketitle
 \begin{abstract}
-Back-in-time debuggers allow developers to explore what happened before a failure and so supports them in finding failure causes more efficiently. 
+Back-in-time debuggers allow developers to explore what happened before a failure and so support them in finding failure causes more efficiently. 
 However, if failure causes leave a specific application layer, it is difficult to further follow infections down to the real defect.
 Especially at the database-level, developers have no such debugging tools to understand unexpected behavior comprehensively.
 
 In this paper, we present an approach for bringing back-in-time debugging down to SQL and stored procedures of the SAP HANA in-memory database.
 Our \tool\, debugger allows developers to step queries backwards and inspecting the database at previous and arbitrary points in time.
-With the help of a SQL extension, we can easily express queries covering a period of execution time within a debugging session and handle large amounts of data with low overhead on performance and memory.
+With the help of a SQL extension, we can express queries covering a period of execution time within a debugging session and handle large amounts of data with low overhead on performance and memory.
 The entire approach has been evaluated within a development project at SAP and shows promising results with respect to the gathered developer feedback.
 
 \end{abstract}
@@ -265,7 +265,8 @@ We evaluated \tool\, with the help our SAP colleagues who worked on a project ca
 The interviews indicated that bugs in stored procedures can be investigated more efficiently with \tool\, than with existing other database development tools.
 
 The remainder of this paper is structured as follows:
-\Cref{sec:prototype} presents our approach and prototype implementation of back-in-time debugging in the database.
+\Cref{sec:relatedWork} describes related work. 
+\Cref{sec:prototype} presents our approach and its prototypical implementation of back-in-time debugging in the database.
 \Cref{sec:ttqueries} discusses querying past database states and introduces and extension to SQL.
 \Cref{sec:evaluation} evaluates our approach before \cref{sec:conclusion} discusses future work and concludes the paper.
 
@@ -274,6 +275,7 @@ The remainder of this paper is structured as follows:
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 \section{Related Work}
+\label{sec:relatedWork}
 
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -285,6 +287,7 @@ The remainder of this paper is structured as follows:
 
 % why post mortem
 \todo{Add our tool name here and there in the following sections}
+\todo{If we need to shorten later on, I would start here in the problem description.}
 
 With a regular debugger, developers have only one way to go back in time, which is to restart the execution.
 Tools can be used to automate this approach\todo{cite} and some modern debuggers even allow to restart execution at the method level\todo{cite}.
@@ -297,7 +300,7 @@ This works well for special purpose tools that only analyze a specific aspect of
 A post-mortem debugger, on the other hand, has to record virtually everything to be able to replay the program execution.
 While this approach allows developers the most freedom when stepping through the execution, it creates a large overhead on performance and memory.
 Debugger implementations using this approach exist for different programming languages.
-
+%
 Both approaches can also be mixed to create a tradeoff between performance and overhead\todo{cite}.
 
 % post-mortem has been solved before, why is it harder in the database
@@ -312,8 +315,8 @@ Stored procedures add the additional challenge that results of a query can be us
 This increases the amount of "invisible" state, sometimes only for a few instructions, other times for the entire length of the program.
 Furthermore, as trace data usually exceeds program data by orders of magnitude, we expect that tracing the processing of every tuple in a large database is not feasible.
 
-With \tool, we focused on stored procedures as database programs, as stored procedures are executed closer to the database and thus more efficient at handling large data sets.
-This does not limit the general validity of our results, as a stored procedures debugger faces all of the problems described above.
+With \tool, we focuses on stored procedures because they are executed close to the data and, thus, more efficient in handling large data sets.
+This does not limit the general validity of our results, as a stored procedures debugger faces all of the challenges described above.
 
 \subsection{Replaying a Stored Procedure}
 
@@ -329,7 +332,7 @@ Thus, neither do we need to trace the internals of a query's execution, nor do w
 \todo{MP: This is not clear to me, yet.}
 
 Third, the database can be used to efficiently manage old state.
-In-memory databases with insert-only storage automatically retain old data for some time~\cite{Plattner2009Acd}.
+In-memory databases with insert-only storage automatically retain old data~\cite{Plattner2009Acd}.
 With insert-only, older versions of the database can be easily reproduced.
 For other database, insert-only can be achieved by adding validity columns.
 For many business applications, the columns already exist as no data may be deleted for legal reasons.
@@ -340,7 +343,7 @@ As there is, conceptually, no concurrency in a stored procedure, we can use sequ
 
 If applicable, a step has a target name, e.g., the name of a variable or stored procedure, and a string representation of the value, which can be shown to the user in the debug view.
 If the step involves a database statement, we only need a timestamp to be able to reproduce the query.
-However, we also record the number of rows in the result set and the execution time, as well as any atomic argument values, as this information is likely to be relevant for developers.
+Moreover, we also record the number of rows in the result set and the execution time, as well as any atomic argument values, as this information is likely to be relevant for developers.
 
 %We never trace any details of the query execution but only record the name of a view than can be used to later reproduce the query result.
 %The view was specifically generated by the debugger, as will be explained in the next subsection.
@@ -366,16 +369,15 @@ With the recorded trace data, the debugger has enough information available to r
 \subsection{Prototype and Tracing Code Generation}
 
 We developed \tool\ as a prototype implementation of our approach.
-
-\tool\ runs in HANA's XS-Engine, a framework for web-applications that is part of the HANA platform.
+Our back-in-time debugger runs in the SAP HANA XS-Engine, a framework for web-applications that is part of the SAP HANA platform.
 The user interface is written in HTML5 and JavaScript and queries debugging data via HTTP from the back-end, written in server-side JavaScript.
 Traces are stored directly in the database.
-Packaged as a XS Application, \tool\ can be easily installed in a HANA installation.
+Packaged as a XS Application, \tool\ can be directly deployed in a SAP HANA installation.
 
 %With a debugger fully integrated in its database, we would expect the stored procedure execution engine to trace the execution steps.
 %However, for our prototype this level of integration was out of scope.\todo{Don't start this way but rather put it into limitation discussion or next steps in summary and than call it producterization}
 
-To be able to trace an execution, we developed a SQLScript pre-processor that parses a stored procedure and inserts °INSERT° statements around every instruction to collect the required trace data.
+To be able to trace an execution, we developed a SQLScript pre-processor that parses a stored procedure and adds °INSERT° statements around every instruction to collect the required trace data.
 To obtain a trace, the debugger then once has to run the traced code instead of the original procedure.
 
 In addition to the tracing code, the pre-processor also generates SQL functions and views that will be used to obtain variable values at given points in time.
@@ -387,7 +389,7 @@ Arguments to the query are initialized using their respective views.
 On top of that, a master view is generated that chooses the appropriate query view by looking up the requested step in the recorded trace.
 \todo{AT: How much detail?}
 
-The user interface looks like a typical debugger.
+The user interface looks like a typical debugger.\todo{Please add a screenshot and describe with it!}
 The largest part of the screen shows the code.
 Buttons allow the developer to step forwards and backwards.
 Instead of a stack trace, \tool\ shows a tree of all execution steps.
@@ -600,8 +602,8 @@ Clicking on value allows the developer to jump to the °UPDATE° or °INSERT° s
 We evaluated our \tool\,debugger on a real-world SAP project that has been developed in co-innovation with one of the largest European retail companies. 
 This project is called \emph{Point of Sales Explorer}~\cite{plattner2015memory} and allows category managers to see a collection of the most important key performance indicators (KPIs) for several thousands of products in a unified dashboard.
 Based on more than 2 billion records of point of sales data, this application aggregates on the fly the requested KPIs with the help of SAP HANA and allows users to further refine them by stores, vendors, or products as they like. 
-In order to implement flexible requests such as return the revenue and margin per week of current and last year, this application makes heavy use of SQLScript. 
-For that reason, it is a proper candidate to measure performance and interview its developers with respect to our \tool. 
+In order to implement flexible requests such as returning the revenue and margin per week of current and last year, this application makes heavy use of SQLScript. 
+For that reason, it is a proper candidate to measure performance and interview its developers with respect to our \tool\ tool. 
 
 \subsection{Performance Measurements}
 % bug-tracker 
@@ -621,7 +623,7 @@ We found out that the main reason for writing SQLScript is to positively influen
 This worked very well as long as the newly written code was bug-free. 
 However, if something went wrong at the database-level, the existing tool support was not sufficient. 
 They often had to guess why a specific sub query was not as expected. 
-For that reason, they also liked our back-in-time debugger and we received a lot of positive feedback.
+For that reason, they liked our back-in-time debugger and we received a lot of positive feedback.
 For example, \tool\, could not only show formerly hidden results but also helped them to understand and follow back the reasons behind a failure cause. 
 Besides that, both developers also revealed several small bugs in our debugger and wished for some new features such as XXX \todo{please add a specific feature here}.
 With this feedback, we see a strong need for better debugging support at the database-level and are eager to further improve our approach.
