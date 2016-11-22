@@ -233,13 +233,13 @@ The entire approach has been evaluated within a development project at SAP and s
 Finding defects in code is a frequent task for every programmer and is often difficult even with a deep understanding of the system.
 To localize failure causes, they examine involved program entities and distinguish relevant from irrelevant behavior and clean from infected state. 
 However, common symbolic debuggers do not support identification of such infection chains very well because they only provide access to the last point of execution without access to the program history.
-Back-in-time also known as omniscient debuggers simplify the debugging process \todo{cite} by making it easier to follow cause-effect chains from the observable failure back to the causing defect.
+Back-in-time also known as omniscient debuggers simplify the debugging process by making it easier to follow cause-effect chains from the observable failure back to the causing defect ~\cite{lewis_debugging_2003}\todo{cite}.
 These tools provide full access to past events so that developers can directly experiment with the entire infection chain. 
 
 %Problem: Back-in-time debugger missing for database-level
-Even though back-in-time debuggers exist for many object-oriented programming languages\todo{cite}, there are none to the best of our knowledge that run on databases and support SQL or SQLScript\footnote{SQLScript is a proprietary SQL extension for stored procedures in SAP HANA~\cite{sqlScript}.}.
+Even though back-in-time debuggers exist for many object-oriented programming languages\cite{lewis_debugging_2003,hofer_design_2006}\todo{cite: more languages?}, there are none to the best of our knowledge that run on databases and support SQL or SQLScript\footnote{SQLScript is a proprietary SQL extension for stored procedures in SAP HANA~\cite{sqlScript}.}.
 This is mainly because of two reasons. 
-First, back-in-time debuggers typically create a significant overhead on performance and memory consumption\todo{cite}.
+First, back-in-time debuggers typically create a significant overhead on performance and memory consumption\cite{lewis_debugging_2003,pothier_scalable_2007,lienhard_practical_2008}.
 It seems unfeasible to use a back-in-time debugger on top of a database script that processes billions of records.
 Second, current back-in-time debugging concepts cannot handle side-effects outside their system that usually happen in writing operations during INSERT and UPDATE statements. 
 
@@ -292,7 +292,7 @@ The remainder of this paper is structured as follows:
 \todo{If we need to shorten later on, I would start here in the problem description.}
 
 With a regular debugger, developers have only one way to go back in time, which is to restart the execution.
-Tools can be used to automate this approach\todo{cite} and some modern debuggers even allow to restart execution at the method level\todo{cite}.
+Tools can be used to automate this approach\todo{cite checkpoint debugger?} and some modern debuggers even allow to restart execution at the method level\todo{http://help.eclipse.org/neon/index.jsp?topic=\%2Forg.eclipse.jdt.doc.user\%2Freference\%2Fviews\%2Fdebug\%2Fref-droptoframe.htm}.
 However, this approach fails if the code has side effects, as it can no longer be guaranteed to execute in the same way.
 Furthermore, if the execution is too slow, developers will spend much time waiting for re-execution, which discourages the use of backwards stepping.
 
@@ -613,11 +613,11 @@ With this feedback, we see a strong need for better debugging support at the dat
 
 Currently, our approach has two major limitations.
 
-First, time-diff queries can only be executed on tables that have clearly defined primary keys, for key attributes are required to track a tuple's versions over time.b
+First, time-diff queries can only be executed on tables that have clearly defined primary keys, for key attributes are required to track a tuple's versions over time.
 For a query like "Sum budgets per project category", it has to be clear that categories are the entities that keep their identity over time.
 Here, an additional syntax extension could be used to convey this kind of information.
 
-Second, it is currently not possible to use time qualifiers outside of the °WHERE° clause.
+Second, it is currently not possible to use time qualifiers outside of the where clause.
 
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
