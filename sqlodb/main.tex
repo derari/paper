@@ -572,11 +572,23 @@ The measurements in \cref{tab:measure1} show that reproducing the result is slig
 This was expected because for variables containing atomic values the value could be taken directly from the trace.
 Only for variables containing table results, database queries had to be executed again.
 
-Finally, we selected two complex queries from the stored procedures as examples for queries a developer might submit through the debugger's SQL console and measured their execution time both as a regular query and as a time-diff query.
+Finally, we selected two queries from the stored procedures as examples for queries a developer might submit through the debugger's SQL console and measured their execution time both as a regular query and as a time-diff query.
 Because the Point of Sales Explorer only computes KPIs and does not change the data, we let the time-diff query compare different time-spans of point of sale data\todo{is this disclaimer needed?}.
-\todo{write about measurements}
+Again, we used different filter arguments to produce different result sizes.
+As \cref{tab:measure2} shows, in each case the runtime overhead of time-diff queries is around 25 percent.
 
+\ctable[caption={Average execution times for queries executed normally or as time-diff query.},label=tab:measure2,doinside={},width=\linewidth]
+				{llRR}{}{
+				&		& Regular query& Time-diff query \ML
+	
+			 &	(a) &	1.21 s		& 1.51 s	\NN
+Query 1& (b)	&	1.74 s		& 2.12 s	\NN
+			 &	(c) &	1.79 s		& 2.23 s	\ML
 
+			 &	(a) &	61 ms		&  75 ms	\NN
+Query 2& (b)	&	81 ms		& 100 ms	\NN
+			 &	(c) &	88 ms		& 109 ms	\ML
+}
 
 
 \subsection{Interviews}
