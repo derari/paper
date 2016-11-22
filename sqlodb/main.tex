@@ -25,6 +25,7 @@
 
 %\usepackage{makecell}
 \usepackage{ctable}
+\newcolumntype{R}{>{\raggedleft \arraybackslash}X}
 
 
 \usepackage{listings}
@@ -459,6 +460,8 @@ However, \SQLextension\, also provides an easier way to find the origin of chang
 
 \subsection{Time-diff Queries}
 
+\todo{show screenshot of query and result instead of table and listing?}
+
 \newcommand{\red}[1]{\textcolor{DarkRed}{#1}}
 \newcommand{\gr}[1]{\textcolor{Green}{#1}}
 
@@ -476,7 +479,7 @@ However, \SQLextension\, also provides an easier way to find the origin of chang
 				&						& \gr{-300}  & \gr{0}		  &	  & \gr{paid}	 &					\ML
 }
 
-To get a better overview about what happened in a piece of code, developers might want to query multiple points in time at once and see the difference in the query result.
+To get a better overview about what happened in a segment of code, developers might want to query multiple points in time at once and see the difference in the query result.
 In our example, developers are looking for purchase orders that cause projects to exceed their budget.
 Using \tool, they identified three important points in time, which we will call "before", "now", and "after".
 "Before" is the step where the stored procedure started processing purchase orders, "now" is the current step, and "after" is the final step of the procedure.
@@ -513,10 +516,8 @@ The partial results are outer-joined on the primary key attributes, then the tim
 \tool\, rewrites the query to fit everything into a single select statement, which allows the database to compute the entire result in one request.
 
 The final query selects all values from each sub-query.
-In the user interface changes in the values are highlighted with red or green as shown in \cref{tab:diffresult}.
+In the user interface, changes in the values are highlighted in red or green as shown in \cref{tab:diffresult}.
 When possible, the tuple creation timestamps are used to allow developers to jump to the point in time where the change occurred.
-
-\todo{maybe show the ui}
 
 %Then, to prepare the diffing of the results, they are outer-joined on the primary keys and the time-specific filters are applied.
 %For performance reasons, all of this happens inside a single SQL query, as shown in \cref{lst:tdifffinal}.
@@ -541,10 +542,41 @@ For that reason, it is a proper candidate to measure performance and interview i
 
 \subsection{Performance Measurements}
 
-% bug-tracker 
-- Exec time: approx. 3 seconds; with tracing: no measurable overhead\todo{There will be overhead!!! Please measure and discuss - but maybe you can write "no significant overhead" (iff it is below 5\,\%)} \\
-- °SELECT * FROM :result°: 1.5 seconds\todo{Hasso will kill you for a select * query - please use realistic example} \\
-- \todo{time-diff queries}?
+Each value is the average of 10 measurements.
+
+To evaluate the performance of our approach, we deployed \tool on a copy of the Point of Sales system.
+
+We selected two stored procedures from the Point of Sales Explorer and compared the runtime with and without tracing.
+%To measure the impact of database size, 
+We ran each procedure with different arguments that would lead to intermediate results of different sizes.
+The results are shown in \cref{tab:measure1}.
+Each value is the average of 10 measurements.
+We found the overhead of tracing to be consistently between 6 and 7 percent.
+
+\ctable[caption={Average execution time for running a stored procedure without and with tracing and for reproducing its result.},label=tab:measure1,doinside={},width=\linewidth]
+				{llRRR}{}{
+				&		& Normal run& Run with tracing  & Reproducing the result \ML
+	
+			&	(a) &	1.27 s		& 1.35 s		& 1.21 s		\NN
+Proc.1& (b)	&	1.61 s		& 1.74 s		& 1.54 s		\NN
+			&	(c) &	1.73 s		& 1.85 s		& 1.60 s		\ML
+
+			&	(a) &	1.24 s		& 1.32 s		& 1.19 s		\NN
+Proc.2& (b)	&	1.61 s		& 1.72 s		& 1.55 s		\NN
+			&	(c) &	1.69 s		& 1.80 s		& 1.63 s		\ML
+}
+
+We also measured the time it takes to reproduce result of each stored procedure.
+This provides us with an upper bound for how long \tool\, would need to compute the value of any variable because in our examples all variables are needed to compute the final result.
+The measurements in \cref{tab:measure1} show that reproducing the result is slightly faster than executing the stored procedure.
+This was expected because for variables containing atomic values the value could be taken directly from the trace.
+Only for variables containing table results, database queries had to be executed again.
+
+Finally, we selected two complex queries from the stored procedures as examples for queries a developer might submit through the debugger's SQL console and measured their execution time both as a regular query and as a time-diff query.
+Because the Point of Sales Explorer only computes KPIs and does not change the data, we let the time-diff query compare different time-spans of point of sale data\todo{is this disclaimer needed?}.
+\todo{write about measurements}
+
+
 
 
 \subsection{Interviews}
