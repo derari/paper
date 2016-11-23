@@ -233,13 +233,13 @@ The entire approach has been evaluated within a development project at SAP and s
 Finding defects in code is a frequent task for every programmer and is often difficult even with a deep understanding of the system.
 To localize failure causes, they examine involved program entities and distinguish relevant from irrelevant behavior and clean from infected state. 
 However, common symbolic debuggers do not support identification of such infection chains very well because they only provide access to the last point of execution without access to the program history.
-Back-in-time also known as omniscient debuggers simplify the debugging process by making it easier to follow cause-effect chains from the observable failure back to the causing defect ~\cite{lewis_debugging_2003}\todo{cite}.
+Back-in-time also known as omniscient debuggers simplify the debugging process by making it easier to follow cause-effect chains from the observable failure back to the causing defect~\cite{lewis_debugging_2003}.
 These tools provide full access to past events so that developers can directly experiment with the entire infection chain. 
 
 %Problem: Back-in-time debugger missing for database-level
-Even though back-in-time debuggers exist for many object-oriented programming languages\cite{lewis_debugging_2003,hofer_design_2006}\todo{cite: more languages?}, there are none to the best of our knowledge that run on databases and support SQL or SQLScript\footnote{SQLScript is a proprietary SQL extension for stored procedures in SAP HANA~\cite{sqlScript}.}.
+Even though back-in-time debuggers exist for many object-oriented programming languages~\cite{lewis_debugging_2003,hofer_design_2006}\todo{Sort reference numbers (overall in paper if multiple references have been used), cite: more languages?}, there are none to the best of our knowledge that run on databases and support SQL or SQLScript\footnote{SQLScript is a proprietary SQL extension for stored procedures in SAP HANA~\cite{sqlScript}.}.
 This is mainly because of two reasons. 
-First, back-in-time debuggers typically create a significant overhead on performance and memory consumption\cite{lewis_debugging_2003,pothier_scalable_2007,lienhard_practical_2008}.
+First, back-in-time debuggers typically create a significant overhead on performance and memory consumption~\cite{lewis_debugging_2003,pothier_scalable_2007,lienhard_practical_2008}.
 It seems unfeasible to use a back-in-time debugger on top of a database script that processes billions of records.
 Second, current back-in-time debugging concepts cannot handle side-effects outside their system that usually happen in writing operations during INSERT and UPDATE statements. 
 
@@ -417,7 +417,7 @@ We defined \SQLextension, a super-set of SQL that allows developers to refer to 
 As an example, we consider a stored procedure that triggers the payment of purchase orders.
 Users reported a bug: projects sometimes exceed their budget, which is not supposed to happen.
 
-Developers tasked to investigate this problem might start debugging the stored procedure with \tool.
+Developers might start debugging this issue and the related stored procedure with \tool.
 However, they soon realize that the number of projects is too large to continue stepping manually.
 Instead, they open \tool's SQL console to look into the °select_projects° variable, that contains ids, names, and budgets of all projects to be processed.
 To better understand the data, they also sum up the total amount of all open purchase orders for each project.
@@ -431,10 +431,10 @@ To better understand the data, they also sum up the total amount of all open pur
 	^§AT STEP§ 1623^
 \end{lstlisting}
 
-\Cref{lst:ttravel} shows the query to fetch all selected projects together with the total amount of open orders.
+\Cref{lst:ttravel} shows the query to fetch all selected projects together with the total amount of open orders\todo{The previous paragraph already explains the code - reference to listing needs to be earlier.}.
 We will use it as an example to show how \tool\, handles time-travel queries.
 
-The last line of \cref{lst:ttravel} contains the °^AT STEP^° clause, an extension to SQL that allows developers to explicitly query a specific point in time. 
+The last line of \cref{lst:ttravel} contains the °^AT STEP^° clause, our extension to SQL that allows developers to explicitly query a specific point in time. 
 When opening the SQL console, \tool\, automatically provides an °AT STEP° clause with the number of the current debug step, °^1623^° in this case.
 Developers can obtain numbers for other steps from the stepping toolbar or the execution tree. 
 
@@ -442,7 +442,7 @@ When submitted, \tool\, applies two transformations to the query before it is pa
 First, all variables are replaced with their corresponding functions or views that were generated during the pre-processing of the stored procedure.
 Each function or view receives the specified step number as an argument to be able to produce the correct value or table.
 Second, time-stamp filters on the validity columns are added for all tables that are referenced in the query. 
-This ensures that the tables appear exactly as they originally were at the specified point in time.
+This ensures that the tables appear exactly as they originally were at the specified point in time.\todo{Refere again to the insert-only feature of SAP HANA that allows this approach}
 
 %In our example,
 %\begin{lstlisting}[language={Inline},basicstyle=\ttfamily,numbers=none]
@@ -454,7 +454,6 @@ Now, the query can be submitted to the database and the result is subsequently p
 
 When developers omit the step number, it is taken from the context of the debug session.
 This way, developers can step through the execution and observe how the query result changes over time.
-However, \SQLextension\, also provides an easier way to find the origin of changes in the data.
 
 \subsection{Time-diff Queries}
 
@@ -475,11 +474,11 @@ However, \SQLextension\, also provides an easier way to find the origin of chang
 				&						& \gr{-300}  & \gr{0}		  &	  & \gr{paid}	 &					\ML
 }
 
-\todo{show screenshot of query and result instead of table and listing?}
+Furthermore, \SQLextension\, provides an easier way to find the origin of changes in the data.
 To get a better overview about what happened in a segment of code, developers might want to query multiple points in time at once and see the difference in the query result.
 In our example, developers are looking for purchase orders that cause projects to exceed their budget.
-Using \tool, they identified three important points in time, which we will call "before", "now", and "after".
-"Before" is the step where the stored procedure started processing purchase orders, "now" is the current step, and "after" is the final step of the procedure.
+Using \tool, they identified three important points in time, which we will call \emph{before}, \emph{now}, and \emph{after}.
+\emph{Before} is the step where the stored procedure started processing purchase orders, \emph{now} is the current step, and \emph{after} is the final step of the procedure.
 
 In \cref{lst:tdiff}, the query from above was extended to select individual purchase orders for each project.
 In line 10, the at-step clause now specifies all three points in time.
@@ -507,7 +506,7 @@ in line 7, it is used to filter for purchase orders whose status was or will be 
 The values for budget and total of outstanding payments are shown for each of the three steps.
 Of the two purchase orders, the first was already marked as "paid" before the current step, the other is about to be paid.
 
-Analyzing the data, it becomes clear that the payment of the second order is what causes the project to exceed its budget.
+Analyzing this data, it becomes clear that the payment of the second order is what causes the project to exceed its budget\todo{What is the budget limit, difficult to see for reader... needs a bit more explanation}.
 Developers can now click on the green "paid" value to jump exactly to the point in time where this order is updated, knowing that at this point they are very likely to be close to the bug they are looking for.
 
 To produce this result, the query has to be executed three times, once for each point in time, without the time-specific where-conditions.
@@ -515,7 +514,7 @@ The partial results are outer-joined on the primary key attributes, then the tim
 \tool\, rewrites the query to fit everything into a single select statement, which allows the database to compute the entire result in one request.
 
 The final query selects all values from each sub-query.
-In the user interface, changes in the values are highlighted in red or green as shown in \cref{tab:diffresult}.
+In the user interface, changes in the values are highlighted in red or green\todo{what means red and what green? Also add explanation of colors to caption of table} as shown in \cref{tab:diffresult}.
 When possible, the tuple creation timestamps are used to allow developers to jump to the point in time where the change occurred.
 
 %Then, to prepare the diffing of the results, they are outer-joined on the primary keys and the time-specific filters are applied.
