@@ -46,7 +46,7 @@
 \lstset{basicstyle=\small\ttfamily}
 \lstset{showstringspaces=false, columns=flexible, keepspaces=true}
 \lstset{tabsize=2, gobble=2}
-%\lstset{upquote=true}
+\lstset{upquote=true}
 %% Linebreaks
 %\lstset{prebreak=\raisebox{0ex}[0ex][0ex]
 %        {\ensuremath{\rhookswarrow}}}
@@ -57,6 +57,7 @@
 \lstset{numbers=left, numberstyle=\lstnumberstyle, numbersep=5pt,
 		numberfirstline=true, firstnumber=1, stepnumber=5}
 \lstset{escapeinside={(*@}{@*)}}
+
 \lstdefinestyle{BWStyle}{
 	keywordstyle=\bfseries,
 	stringstyle=\color{DimGray},
@@ -181,7 +182,6 @@ In this paper, we present an approach for bringing back-in-time debugging down t
 Our \tool\, debugger allows developers to step queries backwards and inspecting the database at previous and arbitrary points in time.
 With the help of a SQL extension, we can express queries covering a period of execution time within a debugging session and handle large amounts of data with low overhead on performance and memory.
 The entire approach has been evaluated within a development project at SAP and shows promising results with respect to the gathered developer feedback.
-
 \end{abstract}
 
 %
@@ -290,7 +290,6 @@ The remainder of this paper is structured as follows:
 % why post mortem
 \todo{Add our tool name here and there in the following sections}
 \todo{If we need to shorten later on, I would start here in the problem description.}
-
 With a regular debugger, developers have only one way to go back in time, which is to restart the execution.
 Tools can be used to automate this approach\todo{cite checkpoint debugger?} and some modern debuggers even allow to restart execution at the method level\todo{http://help.eclipse.org/neon/index.jsp?topic=\%2Forg.eclipse.jdt.doc.user\%2Freference\%2Fviews\%2Fdebug\%2Fref-droptoframe.htm}.
 However, this approach fails if the code has side effects, as it can no longer be guaranteed to execute in the same way.
@@ -364,7 +363,6 @@ With the recorded trace data, the debugger has enough information available to r
 %If we require for all tables that data can never be changed or deleted and annotate all tuples with timestamps of when they have been created and invalidated, we can reconstruct the state of the database of any point in time.
 %Adding timestamp filters to select queries does not cause a significant slowdown.
 %Our prototype was built using this approach.
-
 \todo{HANA hat seit neustem "History tables" die das direkt können, wir benutzen aber explizite timestamps weil das momentan noch praktischer ist }
 
 
@@ -460,8 +458,6 @@ However, \SQLextension\, also provides an easier way to find the origin of chang
 
 \subsection{Time-diff Queries}
 
-\todo{show screenshot of query and result instead of table and listing?}
-
 \newcommand{\red}[1]{\textcolor{DarkRed}{#1}}
 \newcommand{\gr}[1]{\textcolor{Green}{#1}}
 
@@ -479,6 +475,7 @@ However, \SQLextension\, also provides an easier way to find the origin of chang
 				&						& \gr{-300}  & \gr{0}		  &	  & \gr{paid}	 &					\ML
 }
 
+\todo{show screenshot of query and result instead of table and listing?}
 To get a better overview about what happened in a segment of code, developers might want to query multiple points in time at once and see the difference in the query result.
 In our example, developers are looking for purchase orders that cause projects to exceed their budget.
 Using \tool, they identified three important points in time, which we will call "before", "now", and "after".
@@ -487,6 +484,8 @@ Using \tool, they identified three important points in time, which we will call 
 In \cref{lst:tdiff}, the query from above was extended to select individual purchase orders for each project.
 In line 10, the at-step clause now specifies all three points in time.
 This allows developers to query for changes in the data.
+
+Because the steps are named, they can now be used in the query as time qualifiers.
 \SQLextension\, introduces the exclamation mark operator that binds an identifier to a step.
 In line 6, it is used to limit the search to projects that will exceed their budget before the stored procedure ends;
 in line 7, it is used to filter for purchase orders whose status was or will be changed.
@@ -604,7 +603,11 @@ However, if something went wrong at the database-level, the existing tool suppor
 They often had to guess why a specific sub query was not as expected. 
 For that reason, they liked our back-in-time debugger and we received a lot of positive feedback.
 For example, \tool\, could not only show formerly hidden results but also helped them to understand and follow back the reasons behind a failure cause. 
-Besides that, both developers also revealed several small bugs in our debugger and wished for some new features such as XXX \todo{please add a specific feature here}.
+%Besides that, both developers also revealed several small bugs in our debugger and wished for some new features such as XXX \todo{please add a specific feature here}.
+The greatest benefit of \tool\, was reported for debugging stored procedures that take a table of data as an argument.
+Creating a temporary table of specific data using the existing tools is cumbersome and has to be redone every time the debug session has to be restarted.
+Using \tool, it has to be done only once.
+
 With this feedback, we see a strong need for better debugging support at the database-level and are eager to further improve our approach.
 
 %\subsection{Threats to Validity}
@@ -613,11 +616,13 @@ With this feedback, we see a strong need for better debugging support at the dat
 
 Currently, our approach has two major limitations.
 
-First, time-diff queries can only be executed on tables that have clearly defined primary keys, for key attributes are required to track a tuple's versions over time.
+First, time-diff queries can only be executed on tables that have clearly defined primary keys because key attributes are required to track a tuple's versions over time.
 For a query like "Sum budgets per project category", it has to be clear that categories are the entities that keep their identity over time.
 Here, an additional syntax extension could be used to convey this kind of information.
 
-Second, it is currently not possible to use time qualifiers outside of the where clause.
+Second, it is currently not possible to use time qualifiers on identifiers outside of the where clause.
+We can imagine that there may be a need to use time qualifiers in other SQL clauses, such as the select or order-by clause.
+In other use cases, developers might want to attach a time qualifier directly to a table.
 
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -627,8 +632,13 @@ Second, it is currently not possible to use time qualifiers outside of the where
 \section{Conclusion}
 \label{sec:conclusion}
 
+We presented an approach for bringing back-in-time debugging down to SQL and stored procedures and \tool, an implementation of our approach that runs on the SAP HANA in-memory database.
+Using \tool, developers can step forwards and backwards through the execution of a stored procedure and query
+
 
 Future work
+
+
 
 %
 % The following two commands are all you need in the
