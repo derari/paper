@@ -2,9 +2,9 @@
 % This file should be compiled with V2.5 of "sig-alternate.cls" May 2012
 %
 
-\documentclass[english]{sig-alternate-05-2015}
+\documentclass[english,conference]{IEEEtran}
 
-
+%\usepackage{cite} % recommended by IEEEtran template
 
 \usepackage{babel}
 \usepackage{csquotes}
@@ -42,7 +42,7 @@
 \usepackage{cleveref}
 
 
-% \lstset{captionpos=b, xleftmargin=1cm}
+\lstset{captionpos=b}
 \lstset{basicstyle=\small\ttfamily}
 \lstset{showstringspaces=false, columns=flexible, keepspaces=true}
 \lstset{tabsize=2, gobble=2}
@@ -86,89 +86,53 @@
 \lstMakeShortInline[basicstyle=\ttfamily,language={Inline},breaklines=true]°
 
 %Macros
-\newcommand{\tool}{TARDISP}
-\newcommand{\SQLextension}{TARDISQL}
+\newcommand{\tool}{TAR\-DISP}
+\newcommand{\SQLextension}{Back-in-time SQL}
 
 
 \begin{document}
 
-% Copyright
-\setcopyright{acmcopyright}
-%\setcopyright{acmlicensed}
-%\setcopyright{rightsretained}
-%\setcopyright{usgov}
-%\setcopyright{usgovmixed}
-%\setcopyright{cagov}
-%\setcopyright{cagovmixed}
-
-
-% DOI
-\doi{TBD}
-
-% ISBN
-\isbn{TBD}
-
-%Conference
-\conferenceinfo{SANER '17}{February 20--24, 2017, Klagenfurt, Austria}
-
-\acmPrice{TBD}
-
-%
-% --- Author Metadata here ---
-\conferenceinfo{SANER Industry Track}{2017 Klagenfurt, Austria}
-%\CopyrightYear{2007} % Allows default copyright year (20XX) to be over-ridden - IF NEED BE.
-%\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
-% --- End of Author Metadata ---
-
 \title{Bringing Back-in-Time Debugging down to the Database}
 %\subtitle{(\tool is a placeholder for the actual name)}
-%
-% You need the command \numberofauthors to handle the 'placement
-% and alignment' of the authors beneath the title.
-%
-% For aesthetic reasons, we recommend 'three authors at a time'
-% i.e. three 'name/affiliation blocks' be placed beneath the title.
-%
-% NOTE: You are NOT restricted in how many 'rows' of
-% "name/affiliations" may appear. We just ask that you restrict
-% the number of 'columns' to three.
-%
-% Because of the available 'opening page real-estate'
-% we ask you to refrain from putting more than six authors
-% (two rows with three columns) beneath the article title.
-% More than six makes the first-page appear very cluttered indeed.
-%
-% Use the \alignauthor commands to handle the names
-% and affiliations for an 'aesthetic maximum' of six authors.
-% Add names, affiliations, addresses for
-% the seventh etc. author(s) as the argument for the
-% \additionalauthors command.
-% These 'additional authors' will be output/set for you
-% without further effort on your part as the last section in
-% the body of your article BEFORE References or any Appendices.
 
-\numberofauthors{3} 
-\author{
-% 1st. author
-\alignauthor
-Arian Treffer\\
-       \affaddr{Hasso-Plattner-Institut}\\
-       \affaddr{Potsdam, Germany}\\
-       \affaddr{arian.treffer@hpi.de}
-% 2nd. author
-\alignauthor
-Michael Perscheid\\
-       \affaddr{SAP Innovation Center}\\
-       \affaddr{Potsdam, Germany}\\
-       \affaddr{michael.perscheid@sap.com}
-% 3rd. author
-\alignauthor 
-Matthias Uflacker\\
-       \affaddr{Hasso-Plattner-Institut}\\
-       \affaddr{Potsdam, Germany}\\
-       \affaddr{matthias.uflacker@hpi.de}
-%\and  % use '\and' if you need 'another row' of author names
-}
+\author{\IEEEauthorblockN{Arian Treffer}
+\IEEEauthorblockA{Hasso-Plattner-Institut\\
+Potsdam, Germany\\
+arian.treffer@hpi.de}
+\and
+\IEEEauthorblockN{Michael Perscheid}
+\IEEEauthorblockA{SAP Innovation Center\\
+Potsdam, Germany\\
+michael.perscheid@sap.com}
+\and
+\IEEEauthorblockN{Matthias Uflacker}
+\IEEEauthorblockA{Hasso-Plattner-Institut\\
+Potsdam, Germany\\
+matthias.uflacker@hpi.de}}
+
+
+%\numberofauthors{3} 
+%\author{
+%% 1st. author
+%\alignauthor
+%Arian Treffer\\
+       %\affaddr{Hasso-Plattner-Institut}\\
+       %\affaddr{Potsdam, Germany}\\
+       %\affaddr{arian.treffer@hpi.de}
+%% 2nd. author
+%\alignauthor
+%Michael Perscheid\\
+       %\affaddr{SAP Innovation Center}\\
+       %\affaddr{Potsdam, Germany}\\
+       %\affaddr{michael.perscheid@sap.com}
+%% 3rd. author
+%\alignauthor 
+%Matthias Uflacker\\
+       %\affaddr{Hasso-Plattner-Institut}\\
+       %\affaddr{Potsdam, Germany}\\
+       %\affaddr{matthias.uflacker@hpi.de}
+%%\and  % use '\and' if you need 'another row' of author names
+%}
 
 %\date{30 July 1999}
 
@@ -179,49 +143,12 @@ However, if failure causes leave a specific application layer, it is difficult t
 Especially at the database-level, developers have no such debugging tools to understand unexpected behavior comprehensively.
 
 In this paper, we present an approach for bringing back-in-time debugging down to SQL and stored procedures of the SAP HANA in-memory database.
-Our \tool\, debugger allows developers to step queries backwards and inspecting the database at previous and arbitrary points in time.
+Our \tool\ debugger allows developers to step queries backwards and inspecting the database at previous and arbitrary points in time.
 With the help of a SQL extension, we can express queries covering a period of execution time within a debugging session and handle large amounts of data with low overhead on performance and memory.
 The entire approach has been evaluated within a development project at SAP and shows promising results with respect to the gathered developer feedback.
 \end{abstract}
 
-%
-% The code below should be generated by the tool at
-% http://dl.acm.org/ccs.cfm
-% Please copy and paste the code instead of the example below. 
-%
-\begin{CCSXML}
-<ccs2012>
- <concept>
-  <concept_id>10010520.10010553.10010562</concept_id>
-  <concept_desc>Computer systems organization~Embedded systems</concept_desc>
-  <concept_significance>500</concept_significance>
- </concept>
- <concept>
-  <concept_id>10010520.10010575.10010755</concept_id>
-  <concept_desc>Computer systems organization~Redundancy</concept_desc>
-  <concept_significance>300</concept_significance>
- </concept>
- <concept>
-  <concept_id>10010520.10010553.10010554</concept_id>
-  <concept_desc>Computer systems organization~Robotics</concept_desc>
-  <concept_significance>100</concept_significance>
- </concept>
- <concept>
-  <concept_id>10003033.10003083.10003095</concept_id>
-  <concept_desc>Networks~Network reliability</concept_desc>
-  <concept_significance>100</concept_significance>
- </concept>
-</ccs2012>  
-\end{CCSXML}
-
-\ccsdesc[500]{Computer systems organization~Embedded systems}
-\ccsdesc[300]{Computer systems organization~Redundancy}
-\ccsdesc{Computer systems organization~Robotics}
-\ccsdesc[100]{Networks~Network reliability}
-
-%\printccsdesc
-
-\keywords{Back-in-time debugging, in-memory database, SAP HANA}
+%\keywords{Back-in-time debugging, in-memory database, SAP HANA}
 
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -237,9 +164,9 @@ Back-in-time also known as omniscient debuggers simplify the debugging process b
 These tools provide full access to past events so that developers can directly experiment with the entire infection chain. 
 
 %Problem: Back-in-time debugger missing for database-level
-Even though back-in-time debuggers exist for many object-oriented programming languages~\cite{lewis_debugging_2003,hofer_design_2006}\todo{Sort reference numbers (overall in paper if multiple references have been used), cite: more languages?}, there are none to the best of our knowledge that run on databases and support SQL or SQLScript\footnote{SQLScript is a proprietary SQL extension for stored procedures in SAP HANA~\cite{sqlScript}.}.
+Even though back-in-time debuggers exist for many object-oriented programming languages~\cite{feldman_igor:_1988,hofer_design_2006,lewis_debugging_2003}, there are none to the best of our knowledge that run on databases and support SQL or SQLScript\footnote{SQLScript is a proprietary SQL extension for stored procedures in SAP HANA~\cite{sqlScript}.}.
 This is mainly because of two reasons. 
-First, back-in-time debuggers typically create a significant overhead on performance and memory consumption~\cite{lewis_debugging_2003,pothier_scalable_2007,lienhard_practical_2008}.
+First, back-in-time debuggers typically create a significant overhead on performance and memory consumption~\cite{lewis_debugging_2003,lienhard_practical_2008,pothier_scalable_2007}.
 It seems unfeasible to use a back-in-time debugger on top of a database script that processes billions of records.
 Second, current back-in-time debugging concepts cannot handle side-effects outside their system that usually happen in writing operations during INSERT and UPDATE statements. 
 
@@ -257,14 +184,14 @@ The contributions of this paper are as follows:
 	
 	\item \emph{\SQLextension} is an extension to SQL allowing to submit arbitrary queries against previous states of the database 
 		and to compare multiple points in time with one query.
-		\tool\, provides a console for developers to submit \SQLextension\, queries which use variables or points in time from the current debug session.
+		\tool\ provides a console for developers to submit \SQLextension\ queries which use variables or points in time from the current debug session.
 
-	\item \emph{Very low overhead} when recording run-time data and the efficient querying of past database states allow developers to use \tool\, as the default tool for debugging database scripts even on larger data sets.
+	\item \emph{Very low overhead} when recording run-time data and the efficient querying of past database states allow developers to use \tool\ as the default tool for debugging database scripts even on larger data sets.
 	
 \end{itemize}
 
-We evaluated \tool\, with the help our SAP colleagues who worked on a project called \emph{Point of Sales Explorer}~\cite{plattner2015memory} which makes heavy use of SQLScript. 
-The interviews indicated that bugs in stored procedures can be investigated more efficiently with \tool\, than with existing other database development tools.
+We evaluated \tool\ with the help our SAP colleagues who worked on a project called \emph{Point of Sales Explorer}~\cite{plattner2015memory} which makes heavy use of SQLScript. 
+The interviews indicated that bugs in stored procedures can be investigated more efficiently with \tool\ than with existing other database development tools.
 
 The remainder of this paper is structured as follows:
 \Cref{sec:relatedWork} describes related work. 
@@ -279,6 +206,14 @@ The remainder of this paper is structured as follows:
 \section{Related Work}
 \label{sec:relatedWork}
 
+The first debugger that could reverse execution was EXDAMS for FORTRAN in the late 1960s~\cite{balzer_exdams:_1969}, which stored old program state on tape.
+Later, other reversible debuggers used memory snapshots~\cite{feldman_igor:_1988} or reversible execution~\cite{lieberman1997zstep} to allow stepping backwards through time.
+
+The \emph{omniscient debugger}~(ODB)~\cite{lewis_debugging_2003} was the first debugger to keep the entire program history in memory.
+This allows fast jumping between arbitrary points in time and querying the execution history, but creates a large overhead on runtime and memory consumption.
+The trace-oriented  debugger (TOD)~\cite{pothier_scalable_2007} uses a specialized distributed database to better handle large amounts of trace data.
+Object  flow  analysis~\cite{lienhard_practical_2008} reduces the required amount of memory by using the VM's garbage collector to discard objects and events that are no longer reachable.
+
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -288,7 +223,6 @@ The remainder of this paper is structured as follows:
 \label{sec:prototype}
 
 % why post mortem
-\todo{Add our tool name here and there in the following sections}
 \todo{If we need to shorten later on, I would start here in the problem description.}
 With a regular debugger, developers have only one way to go back in time, which is to restart the execution.
 Tools can be used to automate this approach\todo{cite checkpoint debugger?} and some modern debuggers even allow to restart execution at the method level\todo{http://help.eclipse.org/neon/index.jsp?topic=\%2Forg.eclipse.jdt.doc.user\%2Freference\%2Fviews\%2Fdebug\%2Fref-droptoframe.htm}.
@@ -336,7 +270,7 @@ Third, the database can be used to efficiently manage old state.
 In-memory databases with insert-only storage automatically retain old data~\cite{Plattner2009Acd}.
 With insert-only, older versions of the database can be easily reproduced.
 For other database, insert-only can be achieved by adding validity columns.
-For many business applications, such columns already exist as no data may be deleted for legal reasons.
+For many business applications, such columns already exist where no data may be deleted for legal reasons.
 
 In conclusion, all that is needed to reproduce the execution of a stored procedure is a sequence of execution steps.
 Each step represents an instruction that has side effects on the database or assigns a value or result set to a variable.
@@ -387,13 +321,20 @@ For variables containing result tables, a separate view is generated for each qu
 Each view contains the original code of its query.
 Arguments to the query are initialized using their respective views.
 On top of that, a master view is generated that chooses the appropriate query view by looking up the requested step in the recorded trace.
-\todo{AT: How much detail?}
+%\todo{AT: How much detail?}
 
-The user interface looks like a typical debugger.\todo{Please add a screenshot and describe with it!}
-The largest part of the screen shows the code.
-A toolbar contains buttons allowing developers to step forwards and backwards.
-Next to the step buttons, the current step number is shown.
-Instead of a stack trace, \tool\ shows a tree of all execution steps.
+\begin{figure}
+	\centering
+		\includegraphics[width=\linewidth]{odb.png}
+	\caption{User interface of the \tool\ debugger.}
+	\label{fig:odb}
+\end{figure}
+
+The user interface looks like a typical debugger and is is shown in \cref{fig:odb}.
+The top-left part of the screen shows the code.
+Above, a toolbar contains buttons allowing developers to step forwards and backwards.
+Between the step buttons, the current step number is shown.
+Below, \tool\ shows a tree of all execution steps instead of a stack trace.
 
 Next to the code, current variable values are shown.
 Arrow buttons allow to jump to the previous or next assignment of the variable.
@@ -404,7 +345,7 @@ Clicking the variable opens a query window that shows the variable's content and
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-\section{Time-travel Queries}
+\section{\SQLextension}
 \label{sec:ttqueries}
 
 In our setup, the debugger has to recreate intermediate results of a stored procedure.
@@ -422,6 +363,8 @@ However, they soon realize that the number of projects is too large to continue 
 Instead, they open \tool's SQL console to look into the °select_projects° variable, that contains ids, names, and budgets of all projects to be processed.
 To better understand the data, they also sum up the total amount of all open purchase orders for each project.
 
+%\begin{figure} % IEEE says put code in figures
+%\begin{lstlisting}
 \begin{lstlisting}[language=HanaSQL,float,caption={Example for a time-travel query: select the current total of open orders for previously selected projects},label=lst:ttravel]
   SELECT pr.id, pr.name, pr.budget, SUM(po.total)
   FROM :selected_projects pr
@@ -430,15 +373,18 @@ To better understand the data, they also sum up the total amount of all open pur
 	GROUP BY pr.id, pr.name, pr.budget
 	^§AT STEP§ 1623^
 \end{lstlisting}
+%\caption{Example for a time-travel query: select the current total of open orders for previously selected projects}
+%\label{lst:ttravel}
+%\end{figure}
 
 \Cref{lst:ttravel} shows the query to fetch all selected projects together with the total amount of open orders\todo{The previous paragraph already explains the code - reference to listing needs to be earlier.}.
-We will use it as an example to show how \tool\, handles time-travel queries.
+We will use it as an example to show how \tool\ handles time-travel queries.
 
-The last line of \cref{lst:ttravel} contains the °^AT STEP^° clause, our extension to SQL that allows developers to explicitly query a specific point in time. 
-When opening the SQL console, \tool\, automatically provides an °AT STEP° clause with the number of the current debug step, °^1623^° in this case.
+The last line of \cref{lst:ttravel} contains the °^AT STEP^° clause, our extension to SQL that allows developers to explicitly query a specific point in time.
+When opening the SQL console, \tool\ automatically provides an °AT STEP° clause with the number of the current debug step, °^1623^° in this case.
 Developers can obtain numbers for other steps from the stepping toolbar or the execution tree. 
 
-When submitted, \tool\, applies two transformations to the query before it is passed to the database.
+When submitted, \tool\ applies two transformations to the query before it is passed to the database.
 First, all variables are replaced with their corresponding functions or views that were generated during the pre-processing of the stored procedure.
 Each function or view receives the specified step number as an argument to be able to produce the correct value or table.
 Second, time-stamp filters on the validity columns are added for all tables that are referenced in the query. 
@@ -474,7 +420,7 @@ This way, developers can step through the execution and observe how the query re
 				&						& \gr{-300}  & \gr{0}		  &	  & \gr{paid}	 &					\ML
 }
 
-Furthermore, \SQLextension\, provides an easier way to find the origin of changes in the data.
+Furthermore, \SQLextension\ provides an easier way to find the origin of changes in the data.
 To get a better overview about what happened in a segment of code, developers might want to query multiple points in time at once and see the difference in the query result.
 In our example, developers are looking for purchase orders that cause projects to exceed their budget.
 Using \tool, they identified three important points in time, which we will call \emph{before}, \emph{now}, and \emph{after}.
@@ -485,10 +431,12 @@ In line 10, the at-step clause now specifies all three points in time.
 This allows developers to query for changes in the data.
 
 Because the steps are named, they can now be used in the query as time qualifiers.
-\SQLextension\, introduces the exclamation mark operator that binds an identifier to a step.
+\SQLextension\ introduces the exclamation mark operator that binds an identifier to a step.
 In line 6, it is used to limit the search to projects that will exceed their budget before the stored procedure ends;
 in line 7, it is used to filter for purchase orders whose status was or will be changed.
 
+%\begin{figure} % IEEE says put code in figures
+%\begin{lstlisting}
 \begin{lstlisting}[language=HanaSQL,float=b,caption={Example of a time-diff query: "Select all projects that will go over budget and their respective purchase orders"},label=lst:tdiff]
 	SELECT pr.id, pr.name, pr.budget, SUM(po.total), po2.id, po2.status, po2.total
 	FROM :selectedProjects pr
@@ -501,6 +449,9 @@ in line 7, it is used to filter for purchase orders whose status was or will be 
 	         po2.id, po2.status, po2.total
 	^§AT STEP§ before=817, now=1623, after=2043^
 \end{lstlisting}
+%\caption{Example of a time-diff query: "Select all projects that will go over budget and their respective purchase orders"}
+%\label{lst:tdiff}
+%\end{figure}
 
 \Cref{tab:diffresult} shows a possible result for this query, with one project that goes over budget and two associated purchases.
 The values for budget and total of outstanding payments are shown for each of the three steps.
@@ -511,7 +462,7 @@ Developers can now click on the green "paid" value to jump exactly to the point 
 
 To produce this result, the query has to be executed three times, once for each point in time, without the time-specific where-conditions.
 The partial results are outer-joined on the primary key attributes, then the time-specific filter conditions are applied.
-\tool\, rewrites the query to fit everything into a single select statement, which allows the database to compute the entire result in one request.
+\tool\ rewrites the query to fit everything into a single select statement, which allows the database to compute the entire result in one request.
 
 The final query selects all values from each sub-query.
 In the user interface, changes in the values are highlighted in red or green\todo{what means red and what green? Also add explanation of colors to caption of table} as shown in \cref{tab:diffresult}.
@@ -565,7 +516,7 @@ Proc.2& (b)	&	1.61 s		& 1.72 s		& 1.55 s		\NN
 }
 
 We also measured the time it takes to reproduce result of each stored procedure.
-This provides us with an upper bound for how long \tool\, would need to compute the value of any variable because in our examples all variables are needed to compute the final result.
+This provides us with an upper bound for how long \tool\ would need to compute the value of any variable because in our examples all variables are needed to compute the final result.
 The measurements in \cref{tab:measure1} show that reproducing the result is slightly faster than executing the stored procedure.
 This was expected because for variables containing atomic values the value could be taken directly from the trace.
 Only for variables containing table results, database queries had to be executed again.
@@ -593,7 +544,7 @@ Query 2& (b)	&	81 ms		& 100 ms	\NN
 
 Besides measuring performance, we also demonstrated our back-in-time debugger to two backend developers of the Point of Sales Explorer. 
 These persons have written most of the SQLScript and so know all the challenges when developing close to the database. 
-Both had the chance to apply \tool\, in their daily work while we provided tool support and observed them in the background. 
+Both had the chance to apply \tool\ in their daily work while we provided tool support and observed them in the background. 
 Finally, we've conducted an in-depth interview in order to receive feedback and further improve our tool.
 
 We found out that the main reason for writing SQLScript is to positively influence the optimizer of SAP HANA in order to speed up the overall user request.
@@ -601,9 +552,9 @@ This worked very well as long as the newly written code was bug-free.
 However, if something went wrong at the database-level, the existing tool support was not sufficient. 
 They often had to guess why a specific sub query was not as expected. 
 For that reason, they liked our back-in-time debugger and we received a lot of positive feedback.
-For example, \tool\, could not only show formerly hidden results but also helped them to understand and follow back the reasons behind a failure cause. 
+For example, \tool\ could not only show formerly hidden results but also helped them to understand and follow back the reasons behind a failure cause. 
 %Besides that, both developers also revealed several small bugs in our debugger and wished for some new features such as XXX \todo{please add a specific feature here}.
-The greatest benefit of \tool\, was reported for debugging stored procedures that take a table of data as an argument.
+The greatest benefit of \tool\ was reported for debugging stored procedures that take a table of data as an argument.
 Creating a temporary table of specific data using the existing tools is cumbersome and has to be redone every time the debug session has to be restarted.
 Using \tool, it has to be done only once.
 
@@ -613,7 +564,7 @@ With this feedback, we see a strong need for better debugging support at the dat
 
 \subsection{Limitations}
 
-Currently, our approach has two major limitations.
+Our implementation of \SQLextension currently has two limitations.
 
 First, time-diff queries can only be executed on tables that have clearly defined primary keys because key attributes are required to track a tuple's versions over time.
 For a query like "Sum budgets per project category", it has to be clear that categories are the entities that keep their identity over time.
@@ -623,20 +574,26 @@ Second, it is currently not possible to use time qualifiers on identifiers outsi
 We can imagine that there may be a need to use time qualifiers in other SQL clauses, such as the select or order-by clause.
 In other use cases, developers might want to attach a time qualifier directly to a table.
 
-%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-We presented an approach for bringing back-in-time debugging down to SQL and stored procedures and \tool, an implementation of our approach that runs on the SAP HANA in-memory database.
-Using \tool, developers can step forwards and backwards through the execution of a stored procedure and query
+We presented an approach for bringing back-in-time debugging down to SQL and stored procedures, and the \tool\ debugger, an implementation of our approach that runs on the SAP HANA in-memory database.
+With \tool, developers can step forwards and backwards through the execution of a stored procedure.
+We introduced \SQLextension, a super-set of SQL, that allows developers to query the database from any point in the execution, compare the data of multiple points in time with one query, and even query for changes in the data.
 
+Our evaluation has shown that the runtime overhead caused by execution tracing is small enough to let \tool\ be the default choice for debugging stored procedures.
+Interviews with developers have confirmed the usefulness of back-in-time debugging for finding bugs in database programs.
 
-Future work
-
+Future work will move in two directions.
+First, we shall bring more advanced debugging techniques that use a combination of trace data and code analysis to help identify bugs, such as dynamic slicing~\cite{agrawal_dynamic_1990} or why-questions~\cite{ko_debugging_2008}, down to the database.
+Second, while developers now have the tools to efficiently debug each layer of a complex application, the tool support to track bugs across layers and system boundaries is still lacking.
+We want to develop a back-in-time debugger that will allow developers to debug seamlessly across application layers.
 
 
 %
