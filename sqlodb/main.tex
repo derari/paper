@@ -553,11 +553,10 @@ However, if something went wrong at the database-level, the existing tool suppor
 They often had to guess why a specific sub query was not as expected. 
 For that reason, they liked our back-in-time debugger and we received a lot of positive feedback.
 For example, \tool\ could not only show formerly hidden results but also helped them to understand and follow back the reasons behind a failure cause. 
-%Besides that, both developers also revealed several small bugs in our debugger and wished for some new features such as XXX \todo{please add a specific feature here}.
-The greatest benefit of \tool\ was reported for debugging stored procedures that take a table of data as an argument.
-Creating a temporary table of specific data using the existing tools is cumbersome and has to be redone every time the debug session has to be restarted.
+The greatest improvement was reported for debugging stored procedures that take a table of data as an argument.
+Composing such an argument with specific data using the existing tools is cumbersome and has to be redone every time the debug session has to be restarted.
 Using \tool, it has to be done only once.
-
+Besides that, both developers also revealed several small bugs in our debugger and wished for some new features such as the ability to define temporary tables for testing code and queries.
 With this feedback, we see a strong need for better debugging support at the database-level and are eager to further improve our approach.
 
 %\subsection{Threats to Validity}
