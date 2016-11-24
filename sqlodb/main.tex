@@ -360,8 +360,11 @@ Users reported a bug: projects sometimes exceed their budget, which is not suppo
 
 Developers might start debugging this issue and the related stored procedure with \tool.
 However, they soon realize that the number of projects is too large to continue stepping manually.
-Instead, they open \tool's SQL console to look into the °select_projects° variable, that contains ids, names, and budgets of all projects to be processed.
+Instead, they open \tool's SQL console and submit the query shown in \cref{lst:ttravel} to look into the °select_projects° variable, which contains ids, names, and budgets of all projects to be processed.
 To better understand the data, they also sum up the total amount of all open purchase orders for each project.
+
+%\Cref{lst:ttravel} shows the query to fetch all selected projects together with the total amount of open orders\todo{The previous paragraph already explains the code - reference to listing needs to be earlier.}.
+%We will use it as an example to show how \tool\ handles time-travel queries.
 
 %\begin{figure} % IEEE says put code in figures
 %\begin{lstlisting}
@@ -377,9 +380,6 @@ To better understand the data, they also sum up the total amount of all open pur
 %\label{lst:ttravel}
 %\end{figure}
 
-\Cref{lst:ttravel} shows the query to fetch all selected projects together with the total amount of open orders\todo{The previous paragraph already explains the code - reference to listing needs to be earlier.}.
-We will use it as an example to show how \tool\ handles time-travel queries.
-
 The last line of \cref{lst:ttravel} contains the °^AT STEP^° clause, our extension to SQL that allows developers to explicitly query a specific point in time.
 When opening the SQL console, \tool\ automatically provides an °AT STEP° clause with the number of the current debug step, °^1623^° in this case.
 Developers can obtain numbers for other steps from the stepping toolbar or the execution tree. 
@@ -388,7 +388,8 @@ When submitted, \tool\ applies two transformations to the query before it is pas
 First, all variables are replaced with their corresponding functions or views that were generated during the pre-processing of the stored procedure.
 Each function or view receives the specified step number as an argument to be able to produce the correct value or table.
 Second, time-stamp filters on the validity columns are added for all tables that are referenced in the query. 
-This ensures that the tables appear exactly as they originally were at the specified point in time.\todo{Refere again to the insert-only feature of SAP HANA that allows this approach}
+Because of SAP HANA's insert-only approach, this lets all tables appear exactly as they originally were at the specified point in time.
+\todo{Refere again to the insert-only feature of SAP HANA that allows this approach}
 
 %In our example,
 %\begin{lstlisting}[language={Inline},basicstyle=\ttfamily,numbers=none]
@@ -407,7 +408,7 @@ This way, developers can step through the execution and observe how the query re
 \newcommand{\gr}[1]{\textcolor{Green}{#1}}
 
 
-\ctable[star,caption={Result of a time-diff query, with multiple values in some columns},label=tab:diffresult,doinside={}]
+\ctable[star,caption={Result of a time-diff query, with multiple values in some columns. Red indicates a different value at the \emph{before} step, green indicates a different value at the \emph{after} step.},label=tab:diffresult,doinside={}]
 				{rlrrrlr}{}{
 	pr.id & pr.name 	& pr.budget  & total & po2.id & po2.status & po2.total \ML
 	
@@ -457,7 +458,8 @@ in line 7, it is used to filter for purchase orders whose status was or will be 
 The values for budget and total of outstanding payments are shown for each of the three steps.
 Of the two purchase orders, the first was already marked as "paid" before the current step, the other is about to be paid.
 
-Analyzing this data, it becomes clear that the payment of the second order is what causes the project to exceed its budget\todo{What is the budget limit, difficult to see for reader... needs a bit more explanation}.
+Analyzing this data, it becomes clear that the payment of the second order is what causes the project budget to become negative.
+\todo{What is the budget limit, difficult to see for reader... needs a bit more explanation}
 Developers can now click on the green "paid" value to jump exactly to the point in time where this order is updated, knowing that at this point they are very likely to be close to the bug they are looking for.
 
 To produce this result, the query has to be executed three times, once for each point in time, without the time-specific where-conditions.
@@ -465,8 +467,10 @@ The partial results are outer-joined on the primary key attributes, then the tim
 \tool\ rewrites the query to fit everything into a single select statement, which allows the database to compute the entire result in one request.
 
 The final query selects all values from each sub-query.
-In the user interface, changes in the values are highlighted in red or green\todo{what means red and what green? Also add explanation of colors to caption of table} as shown in \cref{tab:diffresult}.
-When possible, the tuple creation timestamps are used to allow developers to jump to the point in time where the change occurred.
+In the user interface, changes in the values are highlighted in as shown in \cref{tab:diffresult}.
+If a value changed since the \emph{before} step, the old value is shown red; if a value will change until the the \emph{after} step, the new value is shown green.
+\todo{what means red and what green? Also add explanation of colors to caption of table}
+When possible, the tuple creation timestamps are used to allow developers to jump exactly to the point in time where the change occurred.
 
 %Then, to prepare the diffing of the results, they are outer-joined on the primary keys and the time-specific filters are applied.
 %For performance reasons, all of this happens inside a single SQL query, as shown in \cref{lst:tdifffinal}.
@@ -493,7 +497,7 @@ For that reason, it is a proper candidate to measure performance and interview i
 
 Each value is the average of 10 measurements.
 
-To evaluate the performance of our approach, we deployed \tool on a copy of the Point of Sales system.
+To evaluate the performance of our approach, we deployed \tool\ on a copy of the Point of Sales system.
 
 We selected two stored procedures from the Point of Sales Explorer and compared the runtime with and without tracing.
 %To measure the impact of database size, 
