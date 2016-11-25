@@ -140,11 +140,11 @@ matthias.uflacker@hpi.de}}
 
 \maketitle
 \begin{abstract}
-Back-in-time debuggers allow developers to explore what happened before a failure and so support them in finding failure causes more efficiently. 
-However, if failure causes leave a specific application layer, it is difficult to further follow infections down to the real defect.
-Especially at the database-level, developers have no such debugging tools to understand unexpected behavior comprehensively.
+With back-in-time debuggers, developers can explore what happened before observable failures by following infection chains back to their root causes.
+While there are several such debuggers for frontend or backend programming languages, we do not know of any back-in-time capabilities at the database-level.
+Thus, if failures are caused by SQL scripts or stored procedures, developers have difficulties in understanding their unexpected behavior.
 
-In this paper, we present an approach for bringing back-in-time debugging down to SQL and stored procedures of the SAP HANA in-memory database.
+In this paper, we present an approach for bringing back-in-time debugging down to the SAP HANA in-memory database.
 Our \tool\ debugger allows developers to step queries backwards and inspecting the database at previous and arbitrary points in time.
 With the help of a SQL extension, we can express queries covering a period of execution time within a debugging session and handle large amounts of data with low overhead on performance and memory.
 The entire approach has been evaluated within a development project at SAP and shows promising results with respect to the gathered developer feedback.
@@ -174,7 +174,7 @@ Second, current back-in-time debugging concepts cannot handle side-effects outsi
 
 %Significance: Especially, in business software much development is based on database scripts. 
 Due to high performance requirements of handling big data in business applications, SAP has not only a strong demand to move code closer to data~\cite{plattner2015memory} but also the need to improve development tools at the database-level. 
-As existing tools mostly work on the application level, are limited to specific points in time, or work only on a query plan, developers are often left alone when it comes to debug and understand the results of their SQL and SQLScripts.
+As existing tools mostly work on the application level, are limited to specific points in time, or work only on an abstract query plan, developers are often left alone when it comes to debug and understand the results of their SQL and SQLScripts.
 We argue that a back-in-time debugger at the bottom of the technology stack is able to close this gap and would support developers in developing and maintaining their queries more efficiently. 
 
 %Solution
