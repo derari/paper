@@ -184,16 +184,16 @@ The contributions of this paper are as follows:
 	\item \emph{\tool} is a back-in-time debugger for stored procedures which can be installed in the SAP HANA in-memory database and programming platform.
 		Using \tool, developers can move freely through the execution time of a stored procedure and inspect control flow, variables, and intermediate results.
 	
-	\item \emph{\SQLextension} is an extension to SQL allowing to submit arbitrary queries against previous states of the database 
+	\item \emph{\SQLextension} is an extension to SQL allowing developers to submit arbitrary queries against previous states of the database 
 		and to compare multiple points in time with one query.
 		\tool\ provides a console for developers to submit \SQLextension\ queries which use variables or points in time from the current debug session.
 
-	\item \emph{Very low overhead} when recording run-time data and the efficient querying of past database states allow developers to use \tool\ as the default tool for debugging database scripts even on larger data sets.
+	\item \emph{Very low overhead} when recording run-time data and the efficient querying of past database states allow developers to use \tool\ as the default tool for debugging database scripts even on large data sets.
 	
 \end{itemize}
 
 We evaluated \tool\ with the help of SAP colleagues who worked on a project called \emph{Point of Sales Explorer}~\cite{plattner2015memory}, which makes heavy use of SQLScript. 
-The interviews indicated that bugs in stored procedures can be investigated more efficiently with \tool\ than with existing other database development tools.
+The interviews indicated that failures in stored procedures can be investigated more efficiently with \tool\ than with existing other database development tools.
 
 The remainder of this paper is structured as follows:
 \Cref{sec:relatedWork} describes related work. 
@@ -466,7 +466,7 @@ Of the two purchase orders, the first was already marked as "paid" before the cu
 
 Analyzing this data, it becomes clear that the payment of the second order is what causes the project budget to become negative.
 \todo{What is the budget limit, difficult to see for reader... needs a bit more explanation}
-Developers can now click on the green "paid" value to jump exactly to the point in time where this order is updated, knowing that at this point they are very likely to be close to the bug they are looking for.
+Developers can now click on the green "paid" value to jump exactly to the point in time where this order is updated, knowing that at this point they are very likely to be close to the defect they are looking for.
 
 To produce this result, the query has to be executed three times, once for each point in time, without the time-specific where-conditions.
 The partial results are outer-joined on the primary key attributes, then the time-specific filter conditions are applied.
@@ -557,7 +557,7 @@ Both had the chance to apply \tool\ in their daily work while we provided tool s
 Finally, we've conducted an in-depth interview in order to receive feedback and further improve our tool.
 
 We found out that the main reason for writing SQLScript is to positively influence the optimizer of SAP HANA in order to speed up the overall user request.
-This worked very well as long as the newly written code was bug-free. 
+This worked very well as long as the newly written code was free of failures. 
 However, if something went wrong at the database-level, the existing tool support was not sufficient. 
 They often had to guess why a specific sub query was not as expected. 
 For that reason, they liked our back-in-time debugger and we received a lot of positive feedback.
@@ -565,7 +565,7 @@ For example, \tool\ could not only show formerly hidden results but also helped 
 The greatest improvement was reported for debugging stored procedures that take a table of data as an argument.
 Composing such an argument with specific data using the existing tools is cumbersome and has to be redone every time the debug session has to be restarted.
 Using \tool, it has to be done only once.
-Besides that, both developers also revealed several small bugs in our debugger and wished for some new features such as the ability to define temporary tables for testing code and queries.
+Besides that, both developers also revealed several small failures in our debugger and wished for some new features such as the ability to define temporary tables for testing code and queries.
 With this feedback, we see a strong need for better debugging support at the database-level and are eager to further improve our approach.
 
 %\subsection{Threats to Validity}
@@ -594,11 +594,11 @@ With \tool, developers can step forwards and backwards through the execution of 
 We introduced \SQLextension, a super-set of SQL, that allows developers to query the database from any point in the execution, compare the data of multiple points in time with one query, and even query for changes in the data.
 
 Our evaluation has shown that the runtime overhead caused by execution tracing is small enough to let \tool\ be the default choice for debugging stored procedures.
-Interviews with developers have confirmed the usefulness of back-in-time debugging for finding bugs in database programs.
+Interviews with developers have confirmed the usefulness of back-in-time debugging for finding root causes in database programs.
 
 Future work will move in two directions.
-First, we shall bring more advanced debugging techniques that use a combination of trace data and code analysis to help identify bugs, such as dynamic slicing~\cite{agrawal_dynamic_1990} or why-questions~\cite{ko_debugging_2008}, down to the database.
-Second, while developers now have the tools to efficiently debug each layer of a complex application, the tool support to track bugs across layers and system boundaries is still lacking.
+First, we shall bring more advanced debugging techniques that use a combination of trace data and code analysis to help identify failure causes, such as dynamic slicing~\cite{agrawal_dynamic_1990} or why-questions~\cite{ko_debugging_2008}, down to the database.
+Second, while developers now have the tools to efficiently debug each layer of a complex application, the tool support to track infection chains across layers and system boundaries is still lacking.
 We want to develop a back-in-time debugger that will allow developers to debug seamlessly across application layers.
 
 
