@@ -54,8 +54,7 @@
 \lstset{breaklines=true, breakatwhitespace=true}
 %% Line Numbers
 \newcommand{\lstnumberstyle}[1]{\tiny\emptyaccsupp{#1}}
-\lstset{numbers=left, numberstyle=\lstnumberstyle, numbersep=5pt,
-		numberfirstline=true, firstnumber=1, stepnumber=5}
+\lstset{numbers=left, numberstyle=\lstnumberstyle, numbersep=5pt, numberfirstline=true, firstnumber=1, stepnumber=5}
 \lstset{escapeinside={(*@}{@*)}}
 
 \lstdefinestyle{BWStyle}{
@@ -84,6 +83,9 @@
 
 \lstset{language=HanaSQL}
 \lstMakeShortInline[basicstyle=\ttfamily,language={Inline},breaklines=true]°
+
+\usepackage{listingsnumbermargin}
+\lstset{numbers=LEFT, LEFTmargin=1.2em}
 
 %Macros
 \newcommand{\tool}{TAR\-DISP}
@@ -509,16 +511,16 @@ Each value is the average of 10 measurements.
 We found the overhead of tracing to be consistently between 6 and 7 percent.
 
 \ctable[caption={Average execution time for running a stored procedure without and with tracing and for reproducing its result.},label=tab:measure1,doinside={},width=\linewidth]
-				{llRRR}{}{
+				{lcRRR}{}{
 				&		& Normal run& Run with tracing  & Reproducing the result \ML
 	
-			&	(a) &	1.27 s		& 1.35 s		& 1.21 s		\NN
-Proc.1& (b)	&	1.61 s		& 1.74 s		& 1.54 s		\NN
-			&	(c) &	1.73 s		& 1.85 s		& 1.60 s		\ML
+			 &	(a) &	1.27 s		& 1.35 s		& 1.21 s		\NN
+Proc. 1& (b)	&	1.61 s		& 1.74 s		& 1.54 s		\NN
+			 &	(c) &	1.73 s		& 1.85 s		& 1.60 s		\ML
 
-			&	(a) &	1.24 s		& 1.32 s		& 1.19 s		\NN
-Proc.2& (b)	&	1.61 s		& 1.72 s		& 1.55 s		\NN
-			&	(c) &	1.69 s		& 1.80 s		& 1.63 s		\ML
+			 &	(a) &	1.24 s		& 1.32 s		& 1.19 s		\NN
+Proc. 2& (b)	&	1.61 s		& 1.72 s		& 1.55 s		\NN
+			 &	(c) &	1.69 s		& 1.80 s		& 1.63 s		\ML
 }
 
 We also measured the time it takes to reproduce result of each stored procedure.
@@ -533,7 +535,7 @@ Again, we used different filter arguments to produce different result sizes.
 As \cref{tab:measure2} shows, in each case the runtime overhead of time-diff queries is around 25 percent.
 
 \ctable[caption={Average execution times for queries executed normally or as time-diff query.},label=tab:measure2,doinside={},width=\linewidth]
-				{llRR}{}{
+				{lcRR}{}{
 				&		& Regular query& Time-diff query \ML
 	
 			 &	(a) &	1.21 s		& 1.51 s	\NN
