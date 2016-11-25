@@ -215,7 +215,7 @@ The \emph{omniscient debugger}~(ODB)~\cite{lewis_debugging_2003} was the first d
 This allows fast jumping between arbitrary points in time and querying the execution history, but creates a large overhead on runtime and memory consumption.
 The trace-oriented debugger (TOD)~\cite{pothier_scalable_2007} uses a specialized distributed database to better handle large amounts of trace data.
 Object  flow  analysis~\cite{lienhard_practical_2008} reduces the required amount of memory by using the VM's garbage collector to discard objects and events that are no longer reachable.
-The Path tool suite and its Test-Driven Fault Navigation~\cite{perscheid2013} leverages reproducible test cases in order to distribute the tracing overhead over multiple runs depending on developers' needs. 
+The Path tool suite and its Test-Driven Fault Navigation~\cite{perscheid2013} leverages reproducible test cases in order to distribute the tracing overhead over multiple runs depending on developers' needs.\todo{Still very short... please add a bit more related work at least 20 references should be at the end}
 
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -250,11 +250,11 @@ Sometimes, state that has impact on a query's result even remains entirely in th
 The only way to examine such state is through specific database queries before it is changed.
 
 Stored procedures add the additional challenge that results of a query can be used in subsequent database statements without having been fetched into the program.
-This increases the amount of "invisible" state, sometimes only for a few instructions, other times for the entire length of the program.
+This increases the amount of invisible state, sometimes only for a few instructions, other times for the entire length of the program.
 Furthermore, as trace data usually exceeds program data by orders of magnitude, we expect that tracing the processing of every tuple in a large database is not feasible.
 
 With \tool, we focuses on stored procedures because they are executed close to the data and, thus, more efficient in handling large data sets.
-This does not limit the general validity of our results, as a stored procedures debugger faces all of the challenges described above.
+This does not limit the general validity of our results, as a debugger for stored procedures faces all of the challenges described above.
 
 \subsection{Replaying a Stored Procedure}
 
@@ -333,9 +333,9 @@ On top of that, a master view is generated that chooses the appropriate query vi
 	\label{fig:odb}
 \end{figure}
 
-The user interface looks like a typical debugger and is is shown in \cref{fig:odb}.
+The user interface looks like a typical debugger and is shown in \cref{fig:odb}.
 The top-left part of the screen shows the code.
-Above, a toolbar contains buttons allowing developers to step forwards and backwards.
+Above, a toolbar contains buttons allowing developers to step forward and backward.
 Between the step buttons, the current step number is shown.
 Below, \tool\ shows a tree of all execution steps instead of a stack trace.
 
@@ -373,7 +373,7 @@ Clicking the variable opens a query window that shows the variable's content and
 In our setup, the debugger has to recreate intermediate results of a stored procedure.
 We generalized this feature to enable developers to submit arbitrary queries against the database of any previous point in time.
 Furthermore, we allow developers to compare query results from different points in time and even query for changes in the data.
-We defined \SQLextension, a super-set of SQL that allows developers to refer to points in execution time by introducing a new keyword and a new operator.
+We defined \SQLextension, a super-set of SQL introducing a new keyword and a new operator.
 
 \subsection{A SQL Clause to Query Points in Time}
 
@@ -411,7 +411,6 @@ First, all variables are replaced with their corresponding functions or views th
 Each function or view receives the specified step number as an argument to be able to produce the correct value or table.
 Second, time-stamp filters on the validity columns are added for all tables that are referenced in the query. 
 Because of SAP HANA's insert-only approach, this lets all tables appear exactly as they originally were at the specified point in time.
-\todo{Refere again to the insert-only feature of SAP HANA that allows this approach}
 
 %In our example,
 %\begin{lstlisting}[language={Inline},basicstyle=\ttfamily,numbers=none]
@@ -464,7 +463,6 @@ The values for budget and total of outstanding payments are shown for each of th
 Of the two purchase orders, the first was already marked as "paid" before the current step, the other is about to be paid.
 
 Analyzing this data, it becomes clear that the payment of the second order is what causes the project budget to become negative.
-\todo{What is the budget limit, difficult to see for reader... needs a bit more explanation}
 Developers can now click on the green "paid" value to jump exactly to the point in time where this order is updated, knowing that at this point they are very likely to be close to the defect they are looking for.
 
 To produce this result, the query has to be executed three times, once for each point in time, without the time-specific where-conditions.
@@ -473,8 +471,7 @@ The partial results are outer-joined on the primary key attributes, then the tim
 
 The final query selects all values from each sub-query.
 In the user interface, changes in the values are highlighted in as shown in \cref{tab:diffresult}.
-If a value changed since the \emph{before} step, the old value is shown red; if a value will change until the the \emph{after} step, the new value is shown green.
-\todo{what means red and what green? Also add explanation of colors to caption of table}
+If a value changed since the \emph{before} step, the old value is shown red; if a value will change until the \emph{after} step, the new value is shown green.
 When possible, the tuple creation timestamps are used to allow developers to jump exactly to the point in time where the change occurred.
 
 %Then, to prepare the diffing of the results, they are outer-joined on the primary keys and the time-specific filters are applied.
@@ -492,7 +489,7 @@ When possible, the tuple creation timestamps are used to allow developers to jum
 \section{Evaluation}
 \label{sec:evaluation}
 
-We evaluated our \tool\,debugger on a real-world SAP project that has been developed in co-innovation with one of the largest European retail companies. 
+We evaluated our \tool\,debugger on a real-world SAP project that has been developed with one of the largest European retail companies. 
 This project is called \emph{Point of Sales Explorer}~\cite{plattner2015memory} and allows category managers to see a collection of the most important key performance indicators (KPIs) for several thousands of products in a unified dashboard.
 Based on more than 2 billion records of point of sales data, this application aggregates on the fly the requested KPIs with the help of SAP HANA and allows users to further refine them by stores, vendors, or products as they like. 
 In order to implement flexible requests such as returning the revenue and margin per week of current and last year, this application makes heavy use of SQLScript. 
@@ -500,16 +497,13 @@ For that reason, it is a proper candidate to measure performance and interview i
 
 \subsection{Performance Measurements}
 
-Each value is the average of 10 measurements.
-
-To evaluate the performance of our approach, we deployed \tool\ on a copy of the Point of Sales system.
-
+To evaluate the performance of our approach, we deployed \tool\ on a copy of the productive system.
 We selected two stored procedures from the Point of Sales Explorer and compared the runtime with and without tracing.
 %To measure the impact of database size, 
 We ran each procedure with different arguments that would lead to intermediate results of different sizes.
+Each value is the average of ten measurements.
 The results are shown in \cref{tab:measure1}.
-Each value is the average of 10 measurements.
-We found the overhead of tracing to be consistently between 6 and 7 percent.
+We found the overhead of tracing to be consistently between six and seven percent.
 
 \ctable[caption={Average execution time for running a stored procedure without and with tracing and for reproducing its result.},label=tab:measure1,doinside={},width=\linewidth]
 				{lcRRR}{}{
@@ -524,16 +518,16 @@ Proc. 2& (b)	&	1.61 s		& 1.72 s		& 1.55 s		\NN
 			 &	(c) &	1.69 s		& 1.80 s		& 1.63 s		\ML
 }
 
-We also measured the time it takes to reproduce result of each stored procedure.
+We also measured the time it takes to reproduce results of each stored procedure.
 This provides us with an upper bound for how long \tool\ would need to compute the value of any variable because in our examples all variables are needed to compute the final result.
 The measurements in \cref{tab:measure1} show that reproducing the result is slightly faster than executing the stored procedure.
 This was expected because for variables containing atomic values the value could be taken directly from the trace.
 Only for variables containing table results, database queries had to be executed again.
 
-Finally, we selected two queries from the stored procedures as examples for queries a developer might submit through the debugger's SQL console and measured their execution time both as a regular query and as a time-diff query.
-Because the Point of Sales Explorer only computes KPIs and does not change the data, we let the time-diff query compare different time-spans of point of sale data\todo{is this disclaimer needed?}.
+Finally, we selected two queries from the stored procedures as examples a developer might submit through the debugger's SQL console and measured their execution time both as a regular query and as a time-diff query.
+%Because the Point of Sales Explorer only computes KPIs and does not change the data, we let the time-diff query compare different time-spans of point of sale data\todo{is this disclaimer needed?}.
 Again, we used different filter arguments to produce different result sizes.
-As \cref{tab:measure2} shows, in each case the runtime overhead of time-diff queries is around 25 percent.
+As \cref{tab:measure2} shows, in each case the runtime overhead of time-diff queries is around 25 percent.\todo{Summarize results and emphasize the low overhead that is a requirement for back-in-time debugging.}
 
 \ctable[caption={Average execution times for queries executed normally or as time-diff query.},label=tab:measure2,doinside={},width=\linewidth]
 				{lcRR}{}{
@@ -553,7 +547,7 @@ Query 2& (b)	&	81 ms		& 100 ms	\NN
 Besides measuring performance, we also demonstrated our back-in-time debugger to two backend developers of the Point of Sales Explorer. 
 These persons have written most of the SQLScript and so know all the challenges when developing close to the database. 
 Both had the chance to apply \tool\ in their daily work while we provided tool support and observed them in the background. 
-Finally, we've conducted an in-depth interview in order to receive feedback and further improve our tool.
+Finally, we have conducted an in-depth interview in order to receive feedback and further improve our tool.
 
 We found out that the main reason for writing SQLScript is to positively influence the optimizer of SAP HANA in order to speed up the overall user request.
 This worked very well as long as the newly written code was free of failures. 
@@ -571,9 +565,9 @@ With this feedback, we see a strong need for better debugging support at the dat
 
 \subsection{Limitations}
 
-Our implementation of \SQLextension currently has two limitations.
+Our implementation of \SQLextension\ currently has two limitations.
 
-First, time-diff queries can only be executed on tables that have clearly defined primary keys because key attributes are required to track a tuple's versions over time.
+First, time-diff queries can only be executed on tables that have clearly defined primary keys because key attributes are required to track a tuple's version over time.
 For a query like "Sum budgets per project category", it has to be clear that categories are the entities that keep their identity over time.
 Here, an additional syntax extension could be used to convey this kind of information.
 
@@ -588,8 +582,9 @@ In other use cases, developers might want to attach a time qualifier directly to
 \section{Conclusion}
 \label{sec:conclusion}
 
-We presented an approach for bringing back-in-time debugging down to SQL and stored procedures, and the \tool\ debugger, an implementation of our approach that runs on the SAP HANA in-memory database.
-With \tool, developers can step forwards and backwards through the execution of a stored procedure.
+We presented an approach for bringing back-in-time debugging down to SQL and stored procedures.
+Our \tool\ debugger is an implementation of our approach that runs on the SAP HANA in-memory database.
+With \tool, developers can step forward and backward through the execution of a stored procedure.
 We introduced \SQLextension, a super-set of SQL, that allows developers to query the database from any point in the execution, compare the data of multiple points in time with one query, and even query for changes in the data.
 
 Our evaluation has shown that the runtime overhead caused by execution tracing is small enough to let \tool\ be the default choice for debugging stored procedures.
