@@ -92,7 +92,7 @@
 
 \begin{document}
 
-\title{Bringing Back-in-Time Debugging down to the Database}
+\title{Bringing Back-in-Time Debugging\\ down to the Database}
 %\subtitle{(\tool is a placeholder for the actual name)}
 
 \author{\IEEEauthorblockN{Arian Treffer}
@@ -269,14 +269,14 @@ Thus, neither do we need to trace the internals of a query's execution, nor do w
 Third, the database can be used to efficiently manage old state.
 In-memory databases with insert-only storage automatically retain old data~\cite{Plattner2009Acd}.
 With insert-only, older versions of the database can be easily reproduced.
-For other database, insert-only can be achieved by adding validity columns.
+For other databases, insert-only can be achieved by adding validity columns.
 For many business applications, such columns already exist where no data may be deleted for legal reasons.
 
 In conclusion, all that is needed to reproduce the execution of a stored procedure is a sequence of execution steps.
 Each step represents an instruction that has side effects on the database or assigns a value or result set to a variable.
 As there is, conceptually, no concurrency in a stored procedure, we can use sequential numbering to track the order of steps.
 
-If applicable, a step has a target name, e.g., the name of a variable or stored procedure, and a string representation of the value, which can be shown to the user in the debug view.
+If applicable, a step has a target name, such as the name of a variable or stored procedure, and a string representation of the value, which can be shown to the user in the debug view.
 If the step involves a database statement, we only need a timestamp to be able to reproduce the query.
 Moreover, we also record the number of rows in the result set and the execution time, as well as any atomic argument values, as this information is likely to be relevant for developers.
 
@@ -297,7 +297,7 @@ With the recorded trace data, the debugger has enough information available to r
 %If we require for all tables that data can never be changed or deleted and annotate all tuples with timestamps of when they have been created and invalidated, we can reconstruct the state of the database of any point in time.
 %Adding timestamp filters to select queries does not cause a significant slowdown.
 %Our prototype was built using this approach.
-\todo{HANA hat seit neustem "History tables" die das direkt können, wir benutzen aber explizite timestamps weil das momentan noch praktischer ist }
+%\todo{HANA hat seit neustem "History tables" die das direkt können, wir benutzen aber explizite timestamps weil das momentan noch praktischer ist }
 
 
 \subsection{Prototype and Tracing Code Generation}
@@ -344,6 +344,25 @@ Clicking the variable opens a query window that shows the variable's content and
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+\newcommand{\red}[1]{\textcolor{DarkRed}{#1}}
+\newcommand{\gr}[1]{\textcolor{Green}{#1}}
+\newcommand{\timediffresult}{
+\ctable[star,caption={Result of a time-diff query, with multiple values in some columns. Red indicates a different value at the \emph{before} step, green indicates a different value at the \emph{after} step.},label=tab:diffresult,doinside={}]
+				{rlrrrlr}{}{
+	pr.id & pr.name 	& pr.budget  & total & po2.id & po2.status & po2.total \ML
+	
+				&					  & \red{1200} & \red{1500} &	  & \red{open} &					\NN
+	1			& Project 1 & 200			 	 & 500 			  & 1 & paid 			 & 1000			\NN
+				&						& \gr{-300}  & \gr{0}		  &	  &						 &					\ML
+
+				&					  & \red{1200} & \red{1500} &	  & 					 &					\NN
+	1			& Project 1 & 200				 & 500 			  & 2 & open 			 & 500			\NN
+				&						& \gr{-300}  & \gr{0}		  &	  & \gr{paid}	 &					\ML
+}
+}
+
+\timediffresult
 
 \section{\SQLextension}
 \label{sec:ttqueries}
@@ -403,23 +422,6 @@ When developers omit the step number, it is taken from the context of the debug 
 This way, developers can step through the execution and observe how the query result changes over time.
 
 \subsection{Time-diff Queries}
-
-\newcommand{\red}[1]{\textcolor{DarkRed}{#1}}
-\newcommand{\gr}[1]{\textcolor{Green}{#1}}
-
-
-\ctable[star,caption={Result of a time-diff query, with multiple values in some columns. Red indicates a different value at the \emph{before} step, green indicates a different value at the \emph{after} step.},label=tab:diffresult,doinside={}]
-				{rlrrrlr}{}{
-	pr.id & pr.name 	& pr.budget  & total & po2.id & po2.status & po2.total \ML
-	
-				&					  & \red{1200} & \red{1500} &	  & \red{open} &					\NN
-	1			& Project 1 & 200			 	 & 500 			  & 1 & paid 			 & 1000			\NN
-				&						& \gr{-300}  & \gr{0}		  &	  &						 &					\ML
-
-				&					  & \red{1200} & \red{1500} &	  & 					 &					\NN
-	1			& Project 1 & 200				 & 500 			  & 2 & open 			 & 500			\NN
-				&						& \gr{-300}  & \gr{0}		  &	  & \gr{paid}	 &					\ML
-}
 
 Furthermore, \SQLextension\ provides an easier way to find the origin of changes in the data.
 To get a better overview about what happened in a segment of code, developers might want to query multiple points in time at once and see the difference in the query result.
@@ -543,7 +545,6 @@ Query 2& (b)	&	81 ms		& 100 ms	\NN
 			 &	(c) &	88 ms		& 109 ms	\ML
 }
 
-
 \subsection{Interviews}
 
 Besides measuring performance, we also demonstrated our back-in-time debugger to two backend developers of the Point of Sales Explorer. 
@@ -576,8 +577,6 @@ Here, an additional syntax extension could be used to convey this kind of inform
 Second, it is currently not possible to use time qualifiers on identifiers outside of the where clause.
 We can imagine that there may be a need to use time qualifiers in other SQL clauses, such as the select or order-by clause.
 In other use cases, developers might want to attach a time qualifier directly to a table.
-
-
 
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
