@@ -192,7 +192,7 @@ The contributions of this paper are as follows:
 	
 \end{itemize}
 
-We evaluated \tool\ with the help our SAP colleagues who worked on a project called \emph{Point of Sales Explorer}~\cite{plattner2015memory} which makes heavy use of SQLScript. 
+We evaluated \tool\ with the help of our SAP colleagues who worked on a project called \emph{Point of Sales Explorer}~\cite{plattner2015memory}, which makes heavy use of SQLScript. 
 The interviews indicated that bugs in stored procedures can be investigated more efficiently with \tool\ than with existing other database development tools.
 
 The remainder of this paper is structured as follows:
@@ -216,6 +216,8 @@ This allows fast jumping between arbitrary points in time and querying the execu
 The trace-oriented  debugger (TOD)~\cite{pothier_scalable_2007} uses a specialized distributed database to better handle large amounts of trace data.
 Object  flow  analysis~\cite{lienhard_practical_2008} reduces the required amount of memory by using the VM's garbage collector to discard objects and events that are no longer reachable.
 
+\cite{perscheid2013}
+
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -238,7 +240,7 @@ A post-mortem debugger, on the other hand, has to record virtually everything to
 While this approach allows developers the most freedom when stepping through the execution, it creates a large overhead on performance and memory.
 Debugger implementations using this approach exist for different programming languages.
 %
-Both approaches can also be mixed to create a tradeoff between performance and overhead\todo{cite}.
+Both approaches can also be mixed to create a tradeoff between performance and overhead~\cite{perscheid2013}.
 
 % post-mortem has been solved before, why is it harder in the database
 When debugging programs that run on a database, a back-in-time debugger faces two additional problems:
