@@ -198,7 +198,7 @@ The interviews indicated that failures in stored procedures can be investigated 
 The remainder of this paper is structured as follows:
 \Cref{sec:relatedWork} describes related work. 
 \Cref{sec:prototype} presents our approach and its prototypical implementation of back-in-time debugging in the database.
-\Cref{sec:ttqueries} discusses querying past database states and introduces and extension to SQL.
+\Cref{sec:ttqueries} discusses querying past database states and introduces our extension to SQL.
 \Cref{sec:evaluation} evaluates our approach before \cref{sec:conclusion} discusses future work and concludes the paper.
 
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -213,10 +213,9 @@ Later, other reversible debuggers used memory snapshots~\cite{feldman_igor:_1988
 
 The \emph{omniscient debugger}~(ODB)~\cite{lewis_debugging_2003} was the first debugger to keep the entire program history in memory.
 This allows fast jumping between arbitrary points in time and querying the execution history, but creates a large overhead on runtime and memory consumption.
-The trace-oriented  debugger (TOD)~\cite{pothier_scalable_2007} uses a specialized distributed database to better handle large amounts of trace data.
+The trace-oriented debugger (TOD)~\cite{pothier_scalable_2007} uses a specialized distributed database to better handle large amounts of trace data.
 Object  flow  analysis~\cite{lienhard_practical_2008} reduces the required amount of memory by using the VM's garbage collector to discard objects and events that are no longer reachable.
-
-\cite{perscheid2013}
+The Path tool suite and its Test-Driven Fault Navigation~\cite{perscheid2013} leverages reproducible test cases in order to distribute the tracing overhead over multiple runs depending on developers' needs. 
 
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 %%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
