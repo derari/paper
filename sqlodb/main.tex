@@ -213,8 +213,9 @@ Later, other reversible debuggers used memory snapshots~\cite{feldman_igor:_1988
 
 The \emph{omniscient debugger}~(ODB)~\cite{lewis_debugging_2003} was the first debugger to keep the entire program history in memory.
 This allows fast jumping between arbitrary points in time and querying the execution history, but creates a large overhead on runtime and memory consumption.
-The trace-oriented  debugger (TOD)~\cite{pothier_scalable_2007} uses a specialized distributed database to better handle large amounts of trace data.
-Object  flow  analysis~\cite{lienhard_practical_2008} reduces the required amount of memory by using the VM's garbage collector to discard objects and events that are no longer reachable.
+The \emph{trace-oriented  debugger} (TOD)~\cite{pothier_scalable_2007} uses a specialized distributed database to better handle large amounts of trace data.
+\emph{Object  flow  analysis}~\cite{lienhard_practical_2008} reduces the required amount of memory by using the VM's garbage collector to discard objects and events that are no longer reachable.
+\emph{SPYDER}~\cite{agrawal_debugging_1993} and the \emph{Slice Navigator}~\cite{treffer2016} are back-in-time debuggers that use dynamic slicing to make following the infection chain more efficient.
 
 \cite{perscheid2013}
 
@@ -227,9 +228,11 @@ Object  flow  analysis~\cite{lienhard_practical_2008} reduces the required amoun
 \label{sec:prototype}
 
 % why post mortem
-\todo{If we need to shorten later on, I would start here in the problem description.}
+%\todo{If we need to shorten later on, I would start here in the problem description.}
 With a regular debugger, developers have only one way to go back in time, which is to restart the execution.
-Tools can be used to automate this approach\todo{cite checkpoint debugger?} and some modern debuggers even allow to restart execution at the method level\todo{http://help.eclipse.org/neon/index.jsp?topic=\%2Forg.eclipse.jdt.doc.user\%2Freference\%2Fviews\%2Fdebug\%2Fref-droptoframe.htm}.
+Tools can be used to automate this approach and some modern debuggers even allow to restart execution at the method level.
+%\todo{cite checkpoint debugger?}
+%\todo{http://help.eclipse.org/neon/index.jsp?topic=\%2Forg.eclipse.jdt.doc.user\%2Freference\%2Fviews\%2Fdebug\%2Fref-droptoframe.htm}
 However, this approach fails if the code has side effects, as it can no longer be guaranteed to execute in the same way.
 Furthermore, if the execution is too slow, developers will spend much time waiting for re-execution, which discourages the use of backwards stepping.
 
