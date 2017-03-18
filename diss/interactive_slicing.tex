@@ -1,0 +1,50 @@
+\chapter{Interactive Dynamic Slicing}
+
+\tmp{
+% Context: debugging and slicing
+In many cases, software bugs don't cause the software to fail, i.e., to deviate from expected behavior, immediately.
+To actually find the bug, developers have to follow the chain of erroneous state from the observed failure backwards to the bug~\cite{zeller_why_2009}.
+Many approaches exist to support this process~\cite{wong_survey_2016}.
+
+Debuggers allow to inspect the state of a running program and to understand its impact on the program's behavior.
+Back-in-time, or "omniscient" debuggers (ODBs) even make it possible to follow the infection chain backwards through time, removing the overhead of frequently restarting the debug session~\cite{lewis_debugging_2003}.
+However, developers still need to manually identify the relation between states without spending too much time in irrelevant parts of code.
+This often requires a high familiarity with the code, which is not always given.
+%
+%when programmer needs better understanding, turns to debugger\\
+%as knowledge grows, question change\\
+%linear nature of debugger, repetitive task of restarting\\
+%omniscient debugging improves productivity by reducing mental overhead\\
+
+Weiser has shown that programmers think not only in modules, but in related statements~\cite{weiser_programmers_1982}.
+Slicing is a technique to produce subsets of a program relevant to a given criterion.
+Dynamic slicing also considers the program input, which allows to remove even more irrelevant instructions~\cite{agrawal_dynamic_1990}.
+
+% Problem: tool integration
+Slicing suffers from a similar problem as debugging:
+every time the developer's question changes the slice has to be recomputed, which can interrupt the developer's flow even if it only takes a few seconds.
+Furthermore, every time developers need to switch between slicer and debugger, another interruption occurs.
+Slicing is rarely used in practice~\cite{perscheid_studying_2017} and the separation of tools might be part of the problem.
+
+% Significance
+It has been shown that slicing can be useful to improve developer productivity~\cite{weiser_programmers_1982, agrawal_dynamic_1990}, especially for developers dealing with very complex or unfamiliar code.
+
+We present a new approach that combines omniscient debugging and dynamic slicing.
+While developers omnisciently debug a dynamic slice, at any point they can add or adjust the slicing criteria and changes are applied instantly, without interrupting the debug session.
+A new UI component, the Slice Navigator, provides a unique view on the execution by combining relevant information from both the ODB and the slicing subsystem.
+
+The contributions of this paper are threefold:
+\begin{itemize}
+	\item A new dynamic slicing algorithm allows quick and iterative refinement of the slicing criteria to adapt the slice to changing developer questions.
+		Based on previous work, developers can formulate their question by choosing from different dependency types that will change the outcome of the slice~\cite{treffer_dynamic_2014}.
+	\item The \emph{Slice Navigator} is a UI component that bundles access to the debugger and the slicer.
+		It provides context for the current instruction by showing relevant parts of the slice, allows developers to iteratively refine the slicing criteria, and serves as an alternative to breakpoints and stepping.
+	\item The integration of dynamic analyses directly in the debugger not only reduces interruptions in developer flow by minimizing context switches between tools and shortens waiting time as recorded run-time data can be re-used; it also allows for a new debugging workflow where developers can isolate a bug by iteratively slicing away correct code.
+\end{itemize}
+}
+
+\section{A New Debugging Workflow}
+
+\section{Incremental Configurable Slicing Algorithm}
+
+\section{Evaluation}

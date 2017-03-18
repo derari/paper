@@ -1,0 +1,63 @@
+\documentclass[
+			english,
+			]{scrbook}
+			
+\input{setup}
+\bibliography{references}
+
+\usepackage{lineno}
+\modulolinenumbers[5]
+
+%\journal{Journal of Systems and Software}
+
+\hypersetup{
+	pdftitle={The Slice Navigator: Focused Debugging with Interactive Dynamic Slicing},
+	pdfauthor={Arian Treffer, Matthias Uflacker, Hasso Plattner},
+	pdfsubject={},
+}
+
+%% remove in final version
+\usepackage[colorinlistoftodos]{todonotes}
+%\renewcommand{\todo}[2][\empty]{\pdfmargincomment[color=orange,icon=Note,subject=TODO,#1]{#2}}
+%\usepackage{pdfcomment}
+%\newcommand{\todo}[2][]{\pdfmargincomment[color=orange,icon=Note,subject={TODO},author={#1}]{#2}}
+
+%\newcommand{\tmp}[1]{#1}
+\newcommand{\tmp}[1]{\color{DarkBlue}#1}
+
+\begin{document}
+
+\title{The Slice Navigator: Focused Debugging with Interactive Dynamic Slicing}
+
+\author{Arian Treffer}
+%\address{Hasso Plattner Institute, Potsdam, Germany}
+
+\maketitle
+
+%\begin{abstract}
+%the abstract
+%\end{abstract}
+
+\linenumbers
+
+\chapter*{abstract}
+the abstract
+
+\input{introduction}
+
+\input{interactive_slicing}
+
+\input{odb_sql}
+
+\input{cross_system}
+
+
+\chapter{Related Work}
+
+\chapter{Conclusion}
+
+
+\nocite{*}
+\printbibliography
+
+\end{document}
