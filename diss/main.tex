@@ -1,12 +1,18 @@
 \documentclass[
 			english,
-			]{scrbook}
+			phd,
+			draft,
+			lmodern,
+			]{sty/swathesis}
+	
 			
 \input{setup}
-\bibliography{references}
 
-\usepackage{lineno}
-\modulolinenumbers[5]
+\iftrue
+\addbibresource{references.bib}
+\else
+\bibliography{references}
+\fi
 
 %\journal{Journal of Systems and Software}
 
@@ -17,15 +23,18 @@
 }
 
 %% remove in final version
-\usepackage[colorinlistoftodos]{todonotes}
+%\usepackage[colorinlistoftodos]{todonotes}
 %\renewcommand{\todo}[2][\empty]{\pdfmargincomment[color=orange,icon=Note,subject=TODO,#1]{#2}}
 %\usepackage{pdfcomment}
 %\newcommand{\todo}[2][]{\pdfmargincomment[color=orange,icon=Note,subject={TODO},author={#1}]{#2}}
 
 %\newcommand{\tmp}[1]{#1}
-\newcommand{\tmp}[1]{\color{DarkBlue}#1}
+\newcommand{\tmpStart}{\color{DarkBlue}}
+\newcommand{\tmpEnd}{\color{Black}}
 
 \begin{document}
+
+\lstMakeShortInline[basicstyle=\ttfamily,language={Inline}]`
 
 \title{The Slice Navigator: Focused Debugging with Interactive Dynamic Slicing}
 
@@ -58,6 +67,6 @@ the abstract
 
 
 \nocite{*}
-\printbibliography
+\printbibliography[]
 
 \end{document}
