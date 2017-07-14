@@ -1,0 +1,29 @@
+% math font: euler
+\RequirePackage[euler-digits,T1]{eulervm}
+\let\mathbf\mathbold
+\ifthenelse{\boolean{luatex} \or \boolean{xetex}}{%
+  \setmainfont[ExternalLocation,%
+      Numbers={Proportional,OldStyle},%
+      UprightFont= *-regular,%
+      BoldFont=*-bold,%
+      ItalicFont=*-italic,%
+      BoldItalicFont=*-bolditalic,%
+      Ligatures={Common,TeX},%
+      ]{texgyrepagella}
+  %
+  % Set a Vera mono descendant as monofont.
+  %
+  \setmonofont[ExternalLocation,
+     Scale=MatchLowercase,Ligatures=TeX,%Microtype,
+      BoldFont={*-Bold},
+      ItalicFont={*-Oblique},
+      BoldItalicFont={*-BoldOblique}
+    ]%
+    {DejaVuSansMono}
+  %\defaultfontfeatures{Scale=MatchLowercase,Microtype,Ligatures=TeX,RawFeature={+calt,+clig,+tlig}}
+}{
+  \RequirePackage[scaled=.84]{DejaVuSansMono}
+  \RequirePackage[osf,sc]{mathpazo} % Palatino with real small caps and old style figures
+}
+\linespread{1.05} % a bit more for Palatino
+

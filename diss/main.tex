@@ -1,12 +1,14 @@
 \documentclass[
-			english,
+			en,
 			phd,
 			draft,
-			lmodern,
+			garamond,
+			12pt,
 			]{sty/swathesis}
 	
 			
 \input{setup}
+\renewcommand{\baselinestretch}{1.2}
 
 \iftrue
 \addbibresource{references.bib}
@@ -14,13 +16,35 @@
 \bibliography{references}
 \fi
 
-%\journal{Journal of Systems and Software}
+\setcounter{tocdepth}{1}
+\setcounter{secnumdepth}{3}
 
-\hypersetup{
-	pdftitle={The Slice Navigator: Focused Debugging with Interactive Dynamic Slicing},
-	pdfauthor={Arian Treffer, Matthias Uflacker, Hasso Plattner},
-	pdfsubject={},
-}
+\renewcommand*{\glsnamefont}[1]{\textbf{#1}}
+
+
+\usepackage{titlepage}
+\TitlePageStyle[discipline=phd, whom={der}, subject=degree]{hpi-swa}
+%\degree{Doktor der Naturwissenschaften\\ (Doctor rerum naturalium)}
+\degree{Doktor der Ingenieurwissenschaften\\ (Doktor-Ingenieur)}
+\faculty{%
+Digital Engineering Fakultät\\
+der Universität Potsdam}
+
+\advisor{Prof.\,Dr.\,Hasso Plattner}
+
+
+% ABGABEDATUM
+% \setdate{2012}{04}{05}
+% \date{\datedate}
+
+\author{Arian Treffer}
+\location{Berlin}
+\extratitle{\raggedleft Treffer, \\ Omnidb\par}
+\title{Omniscient Debugging in Enterprise Applications}
+\subtitle{This is Optionally}
+\othertitle{Omniscient Debugging in Unternehmensanwendungen}
+\othersubtitle{Ein Untertitel ist Optional}
+
 
 %% remove in final version
 %\usepackage[colorinlistoftodos]{todonotes}
@@ -32,39 +56,81 @@
 \newcommand{\tmpStart}{\color{DarkBlue}}
 \newcommand{\tmpEnd}{\color{Black}}
 
+\includeonly{introduction}
+
 \begin{document}
 
-\lstMakeShortInline[basicstyle=\ttfamily,language={Inline}]`
-
-\title{The Slice Navigator: Focused Debugging with Interactive Dynamic Slicing}
-
-\author{Arian Treffer}
-%\address{Hasso Plattner Institute, Potsdam, Germany}
-
+\frontmatter
+\begin{otherlanguage}{german}
 \maketitle
-
-%\begin{abstract}
-%the abstract
-%\end{abstract}
+\end{otherlanguage}
 
 \linenumbers
 
-\chapter*{abstract}
-the abstract
+\begin{abstract}
+Developers spend between 40 and 60 percent of their time working on defects.
+A lot of that time is spend in the debugger, searching for the cause of an observed problem.
+While debugging, a developer's attention is divided between multiple tasks, which fall into two categories:
+first, understanding the program at different levels of abstraction and second, operating the debugger and other related tools.
+Attention spent in the first category will directly let developers progress towards their goal, whereas the second category represents an overhead that should be kept to a minimum.
 
-\input{introduction}
+Complex enterprise applications often consist of multiple components, such as client code, application layer, and database scripts.
+These components are often developed in different programming languages, run in different environments, and therefore require different tools to be debugged.
+When debugging such systems, developers can be faced with long infection chains, the paths of erroneous states leading from the fault in the code to the observed failure, that may even cross sub-system boundaries.
+%Following an infection chain can be a tedious and time-consuming task,
+Back-in-time debuggers can simplify the process of following an infection chain,
+ but when it crosses a system boundary developers have to switch tools and manually map state, such as request arguments, from one system to the next.
+This creates an additional mental burden and distracts from the actual problem.
 
-\input{interactive_slicing}
+In our work, we take necessary steps towards a debugger that allows developers to efficiently debug long infection chains in a heterogeneous system.
 
-\input{odb_sql}
+We combine omniscient debugging with dynamic analysis, in particular dynamic slicing, 
+to improve the process of tracking erroneous state over long distances.
+A new configurable dynamic slicing algorithm processes the debugger's runtime data.
+The results are shown in the Slice Navigator, a novel UI component enriching the debugging
+experience in multiple ways. Firstly, it supports developers’ short term memory
+by providing a summary of relevant program state and context for the current
+instruction. Secondly, it provides an alternative to breakpoints as it can be used
+to control the debugger to jump to related instructions, such as the last change of
+a variable. Thirdly, it allows to directly reconfigure the slicing criteria, enabling
+developers to minimize the search space of active code without interrupting the
+debugging workflow.
 
-\input{cross_system}
+Enterprise applications also often use a database to handle complex operations on large amounts of data.
+While most modern databases allow to attach a debugger to queries or scripts, the general tool support for understanding complex programs in databases is rather poor compared to that of popular object-oriented languages.
 
+To accommodate the demand for better debugging tools in database programs, we brought omniscient debugging down to the database.
+We developed a method to leverage the mix of imperative control flow and declarative SQL statements in SQL Script. 
+This allowed us to created an omniscient debugger which is much more efficient with large amounts of data than previous solutions for object-oriented languages.
 
-\chapter{Related Work}
+With omniscient debugging available in every component of an enterprise system, we combine the runtime data of each component into an omniscient system debugger that allows to efficiently debug the entire application stack.
 
-\chapter{Conclusion}
+\end{abstract}
 
+%\begin{zusammenfassung}
+  %zusammenfassung
+%\end{zusammenfassung}
+\tableofcontents
+%\listoffigures
+%\listoftables
+%\lstlistoflistings
+%\printacronyms
+%\printglossary[type=main]
+
+\mainmatter
+\lstMakeShortInline[basicstyle=\ttfamily,language={Inline}]´
+
+\include{introduction}
+
+\include{interactive_slicing}
+
+\include{odb_sql}
+
+\include{cross_system}
+
+\include{relwork_conclusion}
+
+%\defaultstatement
 
 \nocite{*}
 \printbibliography[]

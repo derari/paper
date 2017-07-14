@@ -33,10 +33,11 @@ We present a new approach that combines omniscient debugging and dynamic slicing
 While developers omnisciently debug a dynamic slice, at any point they can add or adjust the slicing criteria and changes are applied instantly, without interrupting the debug session.
 A new UI component, the Slice Navigator, provides a unique view on the execution by combining relevant information from both the ODB and the slicing subsystem.
 
-The contributions of this paper are threefold:
+\todo{this is new}
 \begin{itemize}
 	\item A new dynamic slicing algorithm allows quick and iterative refinement of the slicing criteria to adapt the slice to changing developer questions.
-		Based on previous work, developers can formulate their question by choosing from different dependency types that will change the outcome of the slice~\cite{treffer_dynamic_2014}.
+		Developers can formulate their question by choosing from different dependency types that will change the outcome of the slice.
+		%~\cite{treffer_dynamic_2014}.
 	\item The \emph{Slice Navigator} is a UI component that bundles access to the debugger and the slicer.
 		It provides context for the current instruction by showing relevant parts of the slice, allows developers to iteratively refine the slicing criteria, and serves as an alternative to breakpoints and stepping.
 	\item The integration of dynamic analyses directly in the debugger not only reduces interruptions in developer flow by minimizing context switches between tools and shortens waiting time as recorded run-time data can be re-used; it also allows for a new debugging workflow where developers can isolate a bug by iteratively slicing away correct code.
@@ -169,25 +170,200 @@ First, it should be able to quickly produce useful intermediate results to avoid
 Second, if it distinguishes between different types of dependencies, the differences between those types should be easily understandable for developers.
 This way, additional helpful information can be communicated to the user and better customization of the slice is possible.
 Finally, it should support incrementally changing the slicing criteria.
+The algorithm we use in our prototype is specifically engineered to meet these criteria.
 
-The algorithm we use in our prototype is based on previous work~\cite{treffer_dynamic_2014} and specifically engineered to meet these criteria.
-When building the dependency graph between instructions, the algorithm distinguishes between three types of dependencies.
+%The algorithm we use in our prototype is based on previous work~\cite{treffer_dynamic_2014} and specifically engineered to meet these criteria.
+%When building the dependency graph between instructions, the algorithm distinguishes between three types of dependencies.
+%
+%\emph{Value dependencies} occur when the the value of an instruction is derived from another instruction's value.
+%In the slice navigator, they are represented with a red equality sign.
+%
+%Instructions that determine if another instruction can be reached are \emph{reachability dependencies}, indicated by a yellow arrow.
+%Typically, these are method invocations and instruction in conditional statements.
+%
+%Sometimes, a value depends on only one of multiple candidate values. 
+%A \emph{control dependency} determines which of these candidates is used.
+%More formally, control dependencies are reachability dependencies of value candidates that are not also reachability dependencies of all other candidates.
+%In the navigator, they are indicated by a blue~"X".
+%
+%Developers can now combine these different dependency types to adjust the slice for specific purposes.
+%Clicking on an event's dependency symbol brings up a dialog that allows to choose which dependencies of that event to include.
+%This way developers can, for instance, put a focus on how a value was computed or how an instruction was reached.
+%It is also possible to remove all dependencies of an event, for instance if it is known to be correct and its history is not of interest, thereby moving the focus of the slice to less well-understood parts of the program.
 
-\emph{Value dependencies} occur when the the value of an instruction is derived from another instruction's value.
-In the slice navigator, they are represented with a red equality sign.
 
-Instructions that determine if another instruction can be reached are \emph{reachability dependencies}, indicated by a yellow arrow.
-Typically, these are method invocations and instruction in conditional statements.
+Typically, static and dynamic slicing algorithms focus on finding statements belonging to a slice.
+However, in many cases statements are executed multiple times in a single program run and not all executions are relevant for the slice.
+Therefore, our algorithm focuses on state-changing events, i.e., actual executions of statements, instead of the statements themselves.
 
-Sometimes, a value depends on only one of multiple candidate values. 
-A \emph{control dependency} determines which of these candidates is used.
-More formally, control dependencies are reachability dependencies of value candidates that are not also reachability dependencies of all other candidates.
-In the navigator, they are indicated by a blue~"X".
+On the highest level, our algorithm to compute a dynamic slice works as follows:
+The output of the algorithm will be a sorted set of events.
+The target event, i.e., the event for which the slice was requested, is added to both the result set and a queue of unprocessed events.
+Then, until the queue is empty, an event is polled and its dependency events are determined as follows:
 
-Developers can now combine these different dependency types to adjust the slice for specific purposes.
-Clicking on an event's dependency symbol brings up a dialog that allows to choose which dependencies of that event to include.
-This way developers can, for instance, put a focus on how a value was computed or how an instruction was reached.
-It is also possible to remove all dependencies of an event, for instance if it is known to be correct and its history is not of interest, thereby moving the focus of the slice to less well-understood parts of the program.
+%Firstly, the event is mapped to a unit of a \verb+SootMethod+.
+Firstly, the event is mapped to a statement in the code.
+Secondly, Soot is used to obtain a static dependency graph for that method (the graph is cached for reuse).
+Thirdly, the statement is looked-up in the graph and candidate dependency statements are mapped back to events.
+
+Each dependency event that is not yet part of the result set is added to both the result and the queue.
+Finally, the result set is returned.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=.90\linewidth, clip, trim=12mm 7mm 8mm 7mm]{img/graph}
+\caption{A dynamic dependency graph of trace events, on top of static dependency graphs derived with Soot. For brevity, not all Soot units are shown, the boxing of long values has been omitted, and ``split'' and ``parseTimeString'' are summarized.}
+\label{fig:graph}
+\end{figure*}
+
+\subsection{Computing the Dependency Graph}
+
+In the dependency graph, three types of dependencies are distinguished: value, reachability, and control dependencies.
+
+Value dependencies are the most common, they occur whenever a value is derived from another value.
+For instance, the value of \verb+params+ in \linerefn{lst:parse}{38} of \verb+parse()+ depends on the result of \verb+split()+ (cf. \autoref{lst:parse}).
+
+Reachability dependencies refer to expressions whose values determine whether the statement could be reached.
+For the assignment in \linerefn{lst:parse}{44} one reachability dependency is the result of \verb+length()+ in \linerefn{lst:parse}{41}.
+
+Control dependencies occur when a statement can have multiple candidate dependencies.
+In the statement \lstinline{var = foo() ? bar() : baz()}, the value of \verb+var+ depends on either \verb+bar()+ or \verb+baz()+.
+Even though \verb+foo()+ does not directly affect the value, it determines which of the two options is used; thus, it is a control dependency.
+
+In previous work, reachability dependencies are often called ``control dependencies'', while control dependencies as we define them are not considered at all. 
+This seems reasonable, as they are only a redundant way to model reachability dependencies.
+We introduced this distinction after a small survey between colleagues revealed that some developers found it counter-intuitive to find statements in a slice that do not directly affect the resulting values, while others wanted to have those statements included, as they could help to understand how a certain line in the code could have been reached.
+Distinguishing between these two types of control flow dependencies allows us to create a slice specifically for the user's needs.
+
+The algorithm to build the dependency graph was implemented in Soot, using a \verb+ForwardFlowAnalysis+.
+In Soot, a method is represented by three-address-code instructions, called ``units''.
+A flow analysis ``flows through'' (i.e., visits) every unit in a method and allows to pass state in a ``flow set'' from one instruction to the next.
+If a unit has more than one following unit, (e.g., it is a conditional jump) a copy of the flow set is passed to each.
+If multiple flow sets appear as input to a flow step, they are merged into one first and only the result of the merge is passed on.
+The flow and merge steps of our implementation are shown as pseudocode in \autoref{lst:visit}.
+
+
+\begin{lstlisting}[firstnumber=1,float,caption={Our dependency algorithm in pseudocode.},stepnumber=5,label=lst:visit,gobble=0,language=algorithm,tabsize=2]
+function visit(DataDependencyFlow in, Unit unit, DataDependencyFlow out)
+	in.copyTo(out)
+	DataDependency dependency = getDependencies(unit.getUseBoxes(), out)
+	if unit is_a IfStmt or unit is_a LookUpSwitchStmt then
+		out.reachabilityDependencies << dependency
+	else
+		out.valueDependency = dependency
+		if unit is_a DefinitionStmt then
+			left = d.getLeftOp()
+			indexAssignment(left, unit)
+			if left is_a JimpleLocal then
+				out.variableChanged(left.name, unit)
+		else if unit is_a ReturnStmt or unit is_a ReturnVoidStmt then
+			indexReturn(unit)
+		else if unit is_a ThrowStmt then
+			indexThrow(unit)
+
+function getDependencies(List values, DataDependencyFlow out)
+	allDependencies = []
+	for v in values do
+		allDependencies << getDependency(v, out)
+	return DataDependency.all(allDependencies)
+
+function getDependency(Value v, DataDependencyFlow out)
+	if v is_a JimpleLocal then
+		return out.getVariable(v.name)
+	else if v is_a InvokeExpr then
+		d = DataDependency.Invoke(v.method,
+			getDependency(v.instance, out),
+			getDependencies(v.arguments, out))
+		indexInvocation(d)
+		return d
+	else if v is_a InstanceFieldRef
+		return DataDependency.field(v.name,
+			getDependency(v.instance))
+	else 
+		...
+
+function merge(DataDependencyFlow in1, DataDependencyFlow in2, DataDependencyFlow out)
+	in1.copyTo(out)
+	controlDependency = ' delta of in2.reachabilityDependencies and out.reachabilityDependencies, or the last element of both
+	out.reachabilityDependencies.remove( controlDependency)
+	for var in in2.variables do
+		outValue = out.getVariable(var.name)
+		if var.value != outValue then
+      mergedValue = DataDependency.choice(
+            controlDependency, 
+            var.value, outValue)
+			out.setVariable(var.name, mergedValue)
+\end{lstlisting}
+
+
+A customized FlowSet was implemented that, additionally to existing operations, maintains a stack of reachability dependencies and tracks the current value for each variable, i.e., mostly the unit where it was set last.
+
+For each unit that is visited, its dependencies are determined from its ``use boxes'', the values accessed by the unit.
+If the unit represents an if- or switch-statement, the dependencies are pushed to the outflow as reachability dependencies.
+Otherwise, they are value dependencies of the unit.
+If the unit assigns a variable, it is also registered to be the last unit that changed that variable.
+
+Furthermore, each unit is indexed:
+A unique key is created from the unit's line number and its type. 
+If the unit assigns a variable or field, the respective name is also part of the key.
+The index is stored as a map and will be used later to find the unit for a given event.
+
+To obtain a list of dependencies from a list of value boxes, each value is examined independently.
+If it refers to a variable, the value of the variable currently stored in the flow is used.
+Field and array accesses are not investigated any deeper, and simply noted along with the current line number.
+Method invocations are also treated as opaque, and no dependency between the invocation result and its arguments is created.
+Instead, the dependencies for each argument are determined separately and directly added to the index, with a unique key being created for each argument.
+It is expected that the subsequent analysis of the invoked method reveals, if necessary, how an invocation's result depends on its arguments.
+
+In the merge step of the analysis, the first incoming flow set is copied to the destination set, which is then merged with the second incoming set.
+
+To merge two flow sets, first their reachability dependency stacks have to be aligned.
+If the stacks contain different elements, only dependencies from both stacks are kept.
+If both stacks are identical, for instance when merging the then- and else-branch of an if-statement, the topmost element of the stack is removed.
+
+Then, all variables that have different values have to be merged.
+Instead of a definite unit, the new value is a choice of the two previous values, indicating that at in the dynamic slice only one of the options will actually apply.
+Furthermore, the reachability dependencies that have been removed during the merge are added here as control dependencies.
+
+For reference, \autoref{fig:graph} shows parts of the static dependency graphs from both methods listed above.
+The dynamic dependency graph has been included in the figure as well, to visualize the relation between the static and dynamic elements.
+
+\subsection{Mapping Events and Units}
+
+Before the dependencies of an event can be found, it has to be mapped to a Soot unit.
+The event provides class and method name, line number, and byte-code index as locational information.
+
+Alas, we were not able to find the corresponding unit based on the byte-code index.
+Instead, the event type and line number are used to look-up units in the index that was created during the flow analysis.
+For an averagely structured Java program, ambiguities occur only rarely.
+As shown on the bottom left of \autoref{fig:graph}, in our example the slice would begin with the \verb+assertEquals+ invocation, which can be mapped to the invocation unit in \linerefn{lst:test}{62}.
+
+Once the unit has been identified, its dependencies are looked-up and converted back to events.
+Reachability dependencies are included only if they have been explicitly requested.
+%How events are looked-up depends on the type of the dependencies.
+The dependency value's line number and the current event's step number are used to identify the most recent matching event.
+However, the strategy of the look-up also depends on the type of the dependency value.
+
+If the dependency is an assignment statement of a variable, the last variable change event in that line is looked-up.
+For instance, the dependency between the \verb+assertEquals+ invocation and the \verb+expected2+ assignment is created this way.
+If it is a choice of multiple variable assignments, each assignment is looked-up and, if more than one is found, only the most recent will be used.
+
+For field and array value dependencies, first the according get-event is looked-up.
+Then, the last set-event before the get is found.
+For instance, this allows us to create a dynamic dependency between \verb+assertEquals+ and the array assignment in the second iteration of \verb+parse+ (shown on the right-hand side of \autoref{fig:graph} as the ``put'' event linked to the assignment in \linerefn{lst:parse}{44}).
+Finding the get as an intermediate step is necessary to avoid situations where the field has been changed between access and usage, e.g., as in \verb/int id = counter++/.
+
+If the value stems from an argument, first the calling method is determined from the trace data. 
+Then, the argument is looked up in the index of the dependency graph of the calling method.
+Finally, the dependencies retrieved this way are resolved recursively.
+To get the result of an invocation, the method call event is looked-up and its respective return event is found.
+As \autoref{fig:graph} shows, the invocation of \verb+parse+ is not part of the dynamic dependency graph because it is an event without side effects.
+However, it serves as the link to create dependencies between events of the two methods.
+
+All events that are found this way are added to the slice.
+If an event was found via a unit, this information is retained and reused when computing the dependencies for that event.
+
+The final list of events is the used by the debugger to visualize the program flow and to skip unrelated events during stepping.
 
 \begin{figure}
 	\centering
@@ -209,8 +385,12 @@ After some preliminary user testing, we added two shortcuts for frequently used 
 Right-clicking an entry immediately removes it entirely from the slice, while double-clicking an entry sets it as a slicing criterion and removes all previous criteria.
 \tmpEnd
 
-\section{Evaluation}
+\section{The Slice Navigator}
+
+\section{Performance Considerations}
 \label{sec:eval}
+
+\section{User Study}
 
 \tmpStart
 We evaluated our approach in two ways.

@@ -1,0 +1,74 @@
+\RequirePackage[USenglish,german]{datenumber}
+\setdatetoday
+
+\RequirePackage{sty/swa-platform}
+\ifundefinedorrelax{if@swa@german}{
+  \newif\if@swa@german
+}{}
+
+\ifthenelse{\boolean{xetex}}{
+  \RequirePackage{polyglossia}
+
+  \ifthenelse{\boolean{@swa@german}}{
+    \setotherlanguage{english}
+    \setmainlanguage[babelshorthands,latesthyphen=true]{german}
+  }{
+    \setmainlanguage{english}
+    \setotherlanguage[babelshorthands,latesthyphen=true]{german}
+  }
+
+  \defcaptionname{english}{\figureautorefname}{figure}
+  \defcaptionname{english}{\figureautorefname}{figure}
+  \defcaptionname{english}{\tableautorefname}{table}
+  \defcaptionname{english}{\lstlistingautorefname}{listing}
+  \defcaptionname{english}{\lstnumberautorefname}{line}
+  \defcaptionname{english}{\subsectionautorefname}{\sectionautorefname}
+  \defcaptionname{english}{\subsubsectionautorefname}{\sectionautorefname}
+  \gappto\extrasenglish{%
+    \@datelanguageUSenglish
+    }
+
+  \defcaptionname{german}{\subsectionautorefname}{\sectionautorefname}
+  \defcaptionname{german}{\subsubsectionautorefname}{\sectionautorefname}
+  \gappto\extrasgerman{%
+    \@datelanguagegerman
+    }
+}{
+%fool AUCTeX
+\iffalse
+  \RequirePackage[english]{babel}
+\fi
+
+
+  \ifthenelse{\boolean{@swa@german}}{
+    % hyperref can't handle that.
+    % \RequirePackage[main=english,ngerman]{babel}
+    % order matters!
+    \RequirePackage[english,ngerman]{babel}
+  }{
+    % hyperref can't handle that.
+    % \RequirePackage[main=english,ngerman]{babel}
+    % order matters!
+    \RequirePackage[ngerman,english]{babel}
+  }
+
+  \defcaptionname{english}{\figureautorefname}{figure}
+  \defcaptionname{english}{\figureautorefname}{figure}
+  \defcaptionname{english}{\tableautorefname}{table}
+  \defcaptionname{english}{\lstlistingautorefname}{listing}
+  \defcaptionname{english}{\lstnumberautorefname}{line}
+  \defcaptionname{english,german,ngerman}{\subsectionautorefname}{\sectionautorefname}
+  \defcaptionname{english,german,ngerman}{\subsubsectionautorefname}{\sectionautorefname}
+  \addto\extrasenglish{%
+    \@datelanguageUSenglish
+  }
+
+  \addto\extrasngerman{%
+    \@datelanguagegerman
+    }
+  \addto\extrasgerman{%
+    \@datelanguagegerman
+    }
+
+}
+\endinput

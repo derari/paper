@@ -1,9 +1,171 @@
-\chapter{Bringing Omniscient Debugging Down to the Database}
+\documentclass[english,conference,final]{IEEEtran}
 
+%\overfullrule=1mm
+
+\usepackage{cite} % recommended by IEEEtran template
+\usepackage{balance}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{microtype}
+
+\usepackage{babel}
+\usepackage{csquotes}
+\MakeOuterQuote{"}
+
+%\usepackage[backend=biber,style=numeric-comp]{biblatex}
+%\bibliography{references}
+%\renewcommand{\bibliography}[1]{\printbibliography}
+
+\usepackage{lmodern}
+\usepackage{MnSymbol}
+
+\usepackage[svgnames]{xcolor}
+%\usepackage{todonotes}
+%\presetkeys{todonotes}{inline}{}
+\usepackage[subject={TODO}]{pdfcomment}
+\newcommand{\todo}[2][]{\pdfmargincomment[author={#1}]{#2}}
+
+%\usepackage{makecell}
+\usepackage{ctable}
+\newcolumntype{R}{>{\raggedleft \arraybackslash}X}
+
+
+\usepackage{listings}
+
+\newcommand{\lineref}[2]{\hyperref[#1]{line~\ref*{#1:#2}}}
+\newcommand{\linerefn}[2]{\hyperref[#1]{line~#2}}
+\newcommand{\linesrefn}[2]{\hyperref[#1]{lines~#2}}
+\usepackage{accsupp}
+\newcommand\emptyaccsupp[1]{\BeginAccSupp{ActualText={}}#1\EndAccSupp{}}
+
+\usepackage{hyperref}
+\usepackage[all]{hypcap}
+\PassOptionsToPackage{nameinlink,noabbrev}{cleveref}
+\usepackage{cleveref}
+
+
+\lstset{captionpos=b}
+\lstset{basicstyle=\small\ttfamily}
+\lstset{showstringspaces=false, columns=flexible, keepspaces=true}
+\lstset{tabsize=2, gobble=2}
+\lstset{upquote=true}
+%% Linebreaks
+%\lstset{prebreak=\raisebox{0ex}[0ex][0ex]
+%        {\ensuremath{\rhookswarrow}}}
+\lstset{postbreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\rcurvearrowse\space}}}
+\lstset{breaklines=true, breakatwhitespace=true}
+%% Line Numbers
+\newcommand{\lstnumberstyle}[1]{\tiny\emptyaccsupp{#1}}
+\lstset{numbers=left, numberstyle=\lstnumberstyle, numbersep=5pt, numberfirstline=true, firstnumber=1, stepnumber=5}
+\lstset{escapeinside={(*@}{@*)}}
+
+\lstdefinestyle{BWStyle}{
+	keywordstyle=\bfseries,
+	stringstyle=\color{DimGray},
+	commentstyle=\textsl,
+}
+\lstset{style=BWStyle}
+
+\lstdefinelanguage{algorithm}{
+	keywords={function, for, do, if, then, else, return, in_, is_a, or, and},
+	morecomment=[l]{'},
+	morecomment=[s]{/*}{*/},
+	morestring=[b]",  
+	sensitive=true,
+}
+\lstdefinelanguage{HanaSQL}[]{SQL}{
+	morekeywords={replace,string,if,is,daysbetween,secondsbetween,weekday,adddays,addseconds,double, procedure,begin,declare,inout,call,return,returns},
+	moredelim=**[is][\slshape]{^}{^},
+	moredelim=**[is][\bfseries]{§}{§},
+}
+\lstdefinelanguage{Inline}{
+	moredelim=**[is][\slshape]{^}{^},
+	moredelim=**[is][\bfseries]{§}{§},
+}
+
+\lstset{language=HanaSQL}
+\lstMakeShortInline[basicstyle=\ttfamily,language={Inline},breaklines=true]`
+
+\usepackage{listingsnumbermargin}
+\lstset{numbers=LEFT, LEFTmargin=1.2em}
+
+%Macros
 \newcommand{\tool}{TAR\-DISP}
 \newcommand{\SQLextension}{Back-in-time SQL}
 
-\tmpStart
+\hypersetup{
+	pdftitle={Bringing Back-in-Time Debugging Down to the Database},
+	pdfauthor={Arian Treffer, Michael Perscheid, Matthias Uflacker}
+}
+
+
+\begin{document}
+
+\title{Bringing Back-in-Time Debugging\\ Down to the Database}
+%\subtitle{(\tool is a placeholder for the actual name)}
+
+\author{\IEEEauthorblockN{Arian Treffer}
+\IEEEauthorblockA{Hasso-Plattner-Institut\\
+Potsdam, Germany\\
+arian.treffer@hpi.de}
+\and
+\IEEEauthorblockN{Michael Perscheid}
+\IEEEauthorblockA{SAP Innovation Center\\
+Potsdam, Germany\\
+michael.perscheid@sap.com}
+\and
+\IEEEauthorblockN{Matthias Uflacker}
+\IEEEauthorblockA{Hasso-Plattner-Institut\\
+Potsdam, Germany\\
+matthias.uflacker@hpi.de}}
+
+
+%\numberofauthors{3} 
+%\author{
+%% 1st. author
+%\alignauthor
+%Arian Treffer\\
+       %\affaddr{Hasso-Plattner-Institut}\\
+       %\affaddr{Potsdam, Germany}\\
+       %\affaddr{arian.treffer@hpi.de}
+%% 2nd. author
+%\alignauthor
+%Michael Perscheid\\
+       %\affaddr{SAP Innovation Center}\\
+       %\affaddr{Potsdam, Germany}\\
+       %\affaddr{michael.perscheid@sap.com}
+%% 3rd. author
+%\alignauthor 
+%Matthias Uflacker\\
+       %\affaddr{Hasso-Plattner-Institut}\\
+       %\affaddr{Potsdam, Germany}\\
+       %\affaddr{matthias.uflacker@hpi.de}
+%%\and  % use '\and' if you need 'another row' of author names
+%}
+
+%\date{30 July 1999}
+
+\maketitle
+\begin{abstract}
+With back-in-time debuggers, developers can explore what happened before observable failures by following infection chains back to their root causes.
+While there are several such debuggers for object-oriented programming languages, we do not know of any back-in-time capabilities at the database-level.
+Thus, if failures are caused by SQL scripts or stored procedures, developers have difficulties in understanding their unexpected behavior.
+
+In this paper, we present an approach for bringing back-in-time debugging down to the SAP HANA in-memory database.
+Our \tool\ debugger allows developers to step queries backwards and inspecting the database at previous and arbitrary points in time.
+With the help of a SQL extension, we can express queries covering a period of execution time within a debugging session and handle large amounts of data with low overhead on performance and memory.
+The entire approach has been evaluated within a development project at SAP and shows promising results with respect to the gathered developer feedback.
+\end{abstract}
+
+%\keywords{Back-in-time debugging, in-memory database, SAP HANA}
+
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+\section{Introduction}
+
 %Context: Debugging and Back-in-Time
 Finding defects in code is a frequent task for every programmer and is often difficult even with a deep understanding of the system.
 To localize failure causes, they examine involved program entities and distinguish relevant from irrelevant behavior and clean from infected state. 
@@ -12,20 +174,20 @@ Back-in-time also known as omniscient debuggers simplify the debugging process b
 These tools provide full access to past events so that developers can directly experiment with the entire infection chain. 
 
 %Problem: Back-in-time debugger missing for database-level
-Even though back-in-time debuggers exist for many object-oriented programming languages~\cite{feldman_igor_1988,lewis_debugging_2003}, there are none, to the best of our knowledge, that run on databases and support SQL or SQLScript\footnote{SQLScript is a proprietary SQL extension for stored procedures in SAP HANA~\cite{sqlScript}.}. %hofer_design_2006
+Even though back-in-time debuggers exist for many object-oriented programming languages~\cite{feldman_igor:_1988,lewis_debugging_2003}, there are none, to the best of our knowledge, that run on databases and support SQL or SQLScript\footnote{SQLScript is a proprietary SQL extension for stored procedures in SAP HANA~\cite{sqlScript}.}.%hofer_design_2006
 This is mainly because of two reasons. 
 First, back-in-time debuggers typically create a significant overhead on performance and memory consumption~\cite{lewis_debugging_2003,pothier_scalable_2007,lienhard_practical_2008}.
 It seems unfeasible to use a back-in-time debugger on top of a database script that processes billions of records.
 Second, current back-in-time debugging concepts cannot handle side-effects outside their system that usually happen in writing operations during INSERT and UPDATE statements. 
 
 %Significance: Especially, in business software much development is based on database scripts. 
-Due to high performance requirements of handling big data in business applications, companies like SAP have not only a strong demand to move code closer to data~\cite{plattner2015memory} but also the need to improve development tools at the database-level. 
+Due to high performance requirements of handling big data in business applications, SAP has not only a strong demand to move code closer to data~\cite{plattner2015memory} but also the need to improve development tools at the database-level. 
 As existing tools mostly work on the application level, are limited to specific points in time, or work only on an abstract query plan, developers are often left alone when it comes to debug and understand the results of their SQL and SQLScripts.
 We argue that a back-in-time debugger at the bottom of the technology stack is able to close this gap and can support developers in developing and maintaining their queries more efficiently. 
 
 %Solution
-We bring the concept of back-in-time debugging to the database and developed \emph{\tool} as an implementation of our approach.
-
+In this paper, we bring the concept of back-in-time debugging to the database and present \emph{\tool} as an implementation of our approach.
+The contributions of this paper are as follows:
 \begin{itemize}
 	\item \emph{\tool} ("Tracing And Recorded Data In Stored Procedures") is a back-in-time debugger for stored procedures which can be installed in the SAP HANA in-memory database and programming platform.
 		Using \tool, developers can move freely through the execution time of a stored procedure and inspect control flow, variables, and intermediate results.
@@ -41,29 +203,42 @@ We bring the concept of back-in-time debugging to the database and developed \em
 We evaluated \tool\ with the help of SAP colleagues who worked on a project called \emph{Point of Sales Explorer}~\cite{plattner2015memory}, which makes heavy use of SQLScript. 
 The interviews indicated that failures in stored procedures can be investigated more efficiently with \tool\ than with other existing database development tools.
 
-\section{Back-in-Time Debugging for Stored Procedures}
+The remainder of this paper is structured as follows:
+\Cref{sec:relatedWork} describes related work. 
+\Cref{sec:prototype} presents our approach and its prototypical implementation of back-in-time debugging in the database.
+\Cref{sec:ttqueries} discusses querying past database states and introduces our extension to SQL.
+\Cref{sec:evaluation} evaluates our approach before \cref{sec:conclusion} discusses future work and concludes the paper.
+
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+\section{Related Work}
+\label{sec:relatedWork}
+
+The first debugger that could reverse execution was EXDAMS for FORTRAN in the late 1960s~\cite{balzer_exdams:_1969}, which stored previous program state on tape.
+Later, other reversible debuggers used memory snapshots~\cite{feldman_igor:_1988} or reversible execution~\cite{lieberman1997zstep} to allow stepping backwards through time.
+
+The \emph{omniscient debugger}~\cite{lewis_debugging_2003} was the first debugger to keep the entire program history in memory.
+This allows fast jumping between arbitrary points in time and querying the execution history, but creates a large overhead on runtime and memory consumption.
+%Traceglasses~\cite{sakurai2010traceglasses} records compact execution events of Java applications. By querying and transforming these events, developers have a comfortable navigation through large execution trees. 
+%JHyde~\cite{hermanns2011hybrid} is a hybrid debugger for Java that integrates declarative with back-in-time debugging. With the help of generated hypotheses, developers can explicitly follow the infection chain backwards.
+%Moreover, there are already straightforward back-in-time debuggers in commercial development environments such as Microsoft’s IntelliTrace for Visual Studio 2010.
+The trace-oriented debugger ~\cite{pothier_scalable_2007} uses a specialized distributed database to better handle large amounts of trace data.
+Object  flow  analysis~\cite{lienhard_practical_2008} reduces the required amount of memory by leveraging the VM's garbage collector.
+The Path tool suite and its Test-Driven Fault Navigation~\cite{perscheid2013} leverages reproducible test cases in order to distribute the tracing overhead over multiple runs depending on developers' needs.
+\emph{SPYDER}~\cite{agrawal_debugging_1993} and the \emph{Slice Navigator}~\cite{treffer2016} are back-in-time debuggers that use dynamic slicing to make following the infection chain more efficient.
+
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-% why post mortem
-%\todo{If we need to shorten later on, I would start here in the problem description.}
-With a regular debugger, developers have only one way to go back in time, which is to restart the execution.
-Tools can be used to automate this approach and some modern debuggers even allow to restart execution at the method level.
-%\todo{cite checkpoint debugger?}
-%\todo{http://help.eclipse.org/neon/index.jsp?topic=\%2Forg.eclipse.jdt.doc.user\%2Freference\%2Fviews\%2Fdebug\%2Fref-droptoframe.htm}
-However, this approach fails if the code has side effects, as it can no longer be guaranteed to execute in the same way.
-Furthermore, if the execution is too slow, developers will spend much time waiting for re-execution, which discourages the use of backwards stepping.
-
-A different way to examine a program's behavior over time is to record a trace of the program's actions.
-After the program terminated, the trace can be examined in a post-mortem analysis.
-This works well for special purpose tools that only analyze a specific aspect of a program, such as profilers.
-A post-mortem debugger, on the other hand, has to record virtually everything to be able to replay the program execution.
-While this approach allows developers the most freedom when stepping through the execution, it creates a large overhead on performance and memory.
-Debugger implementations using this approach exist for different programming languages.
-%
-Both approaches can also be mixed to create a tradeoff between performance and overhead~\cite{perscheid2013}.
+\section{Back-in-time Debugging for\texorpdfstring{\\ }{ }Stored Procedures}
+\label{sec:prototype}
 
 % post-mortem has been solved before, why is it harder in the database
-%Back-in-time debuggers typically create a significant overhead on run-time and memory, as they need to trace and record every aspect of an execution.
+Back-in-time debuggers typically create a significant overhead on run-time and memory, as they need to trace and record every aspect of an execution.
 When debugging programs that run on a database, a back-in-time debugger faces two additional problems:
 First, the program's behavior strongly depends on external state.
 With live debugging, this sometimes can be mitigated by resetting the database before restarting the program, but a post-mortem analysis can not easily examine intermediate states when they have been changed.
@@ -72,7 +247,8 @@ Sometimes, state that has impact on a query's result even remains entirely in th
 The only way to examine such state is through specific database queries before it is changed.
 
 Stored procedures add the additional challenge that results of a query can be used in subsequent database statements without having been fetched into the program.
-This increases the amount of invisible state, sometimes only for a few instructions, other times for the entire length of the program.
+This increases the amount of invisible state.
+%, sometimes only for a few instructions, other times for the entire length of the program.
 Furthermore, as trace data usually exceeds program data by orders of magnitude, we expect that tracing the processing of every tuple in a large database is not feasible.
 
 With \tool, we focuses on stored procedures because they are executed close to the data and, thus, more efficient in handling large data sets.
@@ -98,29 +274,9 @@ For many business applications, such columns already exist where no data may be 
 In conclusion, all that is needed to reproduce the execution of a stored procedure is a sequence of execution steps.
 Each step represents an instruction that has side effects on the database or assigns a value or result set to a variable.
 As there is, conceptually, no concurrency in a stored procedure, we can use sequential numbering to track the order of steps.
-If applicable, a step has a target name, such as the name of a variable or stored procedure, and a string representation of the value, which can be shown to the user in the debug view.
 If the step involves a database statement, we also need a timestamp to be able to reproduce the query.
-Moreover, we also record the number of rows in the result set and the execution time, as well as any atomic argument values, as this information is likely to be relevant for developers.
-
-We never trace any details of the query execution but only record the name of a view than can be used to later reproduce the query result.
-The view is specifically generated by the debugger, as will be explained in the next subsection.
-
-%\subsection{Reproducing Query Results}
 
 With the recorded trace data, the debugger has enough information available to replay the execution and to re-execute any query.
-
-However, the query will only yield the same results as long as the underlying data has not changed.
-
-In general, one can expect that debugging will take place on a development machine where no other data manipulation occurs.
-However, in cases where this assumption doesn't hold, the debugger might end up showing wrong or misleading data the developer.
-Furthermore, the debugged stored procedure itself may change the data, which will cause a query to return different results at different points in time.
-
-We ensure consistency over time by following the insert-only approach of our in-memory database.
-If we require for all tables that data can never be changed or deleted and annotate all tuples with timestamps of when they have been created and invalidated, we can reconstruct the state of the database of any point in time.
-Adding timestamp filters to select queries does not cause a significant slowdown.
-Our prototype was built using this approach.
-\todo{HANA hat seit neustem "History tables" die das direkt können, wir benutzen aber explizite timestamps weil das momentan noch praktischer ist }
-
 
 \subsection{Prototype and Tracing Code Generation}
 
@@ -130,10 +286,7 @@ The user interface is written in HTML5 and JavaScript and queries debugging data
 Traces are stored directly in the database.
 Packaged as an XS Application, \tool\ can be directly deployed in a SAP HANA installation.
 
-%With a debugger fully integrated in its database, we would expect the stored procedure execution engine to trace the execution steps.
-%However, for our prototype this level of integration was out of scope.\todo{Don't start this way but rather put it into limitation discussion or next steps in summary and than call it producterization}
-
-To be able to trace an execution, we developed a SQLScript pre-processor that parses a stored procedure and adds ´INSERT´ statements around every instruction to collect the required trace data.
+To be able to trace an execution, we developed a SQLScript pre-processor that parses a stored procedure and adds `INSERT` statements around every instruction to collect the required trace data.
 To obtain a trace, the debugger then once has to run the traced code instead of the original procedure.
 In addition to the tracing code, the pre-processor also generates SQL functions and views that will be used to obtain variable values at given points in time.
 For atomic variables, it is simply a search for its most recent step.
@@ -146,7 +299,7 @@ On top of that, a master view is generated that chooses the appropriate query vi
 
 \begin{figure}
 	\centering
-		\includegraphics[width=\linewidth]{img/odb.png}
+		\includegraphics[width=\linewidth]{odb.png}
 	\caption{User interface of the \tool\ debugger.}
 	\label{fig:odb}
 \end{figure}
@@ -162,30 +315,13 @@ Arrow buttons allow to jump to the previous or next assignment of the variable.
 For variables containing a query result, the size of the result is shown.
 Clicking the variable opens a query window that shows the variable's content and allows the developer to submit time-travel queries, which will be explained in the next section.
 
-\section{Back-in-Time SQL}
-
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 \newcommand{\red}[1]{\textcolor{DarkRed}{#1}}
 \newcommand{\gr}[1]{\textcolor{Green}{#1}}
-\newcommand{\timediffresult}{
-\begin{table}%
-	\begin{tabulary}{\textwidth}{RRRRRRR} \toprule %rlrrrlr
-	%pr.id & pr.name 	& pr.budget  & total & po2.id & po2.status & po2.total \\ \midrule
-		\multicolumn{3}{c}{pr.} & \multicolumn{1}{c}{po.} & \multicolumn{3}{c}{po2.} \\
-	\cmidrule(lr){1-3} \cmidrule(lr){4-4} \cmidrule(lr){5-7}
-	~id & name & budget  & total & ~id & status & total \\ \midrule
-	
-				&					  & \red{1200} & \red{1500} &	  & \red{open} &					\\
-	1			& Project 1 & 200			 	 & 500 			  & 1 & paid 			 & 1000			\\
-				&						& \gr{-300}  & \gr{0}		  &	  &						 &					\\ \midrule
-
-				&					  & \red{1200} & \red{1500} &	  & 					 &					\\
-	1			& Project 1 & 200				 & 500 			  & 2 & open 			 & 500			\\
-				&						& \gr{-300}  & \gr{0}		  &	  & \gr{paid}	 &					\\ \bottomrule
-	\end{tabulary}
-	\caption{Result of a time-diff query, with multiple values in some columns. Red indicates a different value at the \emph{before} step, green indicates a different value at the \emph{after} step.}
-	\label{tab:diffresult}
-\end{table}
+%\newcommand{\timediffresult}{
 %\ctable[caption={Result of a time-diff query, with multiple values in some columns. Red indicates a different value at the \emph{before} step, green indicates a different value at the \emph{after} step.},label=tab:diffresult,doinside={\small}]
 				%{rlrrrlr}{}{
 	%pr.id & pr.name 	& pr.budget  & total & po2.id & po2.status & po2.total \ML
@@ -198,25 +334,13 @@ Clicking the variable opens a query window that shows the variable's content and
 	%1			& Project 1 & 200				 & 500 			  & 2 & open 			 & 500			\NN
 				%&						& \gr{-300}  & \gr{0}		  &	  & \gr{paid}	 &					\ML
 %}
-}
-%\newcommand{\timediffresult}{
-%\ctable[caption={Result of a time-diff query, with multiple values in some columns. Red indicates a different value at the \emph{before} step, green a different value at the \emph{after} step.},label=tab:diffresult,doinside={\small}]
-				%{rrrrrrr}{}{
-	%\multicolumn{3}{c}{pr.} & \multicolumn{1}{c}{po.} & \multicolumn{3}{c}{po2.} \NN
-	%\cmidrule(lr){1-3} \cmidrule(lr){4-4} \cmidrule(lr){5-7}
-	%id & name & budget  & total & id & status & total \ML
-	%
-				%&						& \red{1200} & \red{1500} &	  & \red{open} &					\NN
-	%1			&	Project 1	& 200			 	 & 500 			  & 1 & paid 			 & 1000			\NN
-				%&						& \gr{-300}  & \gr{0}		  &	  &						 &					\ML
-%
-				%&						& \red{1200} & \red{1500} &	  & 					 &					\NN
-	%1			&	Project 1	& 200				 & 500 			  & 2 & open 			 & 500			\NN
-				%&						& \gr{-300}  & \gr{0}		  &	  & \gr{paid}	 &					\ML
 %}
+%\newcommand{\timediffresult}{
+
 %}
 
-\tmpStart
+\section{\SQLextension}
+\label{sec:ttqueries}
 
 In our setup, the debugger has to recreate intermediate results of a stored procedure.
 We generalized this feature to enable developers to submit arbitrary queries against the database of any previous point in time.
@@ -229,11 +353,8 @@ As an example, we consider a stored procedure that triggers the payment of purch
 Users reported a bug: projects sometimes exceed their budget, which is not supposed to happen.
 Developers might start debugging this issue and the related stored procedure with \tool.
 However, they soon realize that the number of projects is too large to continue stepping manually.
-Instead, they open \tool's SQL console and submit the query shown in \cref{lst:ttravel} to look into the ´select_projects´ variable, which contains ids, names, and budgets of all projects to be processed.
+Instead, they open \tool's SQL console and submit the query shown in \cref{lst:ttravel} to look into the `select_projects` variable, which contains ids, names, and budgets of all projects to be processed.
 To better understand the data, they also sum up the total amount of all open purchase orders for each project.
-
-%\Cref{lst:ttravel} shows the query to fetch all selected projects together with the total amount of open orders\todo{The previous paragraph already explains the code - reference to listing needs to be earlier.}.
-%We will use it as an example to show how \tool\ handles time-travel queries.
 
 %\begin{figure} % IEEE says put code in figures
 %\begin{lstlisting}
@@ -249,8 +370,8 @@ To better understand the data, they also sum up the total amount of all open pur
 %\label{lst:ttravel}
 %\end{figure}
 
-The last line of \cref{lst:ttravel} contains the ´^AT STEP^´ clause, our extension to SQL that allows developers to explicitly query a specific point in time.
-When opening the SQL console, \tool\ automatically provides an ´AT STEP´ clause with the number of the current debug step, ´^1623^´ in this case.
+The last line of \cref{lst:ttravel} contains the `^AT STEP^` clause, our extension to SQL that allows developers to explicitly query a specific point in time.
+When opening the SQL console, \tool\ automatically provides an `AT STEP` clause with the number of the current debug step, `^1623^` in this case.
 Developers can obtain numbers for other steps from the stepping toolbar or the execution tree. 
 
 When the query is submitted, \tool\ applies two transformations before it is passed to the database.
@@ -260,16 +381,7 @@ Second, time-stamp filters on the validity columns are added for all tables that
 %Because of SAP HANA's insert-only approach, 
 This lets all tables appear exactly as they originally were at the specified point in time.
 
-%In our example,
-%\begin{lstlisting}[language={Inline},basicstyle=\ttfamily,numbers=none]
-  %po.createdOn < ^1623^ AND (po.validTo IS NULL OR po.validTo > ^1623^)
-%\end{lstlisting}
-%would be added to the where-clause.
-
 Now, the query can be submitted to the database and the result is subsequently presented to the user.
-
-When developers omit the step number, it is taken from the context of the debug session.
-This way, developers can step through the execution and observe how the query result changes over time.
 
 \subsection{Time-diff Queries}
 
@@ -305,7 +417,21 @@ in line 7, it is used to filter for purchase orders whose status was or will be 
 %\caption{Example of a time-diff query: "Select all projects that will go over budget and their respective purchase orders"}
 %\label{lst:tdiff}
 %\end{figure}
-\timediffresult
+\ctable[caption={Result of a time-diff query, with multiple values in some columns. Red indicates a different value at the \emph{before} step, green a different value at the \emph{after} step.},label=tab:diffresult,doinside={\small}]
+				{rrrrrrr}{}{%
+	\multicolumn{3}{c}{pr.} & \multicolumn{1}{c}{po.} & \multicolumn{3}{c}{po2.} \NN
+	\cmidrule(lr){1-3} \cmidrule(lr){4-4} \cmidrule(lr){5-7}
+	id & name & budget  & total & id & status & total \ML
+	
+				&						& \red{1200} & \red{1500} &	  & \red{open} &					\NN
+	1			&	Project 1	& 200			 	 & 500 			  & 1 & paid 			 & 1000			\NN
+				&						& \gr{-300}  & \gr{0}		  &	  &						 &					\ML
+
+				&						& \red{1200} & \red{1500} &	  & 					 &					\NN
+	1			&	Project 1	& 200				 & 500 			  & 2 & open 			 & 500			\NN
+				&						& \gr{-300}  & \gr{0}		  &	  & \gr{paid}	 &					\ML
+}
+
 \Cref{tab:diffresult} shows a possible result for this query, with one project that goes over budget and two associated purchases.
 The values for budget and total of outstanding payments are shown for each of the three steps.
 Of the two purchase orders, the first was already marked as "paid" before the current step, the other is about to be paid.
@@ -322,80 +448,38 @@ In the user interface, changes in the values are highlighted in as shown in \cre
 If a value changed since the \emph{before} step, the old value is shown in red; if a value will change until the \emph{after} step, the new value is shown in green.
 When possible, the tuple creation timestamps are used to allow developers to jump exactly to the point in time where the change occurred.
 
-%Then, to prepare the diffing of the results, they are outer-joined on the primary keys and the time-specific filters are applied.
-%For performance reasons, all of this happens inside a single SQL query, as shown in \cref{lst:tdifffinal}.
-%The execution of the sub-queries is indicated in \linerefn{lst:tdifffinal}{6, 7, and 10}, the time-specific filters can be found in the Where-condition of \linerefn{lst:tdifffinal}{15 and 16}.
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-%
-%In the UI\todo{Instead of many code listing show the UI (this could also include the code)}, the before and after values are only shown if they differ from the now value.
-%Clicking on value allows the developer to jump to the ´UPDATE´ or ´INSERT´ statement that caused the change.
+\section{Evaluation}
+\label{sec:evaluation}
 
-
-\section{Performance Evaluation and Developer Interviews}
-
-\tmpStart
-
-%\ctable[caption=,label=tab:measure1,doinside={\small},width=\linewidth]
-				%{lc>{\raggedleft \arraybackslash}p{1.3cm}RR}{}{
-				%&		& Normal run& Run with tracing  & Reproducing the result \ML
-	%
-			 %&	(a) &	1.27 s		& 1.35 s		& 1.21 s		\NN
-%Proc. 1& (b)	&	1.61 s		& 1.74 s		& 1.54 s		\NN
-			 %&	(c) &	1.73 s		& 1.85 s		& 1.60 s		\ML
-%
-			 %&	(a) &	1.24 s		& 1.32 s		& 1.19 s		\NN
-%Proc. 2& (b)	&	1.61 s		& 1.72 s		& 1.55 s		\NN
-			 %&	(c) &	1.69 s		& 1.80 s		& 1.63 s		\ML
-%}
-
-\begin{table}
-	\centering
-	\begin{tabulary}{\textwidth}{lcRRR}
-	\toprule
-				&		& Normal run& Run with tracing  & Reproducing the result \\ \midrule
+\ctable[caption={Average execution time for running a stored procedure without and with tracing and for reproducing its result.},label=tab:measure1,doinside={\small},width=\linewidth]
+				{lc>{\raggedleft \arraybackslash}p{1.3cm}RR}{}{
+				&		& Normal run& Run with tracing  & Reproducing the result \ML
 	
-			 &	(a) &	1.27 s		& 1.35 s		& 1.21 s		\\
-Proc. 1& (b)	&	1.61 s		& 1.74 s		& 1.54 s		\\
-			 &	(c) &	1.73 s		& 1.85 s		& 1.60 s		\\ \midrule
+			 &	(a) &	1.27 s		& 1.35 s		& 1.21 s		\NN
+Proc. 1& (b)	&	1.61 s		& 1.74 s		& 1.54 s		\NN
+			 &	(c) &	1.73 s		& 1.85 s		& 1.60 s		\ML
 
-			 &	(a) &	1.24 s		& 1.32 s		& 1.19 s		\\
-Proc. 2& (b)	&	1.61 s		& 1.72 s		& 1.55 s		\\
-			 &	(c) &	1.69 s		& 1.80 s		& 1.63 s		\\ \bottomrule
-	\end{tabulary}
-	\caption{Average execution time for running a stored procedure without and with tracing and for reproducing its result.}
-	\label{tab:measure1}
-\end{table}
+			 &	(a) &	1.24 s		& 1.32 s		& 1.19 s		\NN
+Proc. 2& (b)	&	1.61 s		& 1.72 s		& 1.55 s		\NN
+			 &	(c) &	1.69 s		& 1.80 s		& 1.63 s		\ML
+}
 
-\begin{table}
-	\centering
-	\begin{tabulary}{\textwidth}{lcRR}
-	\toprule
-				&		& Regular query& Time-diff query \\ \midrule
+\ctable[caption={Average execution times for queries executed normally or as time-diff query.},label=tab:measure2,doinside={\small},width=\linewidth]
+				{lcRR}{}{
+				&		& Regular query& Time-diff query \ML
 	
-			 &	(a) &	1.21 s		& 1.51 s	\\
-Query 1& (b)	&	1.74 s		& 2.12 s	\\
-			 &	(c) &	1.79 s		& 2.23 s	\\ \midrule
+			 &	(a) &	1.21 s		& 1.51 s	\NN
+Query 1& (b)	&	1.74 s		& 2.12 s	\NN
+			 &	(c) &	1.79 s		& 2.23 s	\ML
 
-			 &	(a) &	61 ms		&  75 ms	\\
-Query 2& (b)	&	81 ms		& 100 ms	\\ 
-			 &	(c) &	88 ms		& 109 ms	\\ \bottomrule
-	\end{tabulary}
-	\caption{Average execution times for queries executed normally or as time-diff query.}
-	\label{tab:measure2}
-\end{table}
-
-%\ctable[caption={Average execution times for queries executed normally or as time-diff query.},label=tab:measure2,doinside={\small},width=\linewidth]
-				%{lcRR}{}{
-				%&		& Regular query& Time-diff query \ML
-	%
-			 %&	(a) &	1.21 s		& 1.51 s	\NN
-%Query 1& (b)	&	1.74 s		& 2.12 s	\NN
-			 %&	(c) &	1.79 s		& 2.23 s	\ML
-%
-			 %&	(a) &	61 ms		&  75 ms	\NN
-%Query 2& (b)	&	81 ms		& 100 ms	\NN
-			 %&	(c) &	88 ms		& 109 ms	\ML
-%}
+			 &	(a) &	61 ms		&  75 ms	\NN
+Query 2& (b)	&	81 ms		& 100 ms	\NN
+			 &	(c) &	88 ms		& 109 ms	\ML
+}
 
 We evaluated our \tool\,debugger on a real-world SAP project that has been developed with one of the largest European retail companies. 
 This project is called \emph{Point of Sales Explorer}~\cite{plattner2015memory} and allows category managers to see a collection of the most important key performance indicators (KPIs) for several thousands of products in a unified dashboard.
@@ -407,19 +491,15 @@ For that reason, it is a proper candidate to measure performance and interview i
 
 To evaluate the performance of our approach, we deployed \tool\ on a copy of the productive system.
 We selected two stored procedures from the Point of Sales Explorer and compared the runtime with and without tracing.
-To measure the impact of database size, we ran each procedure with different arguments that would lead to intermediate results of different sizes.
-Each value is the average of ten measurements.
-%The results are shown in \cref{tab:measure1}.
+We ran each procedure with different arguments that would lead to intermediate results of different sizes.
 As \cref{tab:measure1} shows, we found the overhead of tracing to be consistently between six and seven percent.
 
 We also measured the time it takes to reproduce the results of each stored procedure.
-This provides us with an upper bound for how long \tool\ would need to compute the value of any variable because in our examples all variables are needed to compute the final result.
 The measurements in \cref{tab:measure1} show that reproducing the result is slightly faster than executing the stored procedure.
 This was expected because for variables containing atomic values the value could be taken directly from the trace.
 Only for variables containing table results, database queries had to be executed again.
 
 Finally, we selected two queries from the stored procedures as examples a developer might submit through the debugger's SQL console and measured their execution time both as a regular query and as a time-diff query.
-%Because the Point of Sales Explorer onlyu computes KPIs and does not change the data, we let the time-diff query compare different time-spans of point of sale data\todo{is this disclaimer needed?}.
 Again, we used different filter arguments to produce different result sizes.
 As \cref{tab:measure2} shows, in each case the runtime overhead of time-diff queries is around 25 percent.
 
@@ -437,40 +517,40 @@ Finally, we have conducted an in-depth interview in order to receive feedback an
 We found out that the main reason for writing SQLScript is to positively influence the optimizer of SAP HANA in order to speed up the overall user request.
 If something went wrong at the database-level, the existing tool support was not sufficient. 
 The interviewed developers often had to guess why a specific sub-query was not return the expected results. 
-%For that reason, they liked our back-in-time debugger and we received a lot of positive feedback.
 For this, they liked \tool\ as it could not only show formerly hidden results but also helped them to understand and follow back the reasons behind a failure cause. 
 The greatest improvement was reported for debugging stored procedures that take a table of data as an argument, whose cumbersome preparation has to be done only once, using \tool.
-Composing such an argument with specific data using the existing tools is cumbersome and has to be redone every time the debug session has to be restarted.
-Using \tool, it has to be done only once.
 Besides that, both developers wished for some new features such as the ability to define temporary tables for testing code and queries.
 With this feedback, we see a strong need for better debugging support at the database-level and are eager to further improve our approach.
 
-%We found out that the main reason for writing SQLScript is to positively influence the optimizer of SAP HANA in order to speed up the overall user request.
-%This worked very well as long as the newly written code was free of failures. 
-%However, if something went wrong at the database-level, the existing tool support was not sufficient. 
-%The interviewed developers often had to guess why a specific sub query was not return the expected results. 
-%For that reason, they liked our back-in-time debugger and we received a lot of positive feedback.
-%For example, \tool\ could not only show formerly hidden results but also helped them to understand and follow back the reasons behind a failure cause. 
-%The greatest improvement was reported for debugging stored procedures that take a table of data as an argument.
-%Composing such an argument with specific data using the existing tools is cumbersome and has to be redone every time the debug session has to be restarted.
-%Using \tool, it has to be done only once.
-%Besides that, both developers also revealed several small failures in our debugger and wished for some new features such as the ability to define temporary tables for testing code and queries.
-%With this feedback, we see a strong need for better debugging support at the database-level and are eager to further improve our approach.
 
-%\subsection{Threats to Validity}
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+%%%---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-\subsection{Limitations}
+\section{Conclusion}
+\label{sec:conclusion}
 
-Our implementation of \SQLextension\ currently has two limitations.
+\balance
+We presented an approach for bringing back-in-time debugging down to SQL and stored procedures.
+Our \tool\ debugger is an implementation of our approach that runs on the SAP HANA in-memory database.
+With \tool, developers can step forward and backward through the execution of a stored procedure.
+We introduced \SQLextension, a super-set of SQL, that allows developers to query the database from any point in the execution, compare the data of multiple points in time with one query, and even query for changes in the data.
 
-First, time-diff queries can only be executed on tables that have clearly defined primary keys because key attributes are required to track a tuple's version over time.
-For a query like "Sum budgets per project category", it has to be clear that categories are the entities that keep their identity over time.
-Here, an additional syntax extension could be used to convey this kind of information.
+Our evaluation has shown that the runtime overhead caused by execution tracing is small enough to let \tool\ be the default choice for debugging stored procedures.
+Interviews with developers have confirmed the usefulness of back-in-time debugging for finding root causes in database programs.
 
-Second, it is currently not possible to use time qualifiers on identifiers outside of the where clause.
-We can imagine that there may be a need to use time qualifiers in other SQL clauses, such as the select or order-by clause.
-In other use cases, developers might want to attach a time qualifier directly to a table.
+Future work will move in two directions.
+First, we shall bring more advanced debugging techniques that use a combination of trace data and code analysis to help identify failure causes, such as dynamic slicing~\cite{agrawal_dynamic_1990} down to the database.
+% or why-questions~\cite{ko_debugging_2008}, down to the database.
+Second, while developers now have the tools to efficiently debug each layer of a complex application, the tool support to track infection chains across layers and system boundaries is still lacking.
+We want to develop a back-in-time debugger that will allow developers to debug seamlessly across application layers.
 
 
+%
+% The following two commands are all you need in the
+% initial runs of your .tex file to
+% produce the bibliography for the citations in your paper.
+\bibliographystyle{abbrv}
+\bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
 
-\tmpEnd
+\end{document}

@@ -1,0 +1,178 @@
+%
+% KOMA-specific properties
+%
+\@ifclassloaded{scrbook}{}{%
+  % not koma
+  \PackageError{sty/swa-document-scrbook}{
+    This package should only be used with KOMA script
+  }{
+    You might consider loading swa-document.
+    }
+}
+
+\newif\if@swa@birdseye
+\DeclareOption{birdseyeview}{\@swa@birdseyetrue}
+\DeclareOption{birdseyeview=true}{\@swa@birdseyetrue}
+\DeclareOption{birdseyeview=false}{\@swa@birdseyefalse}
+\ProcessOptions\relax
+
+
+
+\KOMAoptions{
+    pagesize,
+    DIV=9,
+    open=right,
+    appendixprefix=true,
+    % headinclude=true,
+    % footinclude=true
+  }
+\areaset[current]{\textwidth}{1.61803399\textwidth}
+
+\newif\if@swa@bindingcorrection@set
+\@swa@bindingcorrection@setfalse
+
+\newcommand*\bindingcorrection[3][1]{
+  % #1 -> "Volumen", typically 1
+  % #2 -> pages
+  % #3 -> gammage
+
+  % Kohm: Die Bindekorrektur macht bei guter Bindung und gutem Papier maximal die
+  % Hälfte des Buchblocks aus.
+ %
+ % BCOR = (gamage/1000 * sheets * volume) / 2
+ %     = gammage/1000 * pages/2 * volume/1 * 1/2
+ %     = gammage * pages / 4000 * volume
+ %     = gammage * pages * volume * 0.00025
+  \if@swa@bindingcorrection@set\relax
+    \message{^^J Binding correction already set. ignoring}
+  \else
+    \csdimdef{tempcorrection}{\dimexpr #1\dimexpr 0.00025\dimexpr #3mm\relax * #2}
+    % Set and force recalculation
+    \KOMAoptions{BCOR=\tempcorrection}
+    \areaset[current]{\textwidth}{1.61803399\textwidth}
+    \@swa@bindingcorrection@settrue
+  \fi
+}
+\csletcs{bindekorrektur}{bindingcorrection}
+
+\providecommand*\papergammage{80}
+\providecommand*\papervolume{1}
+\providecommand*\BCORTotPages{0}
+\AfterEndDocument{
+  %
+  % We cannot rely on the aux file here (where totpages writes TotPages)
+  %  beacuse when the aux file is read, the page dimesions are already set,
+  %  which is too late.
+  %
+  \if@filesw
+    \newwrite\swa@pagesfile
+    \immediate\openout\swa@pagesfile=\jobname.pgs\relax
+    \immediate\write\swa@pagesfile{\relax}
+    \immediate\write\swa@pagesfile{\string\xdef\string\BCORTotPages{\theTotPages}}
+    \immediate\write\swa@pagesfile{\relax}
+    \immediate\closeout\swa@pagesfile
+    \fi
+}
+\AtEndPreamble{%
+  \@input{\jobname.pgs}
+  \ifnumcomp{\BCORTotPages}{=}{0}{
+      \bindingcorrection[\papervolume]{60}{\papergammage}
+    }{%
+      \bindingcorrection[\papervolume]{\BCORTotPages}{\papergammage}
+    }
+}
+
+\RequirePackage{tocstyle}
+\usetocstyle{KOMAlike}
+
+\setfootnoterule{4cc}
+
+%\RequirePackage[hang,small,bf]{caption}
+\setcapindent{1em}
+\addtokomafont{caption}{\small}
+\addtokomafont{captionlabel}{\bfseries}
+
+
+\RequirePackage{enumitem}
+\setlist{noitemsep,topsep=.5\baselineskip,leftmargin=1em}
+\setdescription{noitemsep,font=\normalfont\scshape,leftmargin=\parindent}
+
+% koma-hacks
+\RequirePackage{scrhack}
+
+% undo babel thing in tocbasic
+\unsettoc{toc}{nobabel}
+\unsettoc{lof}{nobabel}
+\unsettoc{lot}{nobabel}
+
+%\setuptoc{toc}{noprotrusion}
+%\setuptoc{lof}{noprotrusion}
+%\setuptoc{lot}{noprotrusion}
+%\setuptoc{lol}{noprotrusion}
+%\setuptoc{loa}{noprotrusion}
+
+\tocbasicautomode
+
+%
+% design
+%
+\setkomafont{subtitle}{\usekomafont{title}\LARGE}
+% \setkomafont{disposition}{\rmfamily\mdseries\scshape}
+\addtokomafont{disposition}{\rmfamily}
+\setkomafont{title}{\rmfamily\mdseries}
+
+\@ifpackagelater{scrbase}{2014/10/28}{%
+  \RedeclareSectionCommand[%
+    afterskip = 1\baselineskip,%
+    beforeskip = -1\baselineskip,%
+    ]{section}
+  \RedeclareSectionCommand[%
+    afterskip = 1\baselineskip,%
+    beforeskip = -1\baselineskip,%
+    ]{subsection}
+  \RedeclareSectionCommand[%
+    afterskip = 1sp plus -1sp minus 1sp,%
+    beforeskip = -1\baselineskip,%
+    ]{subsubsection}
+  \RedeclareSectionCommand[%
+    beforeskip = 1\baselineskip,%
+    ]{paragraph}
+  \RedeclareSectionCommand[%
+    beforeskip = 1\baselineskip,%
+    ]{subparagraph}
+}{
+  % for sections, not so easy.
+  \def\TR@patchw{\TR@warn{Cannot patch sectioning command.\MessageBreak This is
+      not severe.}}
+  \patchcmd{\section}{-3.5ex \@plus -1ex \@minus -.2ex}{-2\baselineskip}{}{\TR@patchw}
+  \patchcmd{\section}{2.3ex \@plus.2ex}{\baselineskip}{}{\TR@patchw}
+  \patchcmd{\subsection}{-3.25ex\@plus -1ex \@minus -.2ex}{-\baselineskip}{}{\TR@patchw}
+  \patchcmd{\subsection}{1.5ex \@plus .2ex}{\baselineskip}{}{\TR@patchw}
+  \patchcmd{\subsubsection}{-3.25ex\@plus -1ex \@minus -.2ex}{-\baselineskip}{}{\TR@patchw}
+  \patchcmd{\subsubsection}{1.5ex \@plus .2ex}{1sp \@plus 1sp \@minus 1sp}{}{\TR@patchw}
+  \patchcmd{\paragraph}{3.25ex \@plus1ex \@minus .2ex}{\baselineskip}{}{\TR@patchw}
+  \patchcmd{\subparagraph}{3.25ex \@plus1ex \@minus .2ex}{\baselineskip}{}{\TR@patchw}
+}
+
+\AtEndPreamble{
+  % redo document stuff:
+  \ifundefinedorrelax{hypersetup}{}{%
+    \hypersetup{
+      pdftitle={\@title{}: \@subtitle},
+      pdfauthor={\@author},
+      pdfsubject={\@subject}
+    }
+  }
+  \ifthenelse{\boolean{@swa@birdseye}}{
+    \KOMAoptions{
+      twocolumn=true,
+      twoside=semi,
+      fontsize=8pt,
+      headings=small,
+      footinclude=false,
+      headinclude=false,
+      DIV=calc,
+      BCOR=0pt,
+    }
+  }{}
+}

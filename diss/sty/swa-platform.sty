@@ -1,0 +1,37 @@
+\RequirePackage{etoolbox}
+%\RequirePackage{morewrites}
+\RequirePackage{ifthen}
+\RequirePackage{ifpdf}
+\RequirePackage{ifluatex}
+\RequirePackage{ifxetex}
+
+\ifthenelse{\boolean{luatex}}{%
+  \IfFileExists{luatex85.sty}{%
+    \RequirePackage{luatex85}}{}}{}%
+
+\ifthenelse{\boolean{xetex}}{}{\RequirePackage{cmap}}
+\RequirePackage[LGR,OT1,LY1,T1]{fontenc}
+
+\ifthenelse{\boolean{xetex} \or \boolean{luatex}}{}{%
+  \RequirePackage[utf8]{inputenx}
+  \input{ix-utf8enc.dfu}
+  \RequirePackage{alphabeta}
+}
+
+
+\ifcsname ifundefinedorrelax\endcsname
+\else
+\RequirePackage{scrbase}
+\fi
+
+%%
+% From titlepage.dtx by Markus Kohm
+%
+\newcommand*{\swa@NowButAfterBeginDocument}{%
+  \if@atdocument
+    \expandafter\@firstofone
+  \else
+    \expandafter\AtBeginDocument
+  \fi
+}
+%

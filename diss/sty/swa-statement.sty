@@ -1,0 +1,79 @@
+%
+%
+%
+\RequirePackage{sty/swa-platform}
+\RequirePackage{sty/swa-language}
+
+\ifcsstring{swa@degree}{phd}{
+  \newcommand*\swa@statementname{Erklärung}
+  \xdef\statementcontent{%
+    Hiermit erkläre ich an Eides statt, dass ich die vorliegende Dissertation
+    selbst angefertigt und nur die im Literaturverzeichnis aufgeführten Quellen
+    und Hilfsmittel verwendet habe.
+
+    Diese Dissertation oder Teile davon wurden nicht als Prüfungsarbeit für
+    eine staatliche oder andere wissenschaftliche Prüfung eingereicht.
+
+    Ich versichere weiterhin, dass ich diese Arbeit oder eine andere Abhandlung
+    nicht bei einer anderen Fakultät oder einer anderen Universität eingereicht
+    habe.
+  }
+}{
+  \newcommand*\swa@statementname{Eigenständigkeitserklärung}
+  \xdef\statementcontent{%
+      Hiermit versichere ich, dass ich die vorliegende Arbeit selbständig
+      verfasst sowie keine anderen Quellen und Hilfsmittel als die angegebenen
+      benutzt habe.
+  }
+}
+
+\providecommand*\swa@author{}
+\newenvironment*{statement}[1][\swa@statementname]{
+  \cleardoubleemptypage
+  \ifthenelse{\boolean{xetex}}{
+    \begin{german}
+  }{
+    \ifthenelse{\boolean{@swa@german}}{}
+    {\selectlanguage{ngerman}}
+  }
+  \dateselectlanguage{german}
+  \setdatebynumber{\thedatenumber}
+  \chapter*{#1}
+}{
+  ~\\[7\baselineskip]%
+  %
+  \ifundefinedorrelax{@location}{}{%
+    \ifx\@location\@empty%
+    \else
+    \@location, den %
+    \fi%
+  }%
+  \datedate \hfill \rule{.45\textwidth}{0.4pt}\par
+  %
+  \raggedleft%
+  \makeatletter%
+  \ifx\@empty\swa@author\relax%
+  \@author%
+  \else%
+  \swa@author%
+  \fi%
+  \makeatother\par
+  \ifthenelse{\boolean{xetex}}{
+    \end{german}
+  }{
+    \ifthenelse{\boolean{@swa@german}}{}
+    {\selectlanguage{english}}
+  }
+}
+
+\newcommand*{\statementby}{
+  \begin{statement}[\swa@statementname\ von \@author]
+    \statementcontent
+  \end{statement}
+}
+
+\newcommand*{\defaultstatement}{
+  \begin{statement}
+    \statementcontent
+  \end{statement}
+}

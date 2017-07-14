@@ -2,14 +2,17 @@
 \usepackage{lineno}
 \modulolinenumbers[5]
 
+\usepackage{silence}
+\WarningFilter{microtype}{Unknown slot number}
+
 
 %% === Language ===========================================
 \usepackage{csquotes}		%% \enquote, \blockquote
 %%   - Quotes -
 %% Options for english: british -> '', american -> ""
-%\ExecuteQuoteOptions{french=guillemets,german=quotes,english=american}
-\newcommand\q[1]{\enquote{#1}}	%% Quote with \q{}
-\MakeAutoQuote{>}{<} %% {«}{»}
+\ExecuteQuoteOptions{french=guillemets,german=quotes,english=american}
+%\newcommand\q[1]{\enquote{#1}}	%% Quote with \q{}
+%\MakeAutoQuote{>}{<} %% {«}{»}
 \MakeOuterQuote{"}
 
 
@@ -23,12 +26,12 @@
 \usepackage[
 		%backend=bibtex, 			%% bibtex, no utf-8 support
 		backend=biber,				%% biber backend
-		%style=numeric-comp,		%% [1]
+		style=numeric-comp,		%% [1]
 		%style=alphabetic, 		%% [Auth99]
 		%citestyle=authortitle-tcomp,
 		%bibstyle=verbose,
 		backref=true,
-		%defernumbers=true,
+		defernumbers=false,
 		%doi=false,isbn=false,url=false,
 		]{biblatex}
 \usepackage{refcheck}
@@ -46,43 +49,64 @@
 %%% colored rows, requires xcolor
 %%\newcommand{\insidetable}{\rowcolors*{2}{WhiteSmoke}{white}}
 %%\setupctable{doinside=\insidetable}
-%\newcolumntype{R}{>{\raggedleft \arraybackslash}X}
+%\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+\usepackage{tabulary}
+
+\makeatletter
+% see: http://tex.stackexchange.com/a/87543/34962
+\def\oldTy@Ratio#1\def\TY@ratio#2#3!!{
+\def\TY@checkmin{#1%
+ \@tempdima\dimexpr\p@*\TY@linewidth/\TY@tablewidth\relax
+ \ifdim\@tempdima>\TY@linewidth
+  \advance\@tempdima-\TY@linewidth
+  \Gscale@div\@tempb\@tempdima\TY@tablewidth
+  \@tempdimb\TY@ratio\p@
+  \advance\@tempdimb-\@tempb\p@
+  \edef\TY@ratio{\strip@pt\@tempdimb}%
+\fi
+#3}}
+\expandafter\oldTy@Ratio\TY@checkmin!!
+\makeatother
+
 %
 %
 %%% === Code Listings ======================================
 %\usepackage{listings}
+\usepackage{MnSymbol}
+\usepackage{textcomp}
+\undef\mathdollar
 %%%   - Basic Looks -
-%\lstset{
-	%captionpos=b, 
+\lstset{
+	captionpos=b, 
 	%xleftmargin=0.35cm,
 	%basicstyle=\smaller\ttfamily, 
-	%showstringspaces=false, 
-	%columns=fixed, 
+	showstringspaces=false, 
+	columns=fixed, 
 	%basewidth={0.5em,0.45em}, 
-	%upquote=true,
-	%tabsize=2, 
-	%gobble=2,
-	%escapeinside={/*@}{@*/},
-	%numberbychapter=false,
-%}
+	upquote=true,
+	tabsize=2, 
+	gobble=2,
+	escapeinside={/*@}{@*/},
+	numberbychapter=true,
+}
 %%%   - Linebreaks -
-%\lstset{
-	%breaklines=true, 
-	%breakatwhitespace=true,
-	%%prebreak=\raisebox{0ex}[0ex][0ex]{\emptyaccsupp{\small\ensuremath{\rhookswarrow}}},
-	%postbreak=\raisebox{0ex}[0ex][0ex]{\emptyaccsupp{\small\ensuremath{\rcurvearrowse\space}}},
-%}
+\lstset{
+	breaklines=true, 
+	breakatwhitespace=true,
+	%prebreak=\raisebox{0ex}[0ex][0ex]{\emptyaccsupp{\small\ensuremath{\rhookswarrow}}},
+	postbreak=\raisebox{0ex}[0ex][0ex]{\emptyaccsupp{\small\ensuremath{\rcurvearrowse\space}}},
+}
 %%%   - Line Numbers -
-%\lstset{
-	%numbers=left, 
-	%numberstyle=\tiny\emptyaccsupp, 
-	%numbersep=5pt,
-	%numberfirstline=true, 
-	%firstnumber=auto, 
-	%stepnumber=5,
-%}
+\lstset{
+	numbers=left, 
+	numberstyle=\tiny\emptyaccsupp\ttfamily, 
+	numbersep=5pt,
+	numberfirstline=true, 
+	firstnumber=auto, 
+	stepnumber=5,
+}
 %%%   - Copy&Paste -
-%\lstset{keepspaces=true}
+\lstset{keepspaces=true}
 %\ifXeTeX
 %\else
   %\makeatletter
@@ -93,11 +117,11 @@
 	%\pdfglyphtounicode{visualspace}{A0}
 	%\pdfglyphtounicode{uni2423}{A0}
 %\fi
-%%%   - Languages -
-%\lstdefinelanguage{Inline}{
-	%moredelim=**[is][\slshape]{^}{^},
-	%moredelim=**[is][\bfseries]{§}{§},
-%}
+%%   - Languages -
+\lstdefinelanguage{Inline}{
+	moredelim=**[is][\slshape]{^}{^},
+	moredelim=**[is][\bfseries]{§}{§},
+}
 %\lstdefinelanguage{JavaScript}{
 	%keywords={break, case, catch, continue, debugger, default, delete, do, else, finally, for, function, if, in, instanceof, new, return, switch, this, throw, try, typeof, var, void, while, with},
 	%morecomment=[l]{//},
@@ -106,41 +130,41 @@
 	%morestring=[b]",
 	%sensitive=true,
 %}
-%\lstdefinelanguage{HanaSQL}[]{SQL}{
-	%morekeywords={replace,string,if,is,daysbetween,secondsbetween,weekday,adddays,addseconds,double, procedure,begin,declare,inout,call,return,returns},
-	%moredelim=**[is][\slshape]{^}{^},
-	%moredelim=**[is][\bfseries]{§}{§},
-%}
-%\lstdefinelanguage{algorithm}{
-	%keywords={break, case, catch, continue, dec, default, delete, do, each, else, end, error, exists, finally, for, function, if, inc, is, new, return, switch, then, this, throw, try, typeof, until, var, void, while, with},
-	%morestring=[b]",
-	%morecomment=[l]{//},
-	%morecomment=[s]{/*}{*/},
-	%moredelim=[is][\slshape]{'}{'},
-	%moredelim=[is][\bfseries]{''}{''},
-	%style=algorithmStyle,
-%}
-%\lstdefinestyle{algorithmStyle}{
-  %literate= % replace with math symbols
-			%{:=}{{\(\gets\)}}2 {~}{{\(\:\!\!\neg\)}}1
-			%{<=}{{\(\leq\)}}1 {>=}{{\(\geq\)}}1 
-			%{!=}{{\(\neq\)}}1 {=}{{\(=\)}}1
-			%{&&}{{\(\wedge\)}}1 {||}{{\(\vee\)}}1 
-			%{\{\}}{{\(\emptyset\)}}1
-			%{\\in}{{\(\in\)}}1
-			%{\\notin}{{\(\notin\)}}1
-			%{\\exists}{{\(\exists\)}}1
-			%{\\nsubseteq}{{\(\subseteq\)}}1
-			%{<<}{{\(\ll\)}}2
-			%% escape with \
-			%{\\:=}{{:=}}2 {\\~}{{\textasciitilde}}1
-			%{\\<=}{{<=}}2 {\\>=}{{>=}}2 
-			%{\\!=}{{!=}}2  {\\=}{{=}}1
-			%{\\&&}{{\&\&}}2 {\\||}{{||}}2 
-			%{\\\{\}}{{\{\}}}2
-			%{\\bs}{{\textbackslash}}1 
-			%{\\'}{{'}}1 
-%}
+\lstdefinelanguage{HanaSQL}[]{SQL}{
+	morekeywords={replace,string,if,is,daysbetween,secondsbetween,weekday,adddays,addseconds,double, procedure,begin,declare,inout,call,return,returns},
+	moredelim=**[is][\slshape]{^}{^},
+	moredelim=**[is][\bfseries]{§}{§},
+}
+\lstdefinelanguage{algorithm}{
+	keywords={break, case, catch, continue, dec, default, delete, do, each, else, end, error, exists, finally, for, function, if, inc, is, new, return, switch, then, this, throw, try, typeof, until, var, void, while, with},
+	morestring=[b]",
+	morecomment=[l]{//},
+	morecomment=[s]{/*}{*/},
+	moredelim=[is][\slshape]{'}{'},
+	moredelim=[is][\bfseries]{''}{''},
+	style=algorithmStyle,
+}
+\lstdefinestyle{algorithmStyle}{
+  literate= % replace with math symbols
+			{:=}{{\(\gets\)}}2 {~}{{\(\:\!\!\neg\)}}1
+			{<=}{{\(\leq\)}}1 {>=}{{\(\geq\)}}1 
+			{!=}{{\(\neq\)}}1 {=}{{\(=\)}}1
+			{&&}{{\(\wedge\)}}1 {||}{{\(\vee\)}}1 
+			{\{\}}{{\(\emptyset\)}}1
+			{\\in}{{\(\in\)}}1
+			{\\notin}{{\(\notin\)}}1
+			{\\exists}{{\(\exists\)}}1
+			{\\nsubseteq}{{\(\subseteq\)}}1
+			{<<}{{\(\ll\)}}2
+			% escape with \
+			{\\:=}{{:=}}2 {\\~}{{\textasciitilde}}1
+			{\\<=}{{<=}}2 {\\>=}{{>=}}2 
+			{\\!=}{{!=}}2  {\\=}{{=}}1
+			{\\&&}{{\&\&}}2 {\\||}{{||}}2 
+			{\\\{\}}{{\{\}}}2
+			{\\bs}{{\textbackslash}}1 
+			{\\'}{{'}}1 
+}
 %%%   - Styles -
 %\lstdefinestyle{EclipseStyle}{
 	%keywordstyle=\bfseries\color{Purple},
@@ -162,8 +186,8 @@
 %\usepackage{mparhack}			%% marginpar hack
 %% \usepackage{fixltx2e}			%% latex bugs
 %\usepackage{relsize}			%% \smaller
-%\usepackage[space=true]{accsupp}
-%\newcommand\emptyaccsupp[1]{\BeginAccSupp{ActualText={}}#1\EndAccSupp{}}
+\usepackage[space=true]{accsupp}
+\newcommand\emptyaccsupp[1]{\BeginAccSupp{ActualText={}}#1\EndAccSupp{}}
 %
 %
 %%% === Misc ===============================================
@@ -191,13 +215,16 @@
 	%%plainpages=false,
 %%}
 %
-%\usepackage[nameinlink, noabbrev]{cleveref}	%% \cref commands
-%%\newcommand{\lineref}[2]{\hyperref[#1]{line~\ref*{#1:#2}}}
-%\newcommand{\linerefn}[2]{\hyperref[#1]{line~#2}}
-%%\newcommand{\Lineref}[2]{\hyperref[#1]{Line~\ref*{#1:#2}}}
-%\newcommand{\Linerefn}[2]{\hyperref[#1]{Line~#2}}
+%\newcommand{\lineref}[2]{\hyperref[#1]{line~\ref*{#1:#2}}}
+\newcommand{\linerefn}[2]{\hyperref[#1]{line~#2}}
+%\newcommand{\Lineref}[2]{\hyperref[#1]{Line~\ref*{#1:#2}}}
+\newcommand{\Linerefn}[2]{\hyperref[#1]{Line~#2}}
 %
-%%\usepackage[all]{hypcap}
+\AtEndPreamble{
+\usepackage[nameinlink, noabbrev]{cleveref}	%% \cref commands
+\usepackage[all]{hypcap}
+}
+
 %%\usepackage{caption}
 %%\captionsetup[table]{position=t}
 %%\captionsetup[subtable]{position=t}

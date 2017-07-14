@@ -1,0 +1,161 @@
+%
+% Setup generally required document properties
+%
+
+
+\RequirePackage{ifpdf}
+\RequirePackage{url}
+
+\RequirePackage[table,fixpdftex,dvipsnames,svgnames]{xcolor}
+
+\RequirePackage{totpages}
+
+
+\RequirePackage{pdfpages}
+\ifthenelse{\boolean{xetex}}{}{\pdfcompresslevel=6}
+
+% macros for comments
+\RequirePackage[%
+  obeyDraft,%
+  colorinlistoftodos,%
+]{todonotes}
+
+\def\todosec{\par\noindent\todo[inline]}
+\def\secmissing{\par\noindent\todo[color=red,inline,size=\Large]}
+\long\def\todolist#1#2{%
+\par\noindent%
+\todo[inline,color={red!100!green!50},caption={#1}]{%
+\begin{minipage}{\linewidth}%
+\begin{itemize}
+#2%
+\end{itemize}
+\end{minipage}
+}%
+}
+
+% Disable single lines at the start of a paragraph (Schusterjungen)
+\clubpenalty = \@M
+% Disable single lines at the end of a paragraph (Hurenkinder)
+\widowpenalty = \@M
+\displaywidowpenalty = \@M % formulas
+\interfootnotelinepenalty = 1000
+\setlength{\textfloatsep}{\baselineskip}
+\setlength{\floatsep}{\baselineskip}
+
+
+\frenchspacing
+\raggedbottom
+
+% Better float parameters: (from the TeX FAQ)
+\renewcommand{\topfraction}{.85}
+\renewcommand{\bottomfraction}{.7}
+\renewcommand{\textfraction}{.15}
+\renewcommand{\floatpagefraction}{.66}
+\renewcommand{\dbltopfraction}{.66}
+\renewcommand{\dblfloatpagefraction}{.66}
+\setcounter{topnumber}{9}
+\setcounter{bottomnumber}{9}
+\setcounter{totalnumber}{20}
+\setcounter{dbltopnumber}{9}
+
+
+
+%%
+%% An Asterism (three * arranged triangularly)
+%% works well as separator.
+%%
+\newcommand{\asterism}{\smash{% 
+    \raisebox{-.5ex}{% 
+      \setlength{\tabcolsep}{.2pt}% 
+      \begin{tabular}{@{}cc@{}}% 
+        \multicolumn2c*\\[-2.2ex]*&*% 
+      \end{tabular}}}}
+\providecommand\vskipnextgrid{\vskip\baselineskip}
+\newcommand{\ParSep}{{\vskipnextgrid\noindent\hbox to \textwidth{\hss\large\asterism\hss}\par\vskipnextgrid}}
+
+\RequirePackage{pifont}
+% Table stuff
+%\RequirePackage{tabularx}
+\RequirePackage{booktabs}
+\RequirePackage{threeparttable}
+\let\TPTtagStyle\textit
+
+\definecolor{swashadecolor}{gray}{0.93}
+\providecommand*\tablefontcommand{}
+\providecommand*\tableinsidecommand[1][2]{%
+  \def\y{\ding{52}\relax\xspace}\relax%
+  \def\n{\ding{56}\relax\xspace}\relax%
+  \smaller\rowcolors*{#1}{swashadecolor}{white}\tablefontcommand%
+}
+
+\AtEndPreamble{
+  \ifthenelse{\equal{\printmode}{true}}{
+    \RequirePackage[final,pdfpagelabels,bookmarks=false]{hyperref}
+    \hypersetup{colorlinks=false}
+  }{
+    \RequirePackage[final,pdfpagelabels,bookmarks=true]{hyperref}
+    \hypersetup{%
+      colorlinks=true,   %% true for printout
+      linkcolor=MidnightBlue,%
+      citecolor=MidnightBlue,%
+      urlcolor=MidnightBlue,%
+    }
+  }
+
+  \hypersetup{%
+    plainpages=false,
+    breaklinks=true,
+    unicode,%
+    pdfstartpage=3,
+    % pagebackref=true,%
+  }
+}
+
+\expandafter%
+\RequirePackage{sty/swa-document-\swa@cls}
+
+% for development
+\RequirePackage{ifdraft}
+\ifdraft{%
+  \RequirePackage{blindtext,scrtime}
+  \errorcontextlines=999
+  \RequirePackage{eso-pic}
+  \newkomafont{draftline}{\sffamily}
+  \newsavebox{\swa@draftPageLine}
+  % \newsavebox{\swa@draftWatermark}
+  \AddToShipoutPicture{%
+  %  \AtPageLowerLeft{\usebox{\draftWatermark}}
+    \AtPageUpperLeft{%
+      \raisebox{-\height}[\height][0pt]{\usebox{\swa@draftPageLine}}}%
+    \AtPageLowerLeft{%
+      \raisebox{\depth}[\height][0pt]{\usebox{\swa@draftPageLine}}}%
+  }
+  \AtBeginDocument{
+    \def\swa@draftInfo{%
+      {\usekomafont{draftline}
+      Draft Draft Draft%
+      \hspace*{4.5cm}\today\ \thistime\hspace*{4.5cm}%
+      Draft Draft Draft%
+      }}
+      % Draft revision\gitVtags: \gitAbbrevHash{} %
+      % (\gitCommitterIsoDate) \gitCommitterName}
+    % \sbox{\draftWatermark}{%
+    %   \includegraphics[width=\paperwidth]{img/draft}}
+    \sbox{\swa@draftPageLine}{%
+      \colorbox{black!10}{%
+        % enlarge box vertically by 2/3 lines
+        \raisebox{0pt}%
+        [\dimexpr .33\baselineskip + \height]%
+        [\dimexpr .33\baselineskip + \depth]{%
+          \makebox[\paperwidth]{\color{black!50}\swa@draftInfo}}}}
+  }
+  \AtEndDocument{\listoftodos}
+}{
+  \let\blindtext\relax
+  \let\Blindtext\relax
+  \let\blinddocument\relax
+  \let\Blinddocument\relax
+}
+
+
+%

@@ -1,0 +1,58 @@
+\RequirePackage{ebgaramond}
+\setmainfont[Scale=1.1,Ligatures=TeX]{EB Garamond} %Scale=MatchLowercase,
+\PassOptionsToPackage{cmintegrals,cmbraces}{newtxmath}
+\RequirePackage{newtxmath}
+\RequirePackage{ebgaramond-maths}
+% bold is not in eb
+\@ifclassloaded{scrbook}{
+  \addtokomafont{subject}{\mdseries}
+  \addtokomafont{disposition}{\mdseries}
+  \addtokomafont{descriptionlabel}{\mdseries}
+  \addtokomafont{captionlabel}{\mdseries}
+  \renewcommand*\labelitemii{\normalfont\textendash}
+}
+
+\ifthenelse{\boolean{luatex} \or \boolean{xetex}}{%
+ 
+  \addtokomafont{partentrypagenumber}{\ebgaramondtabular}
+  \addtokomafont{chapterentrypagenumber}{\ebgaramondtabular}
+  \settocfeature{pagenumberhook}{\ebgaramondtabular}
+  \renewcommand\listingnumberfont{\ebgaramondtabular}
+  \renewcommand\tablefontcommand{\ebgaramondtabular}
+
+  % \defaultfontfeatures{Scale=MatchLowercase,Microtype,Ligatures=TeX}
+  \defaultfontfeatures{Scale=MatchLowercase} %,Ligatures=TeX
+  \global\let\slshape\itshape\relax
+  
+  \ifthenelse{\boolean{xetex}}{%
+    %\setmonofont{DejaVu Sans Mono}
+	\setmonofont[BoldFont={* Bold},ItalicFont={* Oblique}]{DejaVu Sans Mono}
+	\DeclareTextSymbol{\textquotesingle}     \UnicodeEncodingName{"0027}
+    \DeclareTextSymbol{\textasciigrave}     \UnicodeEncodingName{"0060}
+  }{%
+    \setmonofont%
+    [
+        BoldFont={* Bold},
+        ItalicFont={* Oblique},
+        BoldItalicFont={* BoldOblique}
+      ]%
+      {DejaVu Sans Mono}
+  }
+}{% if pdftex
+  \RequirePackage[scaled=.9]{DejaVuSansMono}
+  %%
+  %% Patch EB
+  %%
+  \input{TS1EBGaramond-LF.fd}
+  \input{TS1EBGaramond-OsF.fd}
+  \DeclareFontShape{TS1}{EBGaramond-OsF}{m}{sl}{ <-> ssub * EBGaramond-OsF/m/it }{}
+  \DeclareFontShape{TS1}{EBGaramond-OsF}{b}{n}{ <-> ssub * EBGaramond-OsF/m/n }{}
+  \DeclareFontShape{TS1}{EBGaramond-OsF}{b}{it}{ <-> ssub * EBGaramond-OsF/m/it }{}
+  \DeclareFontShape{TS1}{EBGaramond-OsF}{b}{sl}{ <-> ssub * EBGaramond-OsF/m/it }{}
+  \DeclareFontShape{TS1}{EBGaramond-OsF}{bx}{n}{ <-> ssub * EBGaramond-OsF/m/n }{}
+  \DeclareFontShape{TS1}{EBGaramond-OsF}{bx}{it}{ <-> ssub * EBGaramond-OsF/m/it }{}
+  \DeclareFontShape{TS1}{EBGaramond-OsF}{bx}{sl}{ <-> ssub * EBGaramond-OsF/m/it }{}
+}
+\DeclareRobustCommand{\em}{%
+\@nomath\em \if b\expandafter\@car\f@series\@nil
+\normalfont \else \itshape \fi}
