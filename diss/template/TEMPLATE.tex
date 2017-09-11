@@ -1,0 +1,70 @@
+% Options.
+%
+% Language
+%  en  -  english (default)
+%  de  -  german
+%
+% Modes
+%  draft     - drafting mode, esp for todos
+%  fulldraft - drafting mode, also for listings/graphics, faster
+%  final     - final mode
+%
+% Fonts
+%  lmodern   - Latin Modern, like TeX default
+%  palatino  - Heavier, slightly more readable (default)
+%  garamond  - Lighter than palatino, heavier than latin modern, more readable.
+%
+% Other
+%  print - do not color links
+%  zebralistings - alternating row colors for listings
+%
+\documentclass[draft,phd]{swathesis}
+\usepackage[backend=biber]{biblatex}
+\addbibresource{thesis.bib}
+
+\setcounter{tocdepth}{1}
+\setcounter{secnumdepth}{3}
+
+\renewcommand*{\glsnamefont}[1]{\textbf{#1}}
+
+\usepackage{titlepage}
+\TitlePageStyle[discipline=phd, whom={der}, subject=degree]{hpi-swa}
+\degree{Doktor der Naturwissenschaften\\ (Doctor rerum naturalium)}
+% \degree{Doktor der Ingenieurwissenschaften\\ (Doktor-Ingerneur)}
+\faculty{%
+Mathematisch-Naturwissenschaftlichen Fakultät\\
+der Universität Potsdam}
+
+\advisor{Prof.\,Dr.\,Jack Hasaname}
+
+
+% ABGABEDATUM
+% \setdate{2012}{04}{05}
+% \date{\datedate}
+
+\author{Vorname Nachname}
+\location{Berlin}
+\extratitle{\raggedleft Nachname, \\ Titel Kurz\par}
+\title{Der Lange Titel der Arbeit die zu Schreiben Ist}
+\subtitle{Ein Untertitel ist Optional}
+\othertitle{The Long Title of the Work to Be Done}
+\othersubtitle{This is Optionally Optional}
+
+\begin{document}
+\frontmatter
+\begin{otherlanguage}{ngerman}
+\maketitle
+\end{otherlanguage}
+\input{frontmatter}
+\mainmatter
+\input{content}
+\input{publications}
+\printbibliography
+\input{appendix}
+\backmatter
+\end{document}
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% coding: utf-8
+%%% End:
