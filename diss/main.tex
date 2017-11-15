@@ -7,6 +7,14 @@
 			]{sty/swathesis}
 	
 			
+% Intro			 3
+% Howto			 5
+% IDS				30
+% SQLODB		20
+% StackDB		10
+% rel				 5
+% Conc			 3
+			
 \input{setup}
 \renewcommand{\baselinestretch}{1.2}
 
@@ -56,7 +64,18 @@ der Universität Potsdam}
 \newcommand{\tmpStart}{\color{DarkBlue}}
 \newcommand{\tmpEnd}{\color{Black}}
 
-\includeonly{introduction,interactive_slicing}
+\includeonly{interactive_slicing}
+
+
+\newacronym{afl}{AFL}{automated fault-localization}
+\newacronym{pdg}{PDG}{program dependence graph}
+\newacronym{ddg}{DDG}{dynamic dependence graph}
+%\DeclareAcronym{afl}{short=AFL,long=automated fault-localization}
+%\DeclareAcronym{pdg}{short=PDG,long=program dependence graph}
+%\DeclareAcronym{ddg}{short=DDG,long=dynamic dependence graph}
+%\acrodef{afl}{automated fault-localization}
+%\acrodef{pdg}{program dependence graph}
+%\acrodef{ddg}{dynamic dependence graph}
 
 \begin{document}
 
@@ -106,6 +125,12 @@ This allowed us to created an omniscient debugger which is much more efficient w
 With omniscient debugging available in every component of an enterprise system, we combine the runtime data of each component into an omniscient system debugger that allows to efficiently debug the entire application stack.
 
 \end{abstract}
+
+%\begin{acronym}[XXX]
+%\acro{afl}[AFL]{automated fault-localization}
+%
+%\acro{ddg}[DDG]{dynamic dependence graph}
+%\end{acronym}
 
 %\begin{zusammenfassung}
   %zusammenfassung

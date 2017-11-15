@@ -68,8 +68,9 @@
 \expandafter\oldTy@Ratio\TY@checkmin!!
 \makeatother
 
-%
-%
+
+%\usepackage[chapter]{algorithm}
+
 %%% === Code Listings ======================================
 %\usepackage{listings}
 \usepackage{MnSymbol}
@@ -94,7 +95,7 @@
 	breaklines=true, 
 	breakatwhitespace=true,
 	%prebreak=\raisebox{0ex}[0ex][0ex]{\emptyaccsupp{\small\ensuremath{\rhookswarrow}}},
-	postbreak=\raisebox{0ex}[0ex][0ex]{\emptyaccsupp{\small\ensuremath{\rcurvearrowse\space}}},
+	postbreak=\raisebox{0ex}[0ex][0ex]{\emptyaccsupp{\hspace{7mm}\small\ensuremath{\rcurvearrowse\space}}},
 }
 %%%   - Line Numbers -
 \lstset{
@@ -136,7 +137,7 @@
 	moredelim=**[is][\bfseries]{§}{§},
 }
 \lstdefinelanguage{algorithm}{
-	keywords={break, case, catch, continue, dec, default, delete, do, each, else, end, error, exists, finally, for, function, if, inc, is, new, return, switch, then, this, throw, try, typeof, until, var, void, while, with},
+	keywords={break, case, catch, continue, dec, default, delete, do, each, else, end, error, exists, finally, for, function, if, inc, is, new, return, switch, then, this, throw, try, typeof, until, void, while, with},
 	morestring=[b]",
 	morecomment=[l]{//},
 	morecomment=[s]{/*}{*/},
@@ -146,7 +147,7 @@
 }
 \lstdefinestyle{algorithmStyle}{
   literate= % replace with math symbols
-			{:=}{{\(\gets\)}}2 {~}{{\(\:\!\!\neg\)}}1
+			{:=}{{\(\coloneq\)}}2 {~}{{\(\:\!\!\neg\)}}1 %\gets
 			{<=}{{\(\leq\)}}1 {>=}{{\(\geq\)}}1 
 			{!=}{{\(\neq\)}}1 {=}{{\(=\)}}1
 			{&&}{{\(\wedge\)}}1 {||}{{\(\vee\)}}1 
@@ -155,7 +156,8 @@
 			{\\notin}{{\(\notin\)}}1
 			{\\exists}{{\(\exists\)}}1
 			{\\nsubseteq}{{\(\subseteq\)}}1
-			{<<}{{\(\ll\)}}2
+			{\\delta}{{\(\triangle\)}}1
+			{<<}{{\(\twoheadleftarrow\)}}2 %\ll
 			% escape with \
 			{\\:=}{{:=}}2 {\\~}{{\textasciitilde}}1
 			{\\<=}{{<=}}2 {\\>=}{{>=}}2 
@@ -191,6 +193,7 @@
 %
 %
 %%% === Misc ===============================================
+%\usepackage[]{acro}	%% Acronyms
 %\usepackage[printonlyused]{acronym}	%% Acronyms
 %\renewcommand*{\acsfont}[1]{\textsc{#1}}
 %%% pdfcomments, load before hyperref
@@ -219,6 +222,7 @@
 \newcommand{\linerefn}[2]{\hyperref[#1]{line~#2}}
 %\newcommand{\Lineref}[2]{\hyperref[#1]{Line~\ref*{#1:#2}}}
 \newcommand{\Linerefn}[2]{\hyperref[#1]{Line~#2}}
+\newcommand{\linesrefn}[2]{\hyperref[#1]{lines~#2}}
 %
 \AtEndPreamble{
 \usepackage[nameinlink, noabbrev]{cleveref}	%% \cref commands
@@ -242,3 +246,10 @@
 %%	pdfstartview={FitH},				%% Fit width
 	%pdfstartview={XYZ null null 1.0},	%% 100% zoom
 %}
+
+\makeatletter
+\newcommand\etc{etc\@ifnextchar.{}{.\@}}
+\newcommand\etal{et al\@ifnextchar.{}{.\@}}
+\newcommand\Dr{Dr\@ifnextchar.{}{.\@}}
+\newcommand\Prof{Prof\@ifnextchar.{}{.\@}}
+\makeatother
