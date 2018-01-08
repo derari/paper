@@ -19,15 +19,18 @@
 %% === Page Format ========================================
 %\usepackage{fancyhdr}			%% more header and footer configuration
 %\usepackage{pdflscape}			%% \begin{landscape} ... \end{landscape}
-
+\usepackage{afterpage}
 
 %% === Bibliography =======================================
 %% use biblatex if you know what you're doing
+\newcounter{cbx@tempcnta}
+\newcounter{cbx@tempcntb}
+
 \usepackage[
 		%backend=bibtex, 			%% bibtex, no utf-8 support
 		backend=biber,				%% biber backend
-		style=numeric-comp,		%% [1]
-		%style=alphabetic, 		%% [Auth99]
+		%style=numeric-comp,		%% [1]
+		style=alphabetic, 		%% [Auth99]
 		%citestyle=authortitle-tcomp,
 		%bibstyle=verbose,
 		backref=true,
@@ -223,6 +226,8 @@
 %\newcommand{\Lineref}[2]{\hyperref[#1]{Line~\ref*{#1:#2}}}
 \newcommand{\Linerefn}[2]{\hyperref[#1]{Line~#2}}
 \newcommand{\linesrefn}[2]{\hyperref[#1]{lines~#2}}
+\newcommand{\secref}[1]{\hyperref[#1]{section~\ref*{#1}}}
+\newcommand{\Secref}[1]{\hyperref[#1]{Section~\ref*{#1}}}
 %
 \AtEndPreamble{
 \usepackage[nameinlink, noabbrev]{cleveref}	%% \cref commands
