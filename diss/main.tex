@@ -6,15 +6,16 @@
 			12pt,
 			]{sty/swathesis}
 	
-			
-% Intro			 3
-% Howto			 5
-% IDS				30
-% SQLODB		20
-% StackDB		10
+
+% Intro			 
+% Howto			30 (17)
+% IDS				40 (27)
+% SQLODB		30 (12)
+% StackDB		20 (10)
 % rel				 5
-% Conc			 3
-			
+% Conc			 5
+
+
 \input{setup}
 \renewcommand{\baselinestretch}{1.2}
 
@@ -49,9 +50,9 @@ der Universität Potsdam}
 \location{Berlin}
 \extratitle{\raggedleft Treffer, \\ Omnidb\par}
 \title{Omniscient Debugging in Enterprise Applications}
-\subtitle{This is Optionally}
+%\subtitle{This is Optionally}
 \othertitle{Omniscient Debugging in Unternehmensanwendungen}
-\othersubtitle{Ein Untertitel ist Optional}
+%\othersubtitle{Ein Untertitel ist Optional}
 
 
 %% remove in final version
@@ -61,18 +62,20 @@ der Universität Potsdam}
 %\newcommand{\todo}[2][]{\pdfmargincomment[color=orange,icon=Note,subject={TODO},author={#1}]{#2}}
 
 %\newcommand{\tmp}[1]{#1}
-%\newcommand{\tmpStart}{\color{DarkBlue}}
-%\newcommand{\tmpEnd}{\color{Black}}
-\newcommand{\tmpStart}{}
-\newcommand{\tmpEnd}{}
+\newcommand{\tmpStart}{\color{DarkBlue}}
+\newcommand{\tmpEnd}{\color{Black}}
+%\newcommand{\tmpStart}{}
+%\newcommand{\tmpEnd}{}
 
-%\includeonly{introduction, interactive_slicing}
+\includeonly{introduction}
+%\includeonly{odb_sql}
 
 
 \newacronym{afl}{AFL}{automated fault-localization}
 \newacronym{pdg}{PDG}{program dependence graph}
 \newacronym{ddg}{DDG}{dynamic dependence graph}
 \newacronym{odb}{ODB}{omniscient debugger}
+\newacronym{orm}{ORM}{object-relational mapper}
 %\DeclareAcronym{afl}{short=AFL,long=automated fault-localization}
 %\DeclareAcronym{pdg}{short=PDG,long=program dependence graph}
 %\DeclareAcronym{ddg}{short=DDG,long=dynamic dependence graph}

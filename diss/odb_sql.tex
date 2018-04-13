@@ -2,26 +2,50 @@
 
 \newcommand{\tool}{TAR\-DISP}
 \newcommand{\SQLextension}{Back-in-time SQL}
+%%Context: Debugging and Back-in-Time
+%Finding defects in code is a frequent task for every programmer and is often difficult even with a deep understanding of the system.
+%To localize failure causes, they examine involved program entities and distinguish relevant from irrelevant behavior and clean from infected state. 
+%However, common symbolic debuggers do not support identification of such infection chains very well because they only provide access to the last point of execution without access to the program history.
+%Back-in-time also known as omniscient debuggers simplify the debugging process by making it easier to follow cause-effect chains from the observable failure back to the causing defect~\cite{lewis03:debugging_backwards_in_time}.
+%These tools provide full access to past events so that developers can directly experiment with the entire infection chain. 
+
+As we have seen, specialized debugging tools can significantly reduce the time needed to locate a bug.
+Consequently, many tools and methods that improve debugging have been developed in the past decades~\cite{wong16:a_survey_on_software}.
+However, few of these debugging tools consider an important component of every enterprise application: the database.
+Back-in-time debuggers, for example, exist for many object-oriented programming languages, such as Java, C++, or JavaScript~\cite{feldman88:igor_a_system,lewis03:debugging_backwards_in_time,barr16:time-travel_debugging_for_javascriptnode,wong16:a_survey_on_software}.
+These languages are typically used in the front-end or application layer of a multi-tier application.
+
+%SQLScript\footnote{SQLScript is a proprietary SQL extension for stored procedures in SAP HANA~\cite{sap16:sap_hana_sqlscript_reference}.}. %hofer_design_2006
+
+
+The application layer of a multi-tier application can interact with the database in multiple ways.
+By using a database connectors like ODBC or JDBC and query languages like SQL, it can submit arbitrary queries to the database to store, manipulate or obtain data.
+For object-oriented programming languages, \acp{orm} can abstract from database-specific logic by automatically generating queries and converting all data from and to native objects.
+For more complex operations, the application can trigger the execution of scripts or stored procedures that run directly on the database.
+Basic debugging support exists for many of these methods and supports forward-in-time debugging and inspecting query results while the program is stopped.
+However, there are, to the best of our knowledge, no omniscient debuggers that include the database and support SQL queries or database scripts.
+
+%Database languages like SQLScript, a proprietary language for stored procedures in SAP HANA~\cite{sap16:sap_hana_sqlscript_reference}, 
 
 \tmpStart
-%Context: Debugging and Back-in-Time
-Finding defects in code is a frequent task for every programmer and is often difficult even with a deep understanding of the system.
-To localize failure causes, they examine involved program entities and distinguish relevant from irrelevant behavior and clean from infected state. 
-However, common symbolic debuggers do not support identification of such infection chains very well because they only provide access to the last point of execution without access to the program history.
-Back-in-time also known as omniscient debuggers simplify the debugging process by making it easier to follow cause-effect chains from the observable failure back to the causing defect~\cite{lewis_debugging_2003}.
-These tools provide full access to past events so that developers can directly experiment with the entire infection chain. 
-
 %Problem: Back-in-time debugger missing for database-level
-Even though back-in-time debuggers exist for many object-oriented programming languages~\cite{feldman_igor_1988,lewis_debugging_2003}, there are none, to the best of our knowledge, that run on databases and support SQL or SQLScript\footnote{SQLScript is a proprietary SQL extension for stored procedures in SAP HANA~\cite{sqlScript}.}. %hofer_design_2006
 This is mainly because of two reasons. 
-First, back-in-time debuggers typically create a significant overhead on performance and memory consumption~\cite{lewis_debugging_2003,pothier_scalable_2007,lienhard_practical_2008}.
+First, back-in-time debuggers typically create a significant overhead on performance and memory consumption~\cite{lewis03:debugging_backwards_in_time,pothier07:scalable_omniscient_debugging,lienhard08:practical_object-oriented_back-in-time_debugging}.
 It seems unfeasible to use a back-in-time debugger on top of a database script that processes billions of records.
 Second, current back-in-time debugging concepts cannot handle side-effects outside their system that usually happen in writing operations during INSERT and UPDATE statements. 
 
 %Significance: Especially, in business software much development is based on database scripts. 
-Due to high performance requirements of handling big data in business applications, companies like SAP have not only a strong demand to move code closer to data~\cite{plattner2015memory} but also the need to improve development tools at the database-level. 
+Due to high performance requirements of handling big data in business applications, companies like SAP have not only a strong demand to move code closer to data~\cite{plattner15:the_in-memory_revolution_how} but also the need to improve development tools at the database-level. 
 As existing tools mostly work on the application level, are limited to specific points in time, or work only on an abstract query plan, developers are often left alone when it comes to debug and understand the results of their SQL and SQLScripts.
 We argue that a back-in-time debugger at the bottom of the technology stack is able to close this gap and can support developers in developing and maintaining their queries more efficiently. 
+\tmpEnd
+
+\tmpStart
+
+This is mainly because of two reasons. 
+First, back-in-time debuggers typically create a significant overhead on performance and memory consumption~\cite{lewis03:debugging_backwards_in_time,pothier07:scalable_omniscient_debugging,lienhard08:practical_object-oriented_back-in-time_debugging}.
+It seems unfeasible to use a back-in-time debugger on top of a database script that processes billions of records.
+Second, current back-in-time debugging concepts cannot handle side-effects outside their system that usually happen in writing operations during INSERT and UPDATE statements. 
 
 %Solution
 We bring the concept of back-in-time debugging to the database and developed \emph{\tool} as an implementation of our approach.
@@ -38,8 +62,31 @@ We bring the concept of back-in-time debugging to the database and developed \em
 	
 \end{itemize}
 
-We evaluated \tool\ with the help of SAP colleagues who worked on a project called \emph{Point of Sales Explorer}~\cite{plattner2015memory}, which makes heavy use of SQLScript. 
+We evaluated \tool\ with the help of SAP colleagues who worked on a project called \emph{Point of Sales Explorer}~\cite{plattner15:the_in-memory_revolution_how}, which makes heavy use of SQLScript. 
 The interviews indicated that failures in stored procedures can be investigated more efficiently with \tool\ than with other existing database development tools.
+
+\tmpEnd
+
+\tmpStart
+
+\subsubsection{Design Concept}
+pros and cons of post mortem,
+pros and cons of database
+discussion insert only
+final decision
+
+\subsubsection{Prototype: Architecture and Schema}
+figure: architecture
+data schema
+tracing code generation and examples
+
+\subsubsection{BiT SQL}
+
+\subsubsection{-TimeTravel queries}
+
+\subsubsection{-TimeDiff queries}
+
+\subsubsection{Evaluation}
 
 \section{Back-in-Time Debugging for Stored Procedures}
 
@@ -60,7 +107,7 @@ A post-mortem debugger, on the other hand, has to record virtually everything to
 While this approach allows developers the most freedom when stepping through the execution, it creates a large overhead on performance and memory.
 Debugger implementations using this approach exist for different programming languages.
 %
-Both approaches can also be mixed to create a tradeoff between performance and overhead~\cite{perscheid2013}.
+Both approaches can also be mixed to create a tradeoff between performance and overhead~\cite{perscheid13:test-driven_fault_navigation}.
 
 % post-mortem has been solved before, why is it harder in the database
 %Back-in-time debuggers typically create a significant overhead on run-time and memory, as they need to trace and record every aspect of an execution.
@@ -78,6 +125,8 @@ Furthermore, as trace data usually exceeds program data by orders of magnitude, 
 With \tool, we focuses on stored procedures because they are executed close to the data and, thus, more efficient in handling large data sets.
 This does not limit the general validity of our results, as a debugger for stored procedures faces all of the challenges described above.
 
+
+
 \subsection{Replaying a Stored Procedure}
 
 While using a database to manage application state creates several problems for debugging tools, it also opens up new possibilities to simplify or improve the debugger.
@@ -90,7 +139,7 @@ This means they can be analyzed without knowing how they are physically executed
 Thus, neither do we need to trace the internals of a query's execution, nor do we need to persist the query result.
 %\todo{MP: This is not clear to me, yet.}
 Third, the database can be used to efficiently manage old state.
-In-memory databases with insert-only storage automatically retain old data~\cite{Plattner2009Acd}.
+In-memory databases with insert-only storage automatically retain old data~\cite{plattner09:a_common_database_approach}.
 With insert-only, older versions of the database can be easily reproduced.
 For other databases, insert-only can be achieved by adding validity columns.
 For many business applications, such columns already exist where no data may be deleted for legal reasons.
@@ -163,6 +212,7 @@ For variables containing a query result, the size of the result is shown.
 Clicking the variable opens a query window that shows the variable's content and allows the developer to submit time-travel queries, which will be explained in the next section.
 
 \section{Back-in-Time SQL}
+
 
 
 \newcommand{\red}[1]{\textcolor{DarkRed}{#1}}
@@ -398,7 +448,7 @@ Query 2& (b)	&	81 ms		& 100 ms	\\
 %}
 
 We evaluated our \tool\,debugger on a real-world SAP project that has been developed with one of the largest European retail companies. 
-This project is called \emph{Point of Sales Explorer}~\cite{plattner2015memory} and allows category managers to see a collection of the most important key performance indicators (KPIs) for several thousands of products in a unified dashboard.
+This project is called \emph{Point of Sales Explorer}~\cite{plattner15:the_in-memory_revolution_how} and allows category managers to see a collection of the most important key performance indicators (KPIs) for several thousands of products in a unified dashboard.
 Based on more than 2 billion records of point of sales data, this application aggregates on the fly the requested KPIs with the help of SAP HANA and allows users to further refine them by stores, vendors, or products as they like. 
 In order to implement flexible requests such as returning the revenue and margin per week of current and last year, this application makes heavy use of SQLScript. 
 For that reason, it is a proper candidate to measure performance and interview its developers with respect to our \tool\ tool. 

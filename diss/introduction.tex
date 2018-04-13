@@ -2,23 +2,38 @@
 \label{sec:introduction}
 
 Twenty years ago, Lieberman described debugging as "the dirty little secret of computer science".
-He argued that the huge economic cost created by software bugs, resulting from the efforts to locate and fix bugs and the damages caused by bugs  not found in time, was not adequately matched by efforts to provide and establish better debugging tools and practices.
-Lieberman called this the "Debugging Scandal"~\cite{lieberman_97_the_debugging_scandal}.
-Twenty years later, the situation has barely improved.
+He argued that the huge economic cost created by software bugs, resulting from the efforts to locate and fix bugs and the damages caused by bugs  not found in time, was not adequately matched by efforts to provide better debugging tools and establish better debugging practices.
+Lieberman called this the "Debugging Scandal"~\cite{lieberman97:the_debugging_scandal}.
+In his famous article, he urged the computer science community to stop ignoring this problem and outlines several directions in which debugging can be evolved.
+Twenty years later, computer science research has produced many new and advanced approaches to debugging, in practice, however, the situation has barely improved.
 
 The amount of software that is involved in almost every aspect of our modern life is steadily increasing.
-In many fields, innovation is largely driven by software~\cite{evans_08_invisible_engines_how_software, gorschek_10_a_lightweight_innovation_process}.
+In many fields, including traditional engineering fields such as automotive engineering, innovation is largely driven by software today~\cite{evans08:invisible_engines_how_software, gorschek10:a_lightweight_innovation_process}.
 With the rise of cloud computing and devices becoming smarter and smarter, this trend will not stop in the near future.
 
-It has long been recognized that there is no such thing as a bug-free program~\cite{schwartz_71_an_overview_of_bugs}.
-Errors affect the operation of all professional and commercial software products, from web-browser~\cite{li_06_have_things_changed_now}, over enterprise applications~\cite{turhan_09_data_mining_source_code, sahoo_10_an_empirical_study}, to operating systems~\cite{guo_10_characterizing_and_predicting_which}\todo{.}. % check sources
+It has long been recognized that there is no such thing as a bug-free program~\cite{schwartz71:an_overview_of_bugs}.
+Errors affect the operation of all professional and commercial software products and have been studied in many kinds of applications, such as web-browser~\cite{li06:have_things_changed_now}, enterprise applications~\cite{turhan09:data_mining_source_code, sahoo10:an_empirical_study}, and operating systems~\cite{guo10:characterizing_and_predicting_which}. % check sources
 
-In 2002, the yearly economic cost of software errors was estimated to be above 60 billion dollars in the United States alone~\cite{tassey_02_the_economic_impacts}. 
-Additional billions of damage are created by failing software projects, where bugs are at least part of the problem~\cite{charette_05_why_software_fails}.
+In 2002, the yearly economic cost of software errors was estimated to be above 60 billion dollars in the United States alone~\cite{tassey02:the_economic_impacts}. 
+The damages a accumulated from a variety of sources.
+Most obviously, errors need to be fixed and therefore increase the software development costs.
+Additional damages are incurred when the increased workload delays the project's release, as the increased time to market can lead to lost opportunities.
+Usually, errors are most expensive when they manifest in production.
+Not only can they cause direct costs by interrupting business operations, they are also more expensive to repair and can cause long-term damage through loss of reputation and future business for the company.
+Additional billions of damage are created by failing software projects, where bugs are at least part of the problem~\cite{charette05:why_software_fails}.
 
-Studies found that developers spend between 25\% and 60\% of their time on software bugs, debugging, and related activities~\cite{ballou_08_improving_software_quality, hailpern_02_software_debugging_testing, beizer_03_software_testing_techniques}.
+%  between 25\% and
+Studies found that developers spend up to 60\% of their time on software bugs, debugging, and related activities~\cite{ballou08:improving_software_quality, hailpern02:software_debugging_testing, beizer03:software_testing_techniques}.
+However, effective debugging skills are not only important to reduce development time.
+An incorrect bug fix might not cover all corner cases or cause unexpected side-effects, thereby causing additional problems in the future.
+In a commercial operating system, between 15\% and 24\% of fixes for post-release bugs found were found incorrect and caused additional problems to users; for concurrency bugs, 39\% of fixes were faulty~\cite{yin11:how_do_fixes_become}.
+In the Apache bug database, 9\% of bug reports were reopened due to bad fixes~\cite{gu10:has_the_bug_really}.
+This number does not even include bad fixes for which a new bug report was created.
+
 Considering the total cost created by bugs in software, we would expect companies to encourage software developers to improve their debugging skills (e.g., through trainings) and to use modern debugging techniques.
-However, 72\% of software companies report their debugging practices to be problematic~\cite{ballou_08_improving_software_quality}.
+However, 72\% of software companies report their debugging practices to be problematic~\cite{ballou08:improving_software_quality}.
+Not only do many debuggers lack a formal education in general debugging best practices, there is also a big gap between the state of the art in research and practice.
+
 
 %\cite{beck_03_testdriven_development_by_example, williams_03_testdriven_development_as}
 
@@ -33,45 +48,51 @@ Because modifying and re-running a program was expensive and time-consuming, bug
 In the 1960s, the invention of operating systems with time-sharing capabilities allowed developers to use the "edit -- compile -- run" loop.
 By experimenting with changes to the source code, it was much easier to get an understanding of the problem.
 Furthermore, interactive terminals allowed developers to insert trace statements into the code, which could report internal states and program flow.
-This practice is also known as "printf"-debugging and remains popular to this day~\cite{perscheid_17_studying_the_advancement}.
+This practice is also known as "printf"-debugging and remains popular to this day~\cite{perscheid17:studying_the_advancement}.
 
-At the same time, with the "Dynamic Debugging Technique" (DDT) and later EXDAMS the first tools were developed to facilitate stepwise executions of programs and to let developers examine program state~\cite{balzer_69_exdams_extendable_debugging}\todo{source: ddt}.
+At the same time, with the "Dynamic Debugging Technique" (DDT) and later EXDAMS the first tools were developed to facilitate stepwise executions of programs and to let developers examine program state~\cite{balzer69:exdams_extendable_debugging}\todo{source: ddt}.
 In the 1970s, debuggers moved to the command line and the introduction of the breakpoint allowed developers to pause the execution at predefined points.
 In 1975, the first debugger (for COBOL) integrated compiler information to translate identifiers from the source code into memory addresses and vice versa, alleviating developers from manually performing this task.
-Such symbolic debuggers are, when available, widely used today; unfortunately, as we will see, they are also the most recent innovation that found wide adoption in pracitce~\cite{perscheid_17_studying_the_advancement}.
+Such symbolic debuggers are, when available, widely used today; unfortunately, as we will see, they are also the most recent innovation that found wide adoption in pracitce~\cite{perscheid17:studying_the_advancement}.
 
-In 1982, Weiser introduced the concept of slices, subsets of statements in a program that influence each other~\cite{weiser_81_program_slicing}. 
-He showed that slices are a useful abstraction for programmers who think about code~\cite{weiser_82_programmers_use_slices_when}.
-Later this concept was extended to consider runtime data for higher precision~\cite{agrawal_90_dynamic_program_slicing, korel_90_dynamic_slicing_of_computer}.
+In 1981, Weiser introduced the concept of slices, subsets of statements in a program that influence each other~\cite{weiser81:program_slicing}. 
+He showed that slices are a useful abstraction for programmers who think about code~\cite{weiser82:programmers_use_slices_when}.
+Later this concept was extended to consider runtime data for higher precision~\cite{agrawal90:dynamic_program_slicing, korel90:dynamic_slicing_of_computer}.
 
 Early on it was noted that given the way debuggers follow infection chains, by trying to find the source for an incorrect value, it would be helpful to go backwards through a program execution.
-Debuggers that used snapshots~\cite{feldman_88_igor_a_system} or reverse execution~\cite{lieberman_95_zstep_95_a_reversible} were developed in the 1990s.
-In 2003, Lewis introduced the concept of "omniscient debugging", a debugger that can not only run forwards and backwards in time, but has instantaneous access to every state in past, present, and future~\cite{lewis_03_debugging_backwards_in_time}.
+Debuggers that used snapshots~\cite{feldman88:igor_a_system} or reverse execution~\cite{lieberman95:zstep_95_a_reversible} were developed in the 1990s.
+In 2003, Lewis introduced the concept of "omniscient debugging", a debugger that can not only run forwards and backwards in time, but has instantaneous access to every state in past, present, and future~\cite{lewis03:debugging_backwards_in_time}.
 
-Although both slicing and omniscient debugging can answer many questions developers have while debugging that regular debuggers can't answer~\cite{ko_07_information_needs_in_collocated, storey_97_how_do_program_understanding, sillito_06_questions_programmers_ask}, neither technique is widely used, or even widely known, today~\cite{perscheid_17_studying_the_advancement}.
+Although both slicing and omniscient debugging can answer many questions developers have while debugging that regular debuggers can't answer~\cite{ko07:information_needs_in_collocated, storey97:how_do_program_understanding, sillito06:questions_programmers_ask}, neither technique is widely used, or even widely known, today~\cite{perscheid17:studying_the_advancement}.
+As \cref{fig:tool-usage} shows, the same is true for many other modern debugging techniques.
+
+\begin{figure*}[th]
+\centering
+\includegraphics[width=.8\linewidth]{img/tool-usage}
+\caption{Answers to "Which debugging tools do you know?"~\cite{perscheid17:studying_the_advancement}.}
+\label{fig:tool-usage}
+\end{figure*}
 
 \begin{figure*}[th]
 \centering
 \includegraphics[width=\linewidth]{img/debugging-timeline}
-\caption{A brief timeline of debugging history and the gap between research and practice.}
+\caption{A brief timeline of debugging history. The orange line visualizes the gap between research and practice.}
 \label{fig:debugging-timeline}
-\end{figure*}
-
-\begin{figure*}[th]
-\centering
-\includegraphics[width=.6\linewidth]{img/tool-usage}
-\caption{Answers to "Which debugging tools do you know?"~\cite{perscheid_17_studying_the_advancement}.}
-\label{fig:tool-usage}
 \end{figure*}
 
 \section{Are There Too Many Debugging Tools?}
 
-What we find today is a large number of debugging tools, techniques, and prototypes that are very good at what they do, but not very accessible to developers.
+\Cref{fig:debugging-timeline} summarizes the history of debugging research and shows when the application of debugging in practice began to disconnect from state of the art research.
+Today, we can find a large number of debugging tools, techniques, and prototypes that are very good at what they do, but not very accessible to developers.
 
-In interviews we have learned that many developers are not even aware that advanced debugging techniques (i.e., anything beyond symbolic debugging) exist and may even be available for the programming languages they use.
-If developers know of an advanced debugging tool, they often cite a lack of documentation as the main reason for not using it.
+Consistently with debugging studies, talking to professional software developers we learned that many developers are not even aware that advanced debugging techniques (i.e., anything beyond symbolic debugging) exist and may even be available for the programming languages they use.
+If developers know of an advanced debugging tool, they often cited a lack of documentation as the main reason for not using it.
 While locating a software fault, developers don't want to divert attention to learning a new tool.
 
+Based on these findings we conclude that it is not enough for debugging research to propose new methods to better find and fix bugs.
+The developer as a user of the tool or method has to be considered, too.
+Debugging tools need to seamlessly integrate into the developer's workflow and tool chain, and allow the exploration of features instead of requiring a formal training of the user.
+Looking back at the history of debugging, we find that innovations in debugging were usually quickly adapted when they occurred alongside changes in how software was developed.
 
 On top of accessibility concerns, new requirements have emerged for debugging tools:
 % Context
@@ -208,11 +229,11 @@ To overcome these problems, developers need a more structured approach to debugg
 
 Experienced developers often follow a process that is similar to the scientific method.
 \Cref{fig:scientifiy-method} shows the process as a flow chart.
-First, developers formulate a hypothesis explaining the failure; then, they attempt to verify that hypothesis through an experiment. 
+First, developers formulate a hypothesis explaining the failure; then, they attempt to verify the hypothesis through an experiment. 
 \begin{figure*}[th]
 \centering
-\includegraphics[width=.9\linewidth]{img/workflow-traditional}
-\caption{TODO: make a workflow.}
+\includegraphics[width=.4\linewidth]{img/workflow-scientific-method}
+\caption{The scientific approach to fault localization.}
 \label{fig:scientifiy-method}
 % R. Metzger. Debugging by Thinking - A Multidisciplinary approach.
 \end{figure*}
@@ -222,9 +243,11 @@ Sometimes, the hypothesis is to vague and the problem needs to be narrowed down 
 In other cases, the experiment revealed that the erroneous behavior of one component was caused by incorrect input of another component, in which case a new failure cause becomes the focus of investigation.
 Either way, developers repeat the hypothesis-experiment cycle until they identify the root cause and can begin the repair.
 
+\section{Back-in-Time and Omniscient Debugging}
+
 Very often, defective code does not cause the program to fail immediately.
 Instead, it creates an error in the program state that propagates, in accordance to the garbage-in-garbage-out principle, until it yields to a failure in a different part of the application.
-This sequence of erroneous states is also called the infection chain~\cite{zeller_09_why_programs_fail}.
+This sequence of erroneous states is also called the infection chain~\cite{zeller09:why_programs_fail}.
 Developers tasked to locate the defect have to follow the infection chain backwards through execution time.
 
 %Tools can support the fault localization process 
@@ -238,13 +261,26 @@ Developers tasked to locate the defect have to follow the infection chain backwa
 
 \Cref{fig:workflow-traditional} shows how developers track an infection chain with a debugger.
 Beginning at the failure, developers follow the infection chain backwards through execution time.
-Each step consists of forming a hypothesis and confirming it by inspecting the relevant code location with a debugger.
+Each step consists of forming a hypothesis and confirming it by inspecting the relevant code location with a debugger. \todo{explain image in more detail}
 Following this method, developers will continually get closer to the root cause of the bug.
-If developers have not enough knowledge of the program to identify relevant code locations for the next step, the debugger can also be used to explore the program execution to find suspicious locations. 
+If developers have not enough knowledge of the program to identify relevant code locations for the next step, the debugger can also be used to explore the program execution to find suspicious locations.
+Thus, debuggers can help developers with both tasks in the scientific debugging approach.
 
-\section{Advanced Debugging Techniques}
+However, debuggers have one major limitation: they do not allow developers to go back.
+Developers track the infection chain backwards through time.
+As \cref{fig:workflow-traditional} shows, to move backwards a new debug session has to be started at every step.
+Likewise, when using a debugger to explore an execution, developers might accidentally step over a method instead of stepping into it, either because they did not expect relevant behavior to occur inside that method or simply because of pressing the wrong button.
+In both cases, the debug session has to be restarted to get back in time.
 
-\subsection{Back-in-Time and Omniscient Debugging}
+Restarting the debugger is usually an easy task, and getting to the desired point in the execution can be as simple as setting a breakpoint at the respective location.
+Alas, often getting to the right point is more cumbersome.
+For instance, it may happen that the breakpoint is hit multiple times.
+In this case developers have to either resume the execution repeatedly until the right point in time is reached, or set a breakpoint at a different location that is hit less often and manually step from there.
+Either way demands high concentration from the developer as making a mistake means having to start all over again.
+In other cases manual interaction with the program is required to set up the program state in which the error will occur.
+This, too, has to be repeated with every restart of the debug session.
+Thus, while restarting the debugger is in the best case a simple operation that imposes only a small delay on the developer, it often is a complex task that requires careful attention.
+This attention is then drawn away from solving the actual problem.
 
 \begin{figure*}[th]
 \centering
@@ -253,10 +289,40 @@ If developers have not enough knowledge of the program to identify relevant code
 \label{fig:workflow-odb}
 \end{figure*}
 
-%\subsection{Slicing}
-\subsection{The Evolution of Slicing Algorithms}
+\emph{Back-in-time debuggers} seek to remedy this problem by allowing developers to step backwards.
+This all but removes the need to restart the debugger.
+\Cref{fig:workflow-odb} shows how developers track the infection chain with a back-in-time debugger.
+Instead of restarting at every step, developers move back and forth along the data-flow, thereby reducing the time needed for each hypothesis-confirmation cycle.
 
-In 1981, Weiser introduced slicing as a technique helping developers to find related code for a given question~\cite{weiser_81_program_slicing}.
+Different approaches exist to realize back-in-time debugging.
+Recording lost state allows the debugger to roll back changes by reversing each instruction~\cite{feldman88:igor_a_system,cook02:reverse_execution_of_java,lieberman95:zstep_95_a_reversible}.
+By creating regular snapshots of the entire program state, the debugger can go back faster over longer distances in time~\cite{boothe00:efficient_algorithms_for_bidirectional,tolmach93:a_debugger_for_standard}.
+% TODO: about IO
+
+A special kind of back-in-time debugger, called \emph{omniscient debugger}, keeps a record of all state changes in the execution history~\cite{lewis03:debugging_backwards_in_time}.
+This not only allows developers to step backwards in time, it also opens the possibility to run structured queries on the history of program states.
+For example, an omniscient debugger can easily list all invocations of a method or show a history of all field accesses in an object.
+Such information can be very helpful for developers trying to understand a program and is not easily obtainable through other means.
+
+Recording the entire execution history also allows the debugger to run \emph{post-mortem}, i.e., it simulates an active debug session while the actual program has already terminated.
+This way, developers can not only restart the debugger later without having to re-run the program, but they can do so on a different machine or even share the recording with coworkers.
+\todo{about memory usage}
+
+
+%\subsection{Slicing}
+\section{The Evolution of Slicing Algorithms}
+
+A different way how tools can support the debugging process is by helping to form hypotheses about the failure.
+Better hypotheses reduce the number of iterations needed in the hypothesis-confirmation cycle and thereby improve the time needed to locate a bug.
+While developers first need to improve their understanding of the program in order to form better hypotheses, a tool can quickly analyze large parts of a program or program execution and suggest likely causes for a fault.
+This approach is called \emph{automatic fault localization} and many techniques to locate suspicious code have been developed~\cite{wong16:a_survey_on_software}.
+In our work, we build on one of these techniques, called "slicing".
+
+Research has shown that developers also break programs down into pieces of code that are related by data flow~\cite{weiser82:programmers_use_slices_when}.
+Such "slices" are often not contiguous and can contain code from many different parts of an application, increasing the navigation overhead for developers trying to understand the program.
+Here, tools can help to identify related statements, saving time and reducing the mental overhead for developers.
+
+In 1981, Weiser introduced slicing as a technique helping developers to find related code for a given question~\cite{weiser81:program_slicing}.
 According to Weiser, a slice is a subset of a program that, when executed, yields the same state trajectory with respect to given slicing criteria as the original program would have.
 The slicing criteria are pairs of variables and code locations.
 An important property of the resulting slice is that it must be executable.
@@ -265,26 +331,26 @@ This allows the slice to be compiled and inspected with a debugger.
 Weiser proposed an algorithm for computing static slices, i.e., slices that are correct for every possible input of the program.
 Static slices often are very large, especially for complex applications, and many sophisticated methods have been developed to reduce the size of static slices \todo{ref}.
 
-In 1990, Korel and Laski proposed to compute slices that are valid only for one specific program input~\cite{korel_88_dynamic_program_slicing}.
-Such dynamic slices can be much smaller than static slices because the slicer has to consider only one concrete execution path~\cite{venkatesh_95_experimental_results_from_dynamica, hoffner_95_evaluation_and_comparison}.
+In 1988, Korel and Laski proposed to compute slices that are valid only for one specific program input~\cite{korel88:dynamic_program_slicing}.
+Such dynamic slices can be much smaller than static slices because the slicer has to consider only one concrete execution path~\cite{venkatesh95:experimental_results_from_dynamic, hoffner95:evaluation_and_comparison}.
 However, to achieve this we must add the program input to the slicing algorithm's parameters.
 
-Shortly after Korel and Laski, Agrawal and Horgan independently also introduced dynamic slices~\cite{agrawal_90_dynamic_program_slicing}.
+Shortly after Korel and Laski, Agrawal and Horgan independently also introduced dynamic slices~\cite{agrawal90:dynamic_program_slicing}.
 Agrawal and Horgan used an approach based on execution traces that allowed to remove more statements than previous approaches, but the resulting slices were not always executable.
 Thus, they defined "accurate slices" as slices that contain all statements relevant for computing the state trajectory for the slicing criteria, but are not necessarily compilable or executable.
-Agrawal \etal\ also presented SPYDER, a tool that allows debugging non-executable slices by superimposing the slice on an execution of the full program~\cite{agrawal_93_debugging_with_dynamic_slicing}.
+Agrawal \etal\ also presented SPYDER, a tool that allows debugging non-executable slices by superimposing the slice on an execution of the full program~\cite{agrawal93:debugging_with_dynamic_slicing}.
 
-Subsequent work focused on increasing the precision of accurate slices, for example in the presence of pointers~\cite{atkinson_02_program_slicing_using_dynamic}.
-In 2003, Zhang \etal\ presented three algorithms to efficiently compute "precise slices", i.e., slices that are "accurate" but contain little to no statements that could be removed~\cite{zhang_03_precise_dynamic_slicing_algorithms}.
+Subsequent work focused on increasing the precision of accurate slices, for example in the presence of pointers~\cite{atkinson02:program_slicing_using_dynamic}.
+In 2003, Zhang \etal\ presented three algorithms to efficiently compute "precise slices", i.e., slices that are "accurate" but contain little to no statements that could be removed~\cite{zhang03:precise_dynamic_slicing_algorithms}.
 Like many other authors, Zhang \etal\ argued that producing small slices is essential if slicing is to be "an attractive option" for developers.
 However, Korel argued that slicing too aggressively can also be dangerous, as
-"for program debugging the challenge is not necessarily to minimize the size of the slice at any cost but rather to minimize the size of the slice without the elimination of faulty program statements"~\cite{korel_98_dynamic_program_slicing_methods}.
+"for program debugging the challenge is not necessarily to minimize the size of the slice at any cost but rather to minimize the size of the slice without the elimination of faulty program statements"~\cite{korel98:dynamic_program_slicing_methods}.
 
 The difference between executable and "accurate" slices can be demonstrated with a small example.
 In the code shown in \cref{lst:sliceAccurate}, line 9 is only executed during the second iteration of the loop.
-Therefore, when choosing ´ratio´ in line 9 as a slicing criterion, "accurate" slicing algorithms can remove the array assignment in line 3.
+Therefore, when choosing ´ratio´ in line 9 as a slicing criterion, "accurate" slicing algorithms can remove the assignment of the first array item in line 3.
 This will reduce the size of the slice, as the call to ´complexComputation1´ is removed, but when the remaining code is executed, a division by zero will occur during the first iteration in line 7.
-Korel argued that the correctness of a slicing algorithm can be objectively determined if it is allowed to produce slices where the program fails.
+Korel argued that the correctness of a slicing algorithm can not be objectively determined if it is allowed to produce slices where the program fails.
 
 \begin{lstlisting}[float,caption={Code example for accurate slices.},stepnumber=2,numberfirstline=false,label=lst:sliceAccurate,language=Java]
 	void main() {
@@ -310,8 +376,8 @@ Korel argued that the correctness of a slicing algorithm can be objectively dete
 
 However, algorithms for both executable and "accurate" slices are allowed to remove the call to ´adjustValue´ in line 6 and therefore hide the actual bug.
 In general, bugs caused by wrongly skipped or missing code are difficult to locate with slicing.
-Wang \etal\ addressed this problem by developing an algorithm to find "relevant" slices, slices including code that could have changed the state trajectory but was not executed~\cite{wang_08_dynamic_slicing_on_java}.
-Likewise, Ko \etal\ developed Whyline, a slicing-based tool allowing developers to ask "Why?" and, more importantly, "Why not?" questions~\cite{ko_08_debugging_reinvented_asking}.
+Wang \etal\ addressed this problem by developing an algorithm to find "relevant" slices, slices including code that could have changed the state trajectory but was not executed~\cite{wang08:dynamic_slicing_on_java}.
+Likewise, Ko \etal\ developed Whyline, a slicing-based tool allowing developers to ask "Why?" and, more importantly, "Why not?" questions~\cite{ko08:debugging_reinvented_asking}.
 
 By considering developers with a debugging problem as end users of a slicing tool, we can carry the trend of carefully reducing slice sizes to its logical conclusion: we define a "most useful slice" as exactly the subset of statements of a program that developers need to see in order to answer the question they are currently investigating.
 Such a slice is not necessarily executable, "accurate", "precise", or "relevant", according to the established definitions, but rather captures the optimal combination of these conflicting properties.
@@ -338,7 +404,7 @@ All applications are designed to work on real-time data generated by respective 
 
 \subsection{Changing Characteristics in 3-tier Applications}
 
-The design of all applications was based on the 3-tier architecture pattern, which divides an application into three layers~\cite{eckerson_95_three_tier_clientserver_architecture}.
+The design of all applications was based on the 3-tier architecture pattern, which divides an application into three layers~\cite{eckerson95:three_tier_clientserver_architecture}.
 The \emph{presentation tier} displays information and receives input from the user,
 the \emph{application tier} contains the application's business logic, and
 the \emph{data tier} encapsulates data access and persistence.
@@ -361,8 +427,8 @@ Via HTTP and fast connections, megabytes of client code can be updated with ever
 JavaScript-based GUI libraries eliminate the need for server-side templates as the entire GUI can be built in the client and data is dynamically loaded via AJAX requests.
 
 With big-data becoming more important for many companies, it is no longer feasible to handle all data operations in the application layer.
-Even transactional systems contain a large fraction of analytical operations~\cite{krueger_10_a_case_for_online} and high-performance databases can handle such queries faster than application-level code~\cite{plattner_09_a_common_database_approach}.
-Even for transactional operations, the usefulness of ORMs is doubted as they can introduce other organizational and architectural problems~\cite{neward_06_the_vietnam_of_computer}.
+Even transactional systems contain a large fraction of analytical operations~\cite{krueger10:a_case_for_online} and high-performance databases can handle such queries faster than application-level code~\cite{plattner09:a_common_database_approach}.
+Even for transactional operations, the usefulness of ORMs is doubted as they can introduce other organizational and architectural problems~\cite{neward06:the_vietnam_of_computer}.
 
 All developers reported that their projects followed these new architecture patterns.
 To achieve sufficiently low response times, data is stored in \emph{SAP HANA}, a high-performance in-memory relational database.
@@ -382,7 +448,7 @@ Data schema definitions are not included in the line counts, as the data is defi
 % db/procedure			2991 // -- 3000
 % // 11521
 
-Standards like \emph{OData}~\cite{chappell_11_introducing_odata} allow clients to submit arbitrary queries to the database, entirely eliminating the need for a middle layer.
+Standards like \emph{OData}~\cite{chappell11:introducing_odata} allow clients to submit arbitrary queries to the database, entirely eliminating the need for a middle layer.
 It should be noted that this setup is different from the classical 2-tier architecture, where a trusted client has full access to the database.
 OData still maintains security concerns such as authentication, authorization, and visibility of data, which was previously a responsibility of the application tier.
 
@@ -424,13 +490,18 @@ Overall, frequent switches between tools were reported to be a major distraction
 Often, multiple monitors were used to allow developers to access all tools more quickly, but all developers wished for better integration between tools.
 \tmpEnd
 
-\section{Requirements}
+\section{Requirements for an Enterprise Application Debugger}
+
+Based on what we learned about
+
 
 Requirements
 - Iterative approach
 - Identify related statements
 - support short-term memory
 - reduce problem size
+
+
 
 %Finding bugs in complex code is a demanding task for developers and many tools and techniques have been developed to support this process.
 %However, complex system architectures add another level of difficulty to fault localization.

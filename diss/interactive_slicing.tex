@@ -34,20 +34,20 @@ Modularization is the art of breaking large software into smaller pieces of rela
 If done right, it can greatly improve the maintainability of an application.
 Many approaches, such as name spaces or object-oriented programming, were developed to help to structure a program.
 
-Modularization is typically used to group code that is semantically related.
-However, research has shown that developers also break programs down into pieces of code that are related by data flow~\cite{weiser_82_programmers_use_slices_when}.
+Typically, modularization is used to group code that is semantically related.
+However, research has shown that developers also break programs down into pieces of code that are related by data flow~\cite{weiser82:programmers_use_slices_when}.
 Such "slices" are often not contiguous and can contain code from many different parts of an application, increasing the navigation overhead for developers trying to understand the program.
 Here, tools can help to identify related statements, saving time and reducing the mental overhead for developers.
 
 \subsection{An Efficient Incrementally Configurable Slicing Algorithm}
 
 To determine which statements belong to a slice and which do not, the slicer has to perform a dependency analysis on the program.
-Many different approaches exist to conduct such analyses~\cite{korel_98_dynamic_program_slicing_methods, tip_94_a_survey_of_program}. 
+Many different approaches exist to conduct such analyses~\cite{korel98:dynamic_program_slicing_methods, tip_94_a_survey_of_program}. 
 In our work, we used the popular approach of computing dependence graphs.
 
-Static slicing algorithms typically use \emph{\acp{pdg}}, where every node is statement or instruction and directed edges indicate dependency relations~\cite{weiser_81_program_slicing}.
+Static slicing algorithms typically use \emph{\acp{pdg}}, where every node is statement or instruction and directed edges indicate dependency relations~\cite{weiser81:program_slicing}.
 For dynamic slicing, the slice precision can be improved by using \emph{\acp{ddg}}, in which each node represents the execution of a statement.
-To compute \acp{ddg}, Agrawal \etal\ and Zhang \etal\ developed algorithms that first compute a \ac{pdg} and then combine it with a recorded execution trace~\cite{agrawal_90_dynamic_program_slicing,zhang_03_precise_dynamic_slicing_algorithms}.
+To compute \acp{ddg}, Agrawal \etal\ and Zhang \etal\ developed algorithms that first compute a \ac{pdg} and then combine it with a recorded execution trace~\cite{agrawal90:dynamic_program_slicing,zhang03:precise_dynamic_slicing_algorithms}.
 Then, from the \ac{ddg} the slice is derived as a sub-graph.
 While this approach produces precise results, it typically takes a long time to complete.
 Thus, they also developed multiple algorithms that provide different trade-offs between runtime and precision.
@@ -185,7 +185,7 @@ The code contains no bugs; nevertheless, a developer might choose to slice on th
 \subsection{Computing the Program Dependence Graph}
 
 Our algorithm for computing the \ac{pdg} distinguishes between three dependency types: data, control, and choice dependencies.
-The first two types have been used by many authors since the original slicing algorithm by Weiser~\cite{weiser_81_program_slicing}.
+The first two types have been used by many authors since the original slicing algorithm by Weiser~\cite{weiser81:program_slicing}.
 
 Data dependencies represent the data flow in a program and occur whenever the value of an instruction is the result of a previous instruction.
 For instance, the value of ´words´ in \linerefn{lst:countLetters}{5} of ´countLetters´ depends on the result of ´split´.
@@ -218,7 +218,7 @@ However, as we will discuss in more detail in \todo{reference}, including this d
 	System.out.println(x);
 \end{lstlisting}
 
-The algorithm to build the method-level \acp{pdg} was implemented in Soot, using a \emph{forward flow analysis}~\cite{lam_11_the_soot_framework}.
+The algorithm to build the method-level \acp{pdg} was implemented in Soot, using a \emph{forward flow analysis}~\cite{lam11:the_soot_framework}.
 The analysis algorithm has two major operations, the visit and the merge.
 
 In Soot, a method is represented by three-address-code instructions, called "units".
@@ -544,8 +544,8 @@ The support for frequent and quick reconfigurations not only allows developers t
 However, for a slice to be really useful to developers, it has to be debuggable.
 Because our algorithm does not produce executable slices, slicing support has to be directly integrated in the debugger.
 
-\Acfp{odb} are debuggers that not only allow developers to move forwards and backwards through a program execution, but can instantly access any point in time~\cite{lewis_03_debugging_backwards_in_time}.
-A common way of implementing \acp{odb} is the post-mortem approach: the execution of a program is first recorded and then a debug session is simulated by replaying the execution trace~\cite{lewis_03_debugging_backwards_in_time, pothier_07_scalable_omniscient_debugging}.
+\Acfp{odb} are debuggers that not only allow developers to move forwards and backwards through a program execution, but can instantly access any point in time~\cite{lewis03:debugging_backwards_in_time}.
+A common way of implementing \acp{odb} is the post-mortem approach: the execution of a program is first recorded and then a debug session is simulated by replaying the execution trace~\cite{lewis03:debugging_backwards_in_time, pothier07:scalable_omniscient_debugging}.
 
 Both omniscient debugging and (dynamic) slicing changed the way how developers approach fault localization.
 Combining omniscient debugging and and dynamic slicing in one tool, we found synergies between both approaches that enable developers to follow a new debugging workflow.
@@ -785,7 +785,7 @@ Backwards debuggers can be implement with both the live and the post-mortem appr
 In the scenario described above, where the debug session begins at the occurrence of a failure, it does not make much of a difference.
 In other use cases, however, the look-ahead that is possible with the post-mortem approach can make the difference between a simple backwards and a fully omniscient debugger.
 
-Many strategies have been proposed to reduce the amount of data that has to be captured to allow a replay of the execution+\cite{pothier_07_scalable_omniscient_debugging, lienhard_08_practical_objectoriented_backintime_debugging}.
+Many strategies have been proposed to reduce the amount of data that has to be captured to allow a replay of the execution~\cite{pothier07:scalable_omniscient_debugging, lienhard08:practical_object-oriented_back-in-time_debugging}.
 However, since we aim for an omniscient approach, we will record almost everything.
 
 Figure \ref{fig:model} shows how the execution trace is modeled.
@@ -932,7 +932,7 @@ We repeated every measurement 10 times, all charts show the average values.
 	\label{fig:chartinitial}
 \end{figure}
 
-We previously observed that our approach differs from other slicing implementations insofar as that the run-time of the algorithm does not depend on the total length or run-time of the sliced program, but only on the size of the resulting slice~\cite{treffer_dynamic_2014}.
+We previously observed that our approach differs from other slicing implementations insofar as that the run-time of the algorithm does not depend on the total length or run-time of the sliced program, but only on the size of the resulting slice~\cite{treffer14:dynamic_slicing_with_soot}.
 Our current measurements confirm that slicing time is linear to the result size.
 
 \Cref{fig:chartinitial} shows the time for computing the initial slice in seconds, depending on size of the resulting slice.
@@ -988,7 +988,7 @@ To gather empirical data on the usefulness of our approach, we conducted an expe
 
 \subsubsection{Setup}
 
-We used Defects4J, a database of actual bugs from various open-source projects~\cite{just_defects4j_2014}, to find suitable debugging tasks.
+We used Defects4J, a database of actual bugs from various open-source projects~\cite{just14:defects4j_a_database}, to find suitable debugging tasks.
 For each bug, Defects4J also provides at least one failing test case and the fix.
 
 We chose to conduct the experiment with \emph{Joda Time}\footnote{\url{http://www.joda.org/joda-time/}}, a date and time library for Java, because it has a domain that everyone is already familiar with.
@@ -1039,7 +1039,7 @@ If a bug could not be located within 20 minutes, we aborted the task to advance 
 
 \begin{figure}
 	\centering
-		\includegraphics[width=\linewidth, clip, trim={20mm 104mm 20mm 114mm}]{img/chart-times2.pdf}
+		\includegraphics[width=\linewidth, clip, trim={20mm 104mm 20mm 114mm}]{img/chart-times3.pdf}
 	\caption{Time for solving each debugging task with the regular Eclipse Debugger (DB), the omniscient debugger (ODB), and the Slice Navigator (SN)}
 	\label{fig:charttimes}
 \end{figure}
@@ -1128,8 +1128,8 @@ A follow-up study should observe programmers using the tools in practice.
 Threats to internal validity include the composition of our participant group, which was very heterogeneous with respect to programming experience.
 To mitigate this problem, we ensured that participants from each subgroup were distributed evenly across the different debugging tasks.
 As \cref{tab:groupresult} shows, students were on average slightly slower using the omniscient debugger and Slice Navigator, but the difference is within the standard deviation of results.
-Studies found that computer science students behave very similar to professionals when confronted with new concepts and are therefore suitable for user studies~\cite{host_00_using_students_as_subjectsa, salman_15_are_students_representatives}.
-However, industry participants appear to use more intuition when identifying important code elements, so some limitations apply~\cite{mcmeekin_09_the_significance_of_participant}.
+Studies found that computer science students behave very similar to professionals when confronted with new concepts and are therefore suitable for user studies~\cite{host00:using_students_as_subjects, salman15:are_students_representatives}.
+However, industry participants appear to use more intuition when identifying important code elements, so some limitations apply~\cite{mcmeekin09:the_significance_of_participant}.
 
 \begin{table}%
 	\begin{tabulary}{\textwidth}{LRRR}
