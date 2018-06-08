@@ -8,7 +8,7 @@ In his famous article, he urged the computer science community to stop ignoring 
 Twenty years later, computer science research has produced many new and advanced approaches to debugging, in practice, however, the situation has barely improved.
 
 The amount of software that is involved in almost every aspect of our modern life is steadily increasing.
-In many fields, including traditional engineering fields such as automotive engineering, innovation is largely driven by software today~\cite{evans08:invisible_engines_how_software, gorschek10:a_lightweight_innovation_process}.
+In many fields, including traditional engineering fields such as automotive engineering, innovation is largely driven by software these days~\cite{evans08:invisible_engines_how_software, gorschek10:a_lightweight_innovation_process}.
 With the rise of cloud computing and devices becoming smarter and smarter, this trend will not stop in the near future.
 
 It has long been recognized that there is no such thing as a bug-free program~\cite{schwartz71:an_overview_of_bugs}.
@@ -88,13 +88,15 @@ Today, we can find a large number of debugging tools, techniques, and prototypes
 Consistently with debugging studies, talking to professional software developers we learned that many developers are not even aware that advanced debugging techniques (i.e., anything beyond symbolic debugging) exist and may even be available for the programming languages they use.
 If developers know of an advanced debugging tool, they often cited a lack of documentation as the main reason for not using it.
 While locating a software fault, developers don't want to divert attention to learning a new tool.
+\todo{performance issues}
 
 Based on these findings we conclude that it is not enough for debugging research to propose new methods to better find and fix bugs.
 The developer as a user of the tool or method has to be considered, too.
 Debugging tools need to seamlessly integrate into the developer's workflow and tool chain, and allow the exploration of features instead of requiring a formal training of the user.
 Looking back at the history of debugging, we find that innovations in debugging were usually quickly adapted when they occurred alongside changes in how software was developed.
+Therefore, we focused on developers of enterprise applications as our target group and looked at recent trends in software engineering to identify specific problems that today's developers have to face when debugging their code. 
 
-On top of accessibility concerns, new requirements have emerged for debugging tools:
+%On top of accessibility concerns, new requirements have emerged for debugging tools:
 % Context
 Complex systems often consist of multiple inter-operating components written in different programming languages and running in different environments.
 Many enterprise applications, for example, follow a three-tier architecture.
@@ -102,7 +104,6 @@ Many enterprise applications, for example, follow a three-tier architecture.
 A database layer handles persistence and data-intensive computations.
 On top, the application layer implements most of the business process logic and acts as a gateway to the client.
 In the client, the user interface layer provides a rich user experience and sends requests to the application back-end to trigger actions and obtain data.
-
 Because of the heterogeneous technologies, each layer typically comes with its own tool set and no tool can be used to work on all layers at once.
 
 % Problem
@@ -112,19 +113,20 @@ If the guess turns out to be wrong, developers have to switch tools and context 
 Locating bugs in the interaction between two layers becomes even more difficult, as developers may have to switch tools several times to understand the fault.
 
 To efficiently debug a multi-tier application, developers would need a single debugger that is not only capable of debugging each layer but also aware of the interaction between layers at a meaningful level of abstraction.
-Furthermore, to help developers handle the complexity and size of an enterprise application, the debugger should provide analysis features that integrate in the debugging process, instead of interrupting it.
+Furthermore, \todo{the database}
+Finally, to help developers handle the complexity and size of an enterprise application, the debugger should provide analysis features that integrate in the debugging process, instead of interrupting it.
 
 % Significance ?
 % Solution
 \section{Our Approach} %(Research Questions \& Contributions)
 
-The overarching motivation of this work is to improve debugging to reduce the time and effort needed to locate faults in enterprise applications.
+The overarching motivation of this work is to reduce the time and effort needed to locate faults in multi-tier enterprise applications. % to improve debugging
 This challenge will be approached from two directions.
 First, recent debugging innovations need to be made more available in practice.
 It is not enough to simply make more features available in debugging tools, the features need to be conveniently accessible and the cost of learning a new feature must not be too high at any point in time.
 Second, debugging tools need to move along with recent technology trends.
 Developers need better support debugging applications that handle large amounts of data and are composed of sub-systems with heterogeneous technology stacks.
-From this, three research questions followed.
+From this, three research questions were defined.
 
 %\newcommand{\RQ}[1]{\paragraph{\emph{#1}}}
 \newcommand{\RQ}[1]{\subsection*{#1}}
@@ -133,14 +135,16 @@ From this, three research questions followed.
 \RQ{Research Question 1: How can debuggers help developers to navigate a program execution when following a long infection chain?}
 
 When developers debug a program, they are typically not just "browsing" the execution, but rather searching for something specific.
-While omniscient debuggers make it easier to effectively navigate a program execution, they offer no specific help for tracking down relevant code locations.
-The debugger's vast knowledge about the execution can be used for dynamic analyzes.
+While \acp{odb} make it easier to effectively navigate a program execution, they offer no specific help for tracking down relevant code locations.
+Many approaches for \ac{afl} can identify code locations likely related to a failure, but do not provide a way to verify this relation.
+%The debugger's vast knowledge about the execution can be used for dynamic analyzes.
 
-We present a new approach that combines omniscient debugging and dynamic slicing. 
-While developers omnisciently debug a dynamic slice, at any point they can add or adjust the slicing criteria.
+We present a new debugging workflow that combines omniscient debugging and dynamic slicing. 
+The execution history available to the \ac{odb} can be used to quickly compute dynamic slices to help developers to identify relevant code.
+While debugging the dynamic slice, at any point developers can add or adjust the slicing criteria.
 A new slicing algorithm allows for incremental configuration of a slice. 
 This way changes are applied instantly, without interrupting the debug session. 
-A new UI component, the Slice Navigator, provides a unique view on the execution by combining relevant information from both the ODB and the slicing subsystem.
+A new UI component, the Slice Navigator, provides a unique view on the execution by combining relevant information from both the \ac{odb} and the slicing subsystem.
 
 \RQ{Research Question 2: How can programs handling large amounts of data be debugged and analyzed efficiently?}
 
@@ -244,6 +248,7 @@ In other cases, the experiment revealed that the erroneous behavior of one compo
 Either way, developers repeat the hypothesis-experiment cycle until they identify the root cause and can begin the repair.
 
 \section{Back-in-Time and Omniscient Debugging}
+\label{sec:omni-debugging}
 
 Very often, defective code does not cause the program to fail immediately.
 Instead, it creates an error in the program state that propagates, in accordance to the garbage-in-garbage-out principle, until it yields to a failure in a different part of the application.
@@ -289,6 +294,7 @@ This attention is then drawn away from solving the actual problem.
 \label{fig:workflow-odb}
 \end{figure*}
 
+%%---------
 \emph{Back-in-time debuggers} seek to remedy this problem by allowing developers to step backwards.
 This all but removes the need to restart the debugger.
 \Cref{fig:workflow-odb} shows how developers track the infection chain with a back-in-time debugger.
@@ -298,6 +304,20 @@ Different approaches exist to realize back-in-time debugging.
 Recording lost state allows the debugger to roll back changes by reversing each instruction~\cite{feldman88:igor_a_system,cook02:reverse_execution_of_java,lieberman95:zstep_95_a_reversible}.
 By creating regular snapshots of the entire program state, the debugger can go back faster over longer distances in time~\cite{boothe00:efficient_algorithms_for_bidirectional,tolmach93:a_debugger_for_standard}.
 % TODO: about IO
+%%----
+Many different strategies can be used to realize back-in-time capabilities in a debugger.
+These strategies come with different trade-offs between overhead and usefulness.
+
+With a regular debugger, the only way to go back in time is to restart the execution.
+Tools can be used to automate this approach, but some manual effort is often required to get to a specific point in time.
+The clumsiness of this approach is what motivated research in back-in-time debuggers in the first place.
+On top of that, this approach only works when the execution is deterministic and does not depend on external factors, such as resources or timing.
+Some debuggers even allow to restart executions at the method level.
+This greatly improves the usability when developers want to re-examine the program flow, but as state changes are not reverted executing a method multiple times can have unintended side-effects.
+
+To improve determinism when re-executing code, snapshot-based debuggers record the program memory at regular intervals~\cite{feldman88:igor_a_system}.
+\cite{boothe00:efficient_algorithms_for_bidirectional}.\todo{merge}
+%%----
 
 A special kind of back-in-time debugger, called \emph{omniscient debugger}, keeps a record of all state changes in the execution history~\cite{lewis03:debugging_backwards_in_time}.
 This not only allows developers to step backwards in time, it also opens the possibility to run structured queries on the history of program states.
@@ -344,7 +364,7 @@ Subsequent work focused on increasing the precision of accurate slices, for exam
 In 2003, Zhang \etal\ presented three algorithms to efficiently compute "precise slices", i.e., slices that are "accurate" but contain little to no statements that could be removed~\cite{zhang03:precise_dynamic_slicing_algorithms}.
 Like many other authors, Zhang \etal\ argued that producing small slices is essential if slicing is to be "an attractive option" for developers.
 However, Korel argued that slicing too aggressively can also be dangerous, as
-"for program debugging the challenge is not necessarily to minimize the size of the slice at any cost but rather to minimize the size of the slice without the elimination of faulty program statements"~\cite{korel98:dynamic_program_slicing_methods}.
+for program debugging the challenge is not necessarily to minimize the size of the slice at any cost but rather to minimize the size of the slice without the elimination of faulty program statements~\cite{korel98:dynamic_program_slicing_methods}.
 
 The difference between executable and "accurate" slices can be demonstrated with a small example.
 In the code shown in \cref{lst:sliceAccurate}, line 9 is only executed during the second iteration of the loop.
@@ -389,6 +409,7 @@ Firstly, we need to find a method to formalize a developer's entire state of min
 However, as a step towards the goal of "most useful" slices, we developed a slicing algorithm that allows developers to easily get arbitrarily close to the smallest slice they need.}
 
 \section{Additional Challenges in Enterprise Applications}
+\label{sec:enterprise_applications}
 
 \tmpStart
 To better understand the development of modern business software, we interviewed five software developers from SAP, a German software corporation developing enterprise software to manage business operations.

@@ -241,7 +241,8 @@
 %
 %
 %%% === Misc 2 ============================================
-%\usepackage[xspace]{ellipsis}	%% \dots, load after hyperref
+\usepackage{xspace}
+\usepackage[xspace]{ellipsis}	%% \dots, load after hyperref
 %
 %
 %%% === Pdf Options =======================================
@@ -254,8 +255,11 @@
 %}
 
 \makeatletter
-\newcommand\etc{etc\@ifnextchar.{}{.\@}}
-\newcommand\etal{et al\@ifnextchar.{}{.\@}}
-\newcommand\Dr{Dr\@ifnextchar.{}{.\@}}
-\newcommand\Prof{Prof\@ifnextchar.{}{.\@}}
+\newcommand\ie{i.\hairspace{}e\@ifnextchar.{}{.\@ifnextchar,{}{,\xspace}}}
+\newcommand\eg{e.\hairspace{}g\@ifnextchar.{}{.\@ifnextchar,{}{,\xspace}}}
+\newcommand\cf{cf\@ifnextchar.{}{.\@\nolinebreak\xspace}}
+\newcommand\etc{etc\@ifnextchar.{}{.\@\xspace}}
+\newcommand\etal{et al\@ifnextchar.{}{.\@\xspace}}
+\newcommand\Dr{Dr\@ifnextchar.{}{.\@\nolinebreak\xspace}}
+\newcommand\Prof{Prof\@ifnextchar.{}{.\@\nolinebreak\xspace}}
 \makeatother

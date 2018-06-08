@@ -194,7 +194,7 @@ Control dependencies model the control flow and point to instructions that deter
 The assignment in \linerefn{lst:countLetters}{8}, for instance, has a control dependency to the conditional expression of the for-loop in \linerefn{lst:parse}{7}.
 
 Choice dependencies occur when a statement has multiple possible data dependencies.
-In the statement ´var = conditional ? value1 : value2´, the value of ´var´ depends on either ´value1´ or ´value2´, but never both.
+In the statement "´var = conditional ? value1 : value2´", the value of ´var´ depends on either ´value1´ or ´value2´, but never both.
 Even though ´conditional´ does not directly affect the value, it determines which of the two options is used; thus, it is a choice dependency.
 More formally, choice dependencies are control dependencies of data dependency candidates that are not also control dependencies of all other candidates.
 Unlike the other two dependency types, choice dependencies are not simple edges in the graph, but rather tree-like structures that combine it with other dependency edges.

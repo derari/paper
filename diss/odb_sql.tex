@@ -19,9 +19,22 @@ These languages are typically used in the front-end or application layer of a mu
 
 
 The application layer of a multi-tier application can interact with the database in multiple ways.
-By using a database connectors like ODBC or JDBC and query languages like SQL, it can submit arbitrary queries to the database to store, manipulate or obtain data.
 For object-oriented programming languages, \acp{orm} can abstract from database-specific logic by automatically generating queries and converting all data from and to native objects.
-For more complex operations, the application can trigger the execution of scripts or stored procedures that run directly on the database.
+In this scenario, the database is mostly used as a persistent storage of business objects from the application layer.
+As already discussed in \cref{sec:enterprise_applications}, "\nameref{sec:enterprise_applications}", 
+this is not sufficient for modern applications that handle large amounts of data.
+
+%a database connectors like ODBC or JDBC and 
+By using query languages like SQL, the application layer can submit arbitrary queries to the database to store, manipulate or obtain data.
+Data-heavy operations can be executed faster by sending them to the database~\cite{plattner15:the_in-memory_revolution_how}, even while the data handling logic remains in the application layer
+By using language extensions such as SQL/OLB~\cite{eisenberg98:sqlj_part_0_now}, it is even possible to include database queries as native language elements.
+
+However, not all operations can be expressed in a single query.
+When queries are submitted from the application layer, intermediate results have to be passed between application layer and database multiple times.
+In big-data applications, where the communication channel between database and application is a strong bottleneck, this pattern must be avoided~\cite{plattner15:the_in-memory_revolution_how}.
+Hence, the third approach of handling data-heavy operations is to implement them as stand-alone scripts, also called stored procedures, that, when called from the application, run directly in the database.
+This reduces communication overhead between layers and allows the database to apply further optimization, such as reordering queries or choosing when to materialize intermediate results.
+
 Basic debugging support exists for many of these methods and supports forward-in-time debugging and inspecting query results while the program is stopped.
 However, there are, to the best of our knowledge, no omniscient debuggers that include the database and support SQL queries or database scripts.
 
@@ -36,16 +49,11 @@ Second, current back-in-time debugging concepts cannot handle side-effects outsi
 
 %Significance: Especially, in business software much development is based on database scripts. 
 Due to high performance requirements of handling big data in business applications, companies like SAP have not only a strong demand to move code closer to data~\cite{plattner15:the_in-memory_revolution_how} but also the need to improve development tools at the database-level. 
-As existing tools mostly work on the application level, are limited to specific points in time, or work only on an abstract query plan, developers are often left alone when it comes to debug and understand the results of their SQL and SQLScripts.
+As existing tools mostly work on the application level, are limited to specific points in time, or work only on an abstract query plan, developers are often left alone when it comes to debug and understand the results of their queries and stored procedures.
 We argue that a back-in-time debugger at the bottom of the technology stack is able to close this gap and can support developers in developing and maintaining their queries more efficiently. 
 \tmpEnd
 
 \tmpStart
-
-This is mainly because of two reasons. 
-First, back-in-time debuggers typically create a significant overhead on performance and memory consumption~\cite{lewis03:debugging_backwards_in_time,pothier07:scalable_omniscient_debugging,lienhard08:practical_object-oriented_back-in-time_debugging}.
-It seems unfeasible to use a back-in-time debugger on top of a database script that processes billions of records.
-Second, current back-in-time debugging concepts cannot handle side-effects outside their system that usually happen in writing operations during INSERT and UPDATE statements. 
 
 %Solution
 We bring the concept of back-in-time debugging to the database and developed \emph{\tool} as an implementation of our approach.
@@ -62,106 +70,125 @@ We bring the concept of back-in-time debugging to the database and developed \em
 	
 \end{itemize}
 
-We evaluated \tool\ with the help of SAP colleagues who worked on a project called \emph{Point of Sales Explorer}~\cite{plattner15:the_in-memory_revolution_how}, which makes heavy use of SQLScript. 
+We evaluated \tool\ with the help of SAP colleagues who worked on a project called \emph{Point of Sales Explorer}~\cite{plattner15:the_in-memory_revolution_how}, which makes heavy use of stored procedures. 
 The interviews indicated that failures in stored procedures can be investigated more efficiently with \tool\ than with other existing database development tools.
 
 \tmpEnd
 
-\tmpStart
-
-\subsubsection{Design Concept}
-pros and cons of post mortem,
-pros and cons of database
-discussion insert only
-final decision
-
-\subsubsection{Prototype: Architecture and Schema}
-figure: architecture
-data schema
-tracing code generation and examples
-
-\subsubsection{BiT SQL}
-
-\subsubsection{-TimeTravel queries}
-
-\subsubsection{-TimeDiff queries}
-
-\subsubsection{Evaluation}
-
-\section{Back-in-Time Debugging for Stored Procedures}
-
-
-% why post mortem
-%\todo{If we need to shorten later on, I would start here in the problem description.}
-With a regular debugger, developers have only one way to go back in time, which is to restart the execution.
-Tools can be used to automate this approach and some modern debuggers even allow to restart execution at the method level.
-%\todo{cite checkpoint debugger?}
-%\todo{http://help.eclipse.org/neon/index.jsp?topic=\%2Forg.eclipse.jdt.doc.user\%2Freference\%2Fviews\%2Fdebug\%2Fref-droptoframe.htm}
-However, this approach fails if the code has side effects, as it can no longer be guaranteed to execute in the same way.
-Furthermore, if the execution is too slow, developers will spend much time waiting for re-execution, which discourages the use of backwards stepping.
-
-A different way to examine a program's behavior over time is to record a trace of the program's actions.
-After the program terminated, the trace can be examined in a post-mortem analysis.
-This works well for special purpose tools that only analyze a specific aspect of a program, such as profilers.
-A post-mortem debugger, on the other hand, has to record virtually everything to be able to replay the program execution.
-While this approach allows developers the most freedom when stepping through the execution, it creates a large overhead on performance and memory.
-Debugger implementations using this approach exist for different programming languages.
+%\subsubsection{Design Concept}
+%pros and cons of post mortem,
+%pros and cons of database
+%discussion insert only
+%final decision
 %
-Both approaches can also be mixed to create a tradeoff between performance and overhead~\cite{perscheid13:test-driven_fault_navigation}.
+%\subsubsection{Prototype: Architecture and Schema}
+%figure: architecture
+%data schema
+%tracing code generation and examples
+%
+%\subsubsection{BiT SQL}
+%
+%\subsubsection{-TimeTravel queries}
+%
+%\subsubsection{-TimeDiff queries}
+%
+%\subsubsection{Evaluation}
 
-% post-mortem has been solved before, why is it harder in the database
-%Back-in-time debuggers typically create a significant overhead on run-time and memory, as they need to trace and record every aspect of an execution.
-When debugging programs that run on a database, a back-in-time debugger faces two additional problems:
-First, the program's behavior strongly depends on external state.
-With live debugging, this sometimes can be mitigated by resetting the database before restarting the program, but a post-mortem analysis can not easily examine intermediate states when they have been changed.
-Second, much of the data processing happens outside of the program's scope.
-Sometimes, state that has impact on a query's result even remains entirely in the database and is practically invisible to analysis tools.
-The only way to examine such state is through specific database queries before it is changed.
+\section{Back-in-Time Debugging in Stored Procedures}
 
-Stored procedures add the additional challenge that results of a query can be used in subsequent database statements without having been fetched into the program.
-This increases the amount of invisible state, sometimes only for a few instructions, other times for the entire length of the program.
+In \cref{sec:omni-debugging}, "\nameref{sec:omni-debugging}", we discussed different approaches for implementing back-in-time capabilities in debuggers.
+A snapshot-based debugger records program memory at certain intervals, additionally logging I/O-operations to make program re-execution deterministic when the program accesses external resources.
+An omniscient debugger records a full execution trace.
+This creates a larger overhead on memory and runtime, but allows the debugger to restore program state from any point in time in a post-mortem analysis.
+Hybrid approaches record only the control-flow and partial memory snapshots, recovering the remaining state by re-executing parts of the program.
+All approaches have in common that they simulate external resources from the program's perspective, but do not allow developers to inspect the resource itself.
+
+From the debugger's perspective, the database is such an external resource and is therefore not covered by back-in-time features by default.
+This is a problem for developers debugging database applications.
+To evaluate the correctness of a piece of code, it is usually not enough to only see the result of queries in the program.
+Instead, developers need to look into the data and maybe even run their own ad hoc queries to understand whether the program behaves correctly.
+
+When including the database in the execution trace, a back-in-time debugger faces two additional problems:
+First, much of the data processing happens outside of the program's scope.
+Sometimes, state that has impact on a query's result remains entirely in the database and is practically invisible to the application debugger.
+The only way to examine such state is through specific database queries.
+Second, the debugger can not easily track changes in the state, because the impact of an insert, update, or delete statement is not reported back to the application in the necessary detail.
+This affects determinism when re-executing earlier parts of the program.
+With live debugging, sometimes this can be mitigated by resetting the database before restarting the program, but a post-mortem analysis can not easily examine intermediate database states when they have been changed.
+
+In stored procedures, result variables are an additional challenge.
+These variables represent the result of a query and can be used in subsequent database statements without havin been fetched into the program
+In fact, the database may chose to not materialize intermediate results at all.
+
+\tmpStart
+Either way, this increases the amount of invisible state, sometimes only for a few instructions, other times for the entire length of the program.
 Furthermore, as trace data usually exceeds program data by orders of magnitude, we expect that tracing the processing of every tuple in a large database is not feasible.
 
-With \tool, we focuses on stored procedures because they are executed close to the data and, thus, more efficient in handling large data sets.
+With \tool, we focused on stored procedures because they are executed close to the data and, thus, more efficient in handling large data sets.
 This does not limit the general validity of our results, as a debugger for stored procedures faces all of the challenges described above.
-
-
+\tmpEnd
 
 \subsection{Replaying a Stored Procedure}
 
-While using a database to manage application state creates several problems for debugging tools, it also opens up new possibilities to simplify or improve the debugger.
+An application using a database to manage its state create several problems for debugging tools.
+However, giving the debugger direct access to the database can open up new possibilities.
 
-First, the database persists state beyond the program execution.
+The most immediate advantage is that the database persists state beyond the program execution.
 Even post-mortem, the state can be directly accessed by the debugger.
-Second, all instructions handling large data sets (i.e., SQL statements), are declarative.
-This means they can be analyzed without knowing how they are physically executed and results are reproducible as long as the underlying data does not change.
-%Thus, SQL queries don't have to be traced at all, although for some purposes it will be helpful to record some meta information, such as the execution time or the number of results.
-Thus, neither do we need to trace the internals of a query's execution, nor do we need to persist the query result.
-%\todo{MP: This is not clear to me, yet.}
-Third, the database can be used to efficiently manage old state.
-In-memory databases with insert-only storage automatically retain old data~\cite{plattner09:a_common_database_approach}.
-With insert-only, older versions of the database can be easily reproduced.
-For other databases, insert-only can be achieved by adding validity columns.
-For many business applications, such columns already exist where no data may be deleted for legal reasons.
+Especially in big-data applications, most operations do not change large parts of the state at once.
+Depending on the problem scope and length of the debug session, most of the program state likely remains unchanged.
+Knowing that the state will still be available, it can be excluded from the execution trace.
 
-In conclusion, all that is needed to reproduce the execution of a stored procedure is a sequence of execution steps.
+Furthermore, programs that rely on the database for data processing have on fundamental difference compared to other programs:
+all instructions handling large data sets (i.e., SQL statements) are declarative.
+Instead of providing a concrete algorithm for performing the operation, an SQL statement describe the outcome on an abstract, logical level.
+At this level a statement can be analyzed without knowing how it is physically executed.
+Even if the database later decides to execute a query using a different query plan, this has no impact for a developer trying to understand the functional correctness of a program.
+Thus, there is no need to trace the internals of a query's execution like the processing of an array would have to be traced.
+As long as the underlying data does not change, the query results need not be recorded either.
+For some purposes it will be helpful to record some meta information, such as the execution time or the number of results, but even this data can be recovered later if needed.
+
+Both advantages can only be exploited if the underlying data does not change.
+However, given direct access to the database, the debugger can use it efficiently manage old state, too.
+Data is already in a format optimized to be processed by the database and does not need to be transferred into another system this way.
+With the ability to restore previous states of the database, 
+\tmpStart
+all that is needed to reproduce the execution of a stored procedure is a sequence of execution steps.
 Each step represents an instruction that has side effects on the database or assigns a value or result set to a variable.
 As there is, conceptually, no concurrency in a stored procedure, we can use sequential numbering to track the order of steps.
 If applicable, a step has a target name, such as the name of a variable or stored procedure, and a string representation of the value, which can be shown to the user in the debug view.
 If the step involves a database statement, we also need a timestamp to be able to reproduce the query.
-Moreover, we also record the number of rows in the result set and the execution time, as well as any atomic argument values, as this information is likely to be relevant for developers.
+\tmpEnd
 
-We never trace any details of the query execution but only record the name of a view than can be used to later reproduce the query result.
+\begin{figure}
+	\centering
+		\includegraphics[width=0.9\linewidth]{img/model_sqlodb}
+	\caption{Data model of the Stored Procedure debugger.}
+	\label{fig:model_odb}
+\end{figure}
+
+\Cref{fig:model_odb} shows the relational data model we use to store the required information.
+We also explicitly record atomic arguments to each query.
+Even though these values can already be derived from the execution trace, storing them explicitly simplifies the process of restoring query results later on.
+Furthermore, we record the execution time and the number of rows in the result set for each query.
+This information, too, is not strictly needed and can be recovered by re-executing the query.
+However, we found that directly providing this information can be helpful to developers, especially for long-running queries.
+Lastly, we record the name of a view than can be used to later reproduce the query result.
 The view is specifically generated by the debugger, as will be explained in the next subsection.
 
-%\subsection{Reproducing Query Results}
+Because the runtime model of SQLScript is much simpler than that of Java and it was not our goal to create a fully featured debugger for the imperative part of the language, the data model of this debugger is much simpler than that of the Java back-in-time debugger~(\cf \cref{fig:model}, \cpageref{fig:model}), respectively.
+This does not limit the general validity of our approach.
+The database query as an extra event type could also be added to the Java debugger's trace model and the debugger would handle these queries in just the same way.
+
+\subsection{Reproducing Query Results}
+
+\tmpStart
 
 With the recorded trace data, the debugger has enough information available to replay the execution and to re-execute any query.
-
 However, the query will only yield the same results as long as the underlying data has not changed.
 
-In general, one can expect that debugging will take place on a development machine where no other data manipulation occurs.
-However, in cases where this assumption doesn't hold, the debugger might end up showing wrong or misleading data the developer.
+In general, one can expect that debugging will take place on a development machine where no other data manipulation occurs, 
+but in cases where this assumption doesn't hold the debugger might end up showing wrong or misleading data the developer.
 Furthermore, the debugged stored procedure itself may change the data, which will cause a query to return different results at different points in time.
 
 We ensure consistency over time by following the insert-only approach of our in-memory database.
@@ -169,6 +196,14 @@ If we require for all tables that data can never be changed or deleted and annot
 Adding timestamp filters to select queries does not cause a significant slowdown.
 Our prototype was built using this approach.
 \todo{HANA hat seit neustem "History tables" die das direkt können, wir benutzen aber explizite timestamps weil das momentan noch praktischer ist }
+
+%Thus, SQL queries don't have to be traced at all, although for some purposes it will be helpful to record some meta information, such as the execution time or the number of results.
+%\todo{MP: This is not clear to me, yet.}
+%Third, the database can be used to efficiently manage old state.
+%In-memory databases with insert-only storage automatically retain old data~\cite{plattner09:a_common_database_approach}.
+%With insert-only, older versions of the database can be easily reproduced.
+%For other databases, insert-only can be achieved by adding validity columns.
+%For many business applications, such columns already exist where no data may be deleted for legal reasons.
 
 
 \subsection{Prototype and Tracing Code Generation}

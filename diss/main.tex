@@ -16,6 +16,15 @@
 % Conc			 5
 
 
+%\newcommand{\tmp}[1]{#1}
+\newcommand{\tmpStart}{\color{DarkBlue}}
+\newcommand{\tmpEnd}{\color{Black}}
+%\newcommand{\tmpStart}{}
+%\newcommand{\tmpEnd}{}
+%\includeonly{introduction}
+\includeonly{odb_sql}
+
+
 \input{setup}
 \renewcommand{\baselinestretch}{1.2}
 
@@ -61,17 +70,8 @@ der Universität Potsdam}
 %\usepackage{pdfcomment}
 %\newcommand{\todo}[2][]{\pdfmargincomment[color=orange,icon=Note,subject={TODO},author={#1}]{#2}}
 
-%\newcommand{\tmp}[1]{#1}
-\newcommand{\tmpStart}{\color{DarkBlue}}
-\newcommand{\tmpEnd}{\color{Black}}
-%\newcommand{\tmpStart}{}
-%\newcommand{\tmpEnd}{}
 
-\includeonly{introduction}
-%\includeonly{odb_sql}
-
-
-\newacronym{afl}{AFL}{automated fault-localization}
+\newacronym{afl}{AFL}{automatic fault-localization}
 \newacronym{pdg}{PDG}{program dependence graph}
 \newacronym{ddg}{DDG}{dynamic dependence graph}
 \newacronym{odb}{ODB}{omniscient debugger}
@@ -163,7 +163,7 @@ With omniscient debugging available in every component of an enterprise system, 
 
 %\defaultstatement
 
-\nocite{*}
-\printbibliography[]
+%\nocite{*}
+%\printbibliography[]
 
 \end{document}
