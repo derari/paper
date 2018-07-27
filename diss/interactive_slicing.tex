@@ -1,8 +1,13 @@
 \chapter{Debugging Long Infection Chains with Interactive Dynamic Slicing}
+\label{sec:ids}
+
+\todo{"Our studies also suggest that developers find concrete values essential for interpreting program state" \cite{ko07:information_needs_in_collocated}}
+\todo{collaborative, sharing execution \cite{ko07:information_needs_in_collocated}}
+\todo{interactive, navigation, \cite{storey99:cognitive_design_elements}}
 
 % context
 Improvements in manual debugging, such as back-in-time debugging, allow developers to debug a program more efficiently in general, but do not assist developers in finding code related to a specific problem.
-\Ac{afl} techniques, such as spectrum-based fault analysis or slicing \todo{cite}, can help developers to locate faults by suggesting relevant code locations.
+\Acf{afl} techniques, such as spectrum-based fault analysis or slicing \todo{cite}, can help developers to locate faults by suggesting relevant code locations.
 However, developers still need to manually debug the code to identify erroneous state at the suggested locations.
 Furthermore, many \ac{afl} tools generate a lot of knowledge about a program's execution in order to find the most helpful suggestions, but then discard this knowledge after the result has been produced.
 Not only are developers left with no explanation why a certain code location was considered relevant, but there is also no way to search the vast body of knowledge for helpful insights.
@@ -39,10 +44,12 @@ However, research has shown that developers also break programs down into pieces
 Such "slices" are often not contiguous and can contain code from many different parts of an application, increasing the navigation overhead for developers trying to understand the program.
 Here, tools can help to identify related statements, saving time and reducing the mental overhead for developers.
 
-\subsection{An Efficient Incrementally Configurable Slicing Algorithm}
+\subsection{Configurable Slicing}
+
+Motivation: continue where \nameref{sec:evolution_of_slicing} stopped.
 
 To determine which statements belong to a slice and which do not, the slicer has to perform a dependency analysis on the program.
-Many different approaches exist to conduct such analyses~\cite{korel98:dynamic_program_slicing_methods, tip_94_a_survey_of_program}. 
+Many different approaches exist to conduct such analyses~\cite{korel98:dynamic_program_slicing_methods, tip94:a_survey_of_program}. 
 In our work, we used the popular approach of computing dependence graphs.
 
 Static slicing algorithms typically use \emph{\acp{pdg}}, where every node is statement or instruction and directed edges indicate dependency relations~\cite{weiser81:program_slicing}.
@@ -51,6 +58,11 @@ To compute \acp{ddg}, Agrawal \etal\ and Zhang \etal\ developed algorithms that 
 Then, from the \ac{ddg} the slice is derived as a sub-graph.
 While this approach produces precise results, it typically takes a long time to complete.
 Thus, they also developed multiple algorithms that provide different trade-offs between runtime and precision.
+
+
+TODO: formal definition of configurable slicing,
+
+\subsection{An Efficient Incrementally Configurable Slicing Algorithm}
 
 We present a new efficient algorithm that produces slices with a very high precision.
 Like previous approaches, we derive the slice from a \ac{ddg}, which is computed by combining \acp{pdg} with execution traces.
@@ -184,14 +196,15 @@ The code contains no bugs; nevertheless, a developer might choose to slice on th
 
 \subsection{Computing the Program Dependence Graph}
 
-Our algorithm for computing the \ac{pdg} distinguishes between three dependency types: data, control, and choice dependencies.
+Our algorithm for computing \acp{pdg} distinguishes between three dependency types: data, control, and choice dependencies.
 The first two types have been used by many authors since the original slicing algorithm by Weiser~\cite{weiser81:program_slicing}.
 
 Data dependencies represent the data flow in a program and occur whenever the value of an instruction is the result of a previous instruction.
-For instance, the value of ´words´ in \linerefn{lst:countLetters}{5} of ´countLetters´ depends on the result of ´split´.
+For instance, the value of ´words´ in \linerefn{lst:countLetters}{5} of ´countLetters´ depends on the result of ´split´. %data-data-dependency korel90
 
 Control dependencies model the control flow and point to instructions that determine whether a statement can be reached during the execution.
 The assignment in \linerefn{lst:countLetters}{8}, for instance, has a control dependency to the conditional expression of the for-loop in \linerefn{lst:parse}{7}.
+%test-control-dependency korel90
 
 Choice dependencies occur when a statement has multiple possible data dependencies.
 In the statement "´var = conditional ? value1 : value2´", the value of ´var´ depends on either ´value1´ or ´value2´, but never both.
@@ -327,7 +340,7 @@ For reference, \cref{fig:graph_static} shows the data dependencies of the \acp{p
 \begin{figure*}[t]
 \centering
 \includegraphics[width=.90\linewidth, clip, trim=12mm 7mm 7mm 7mm]{img/graph_static}
-\caption{The data dependencies in the method-level \aclp{pdg} of \lstinline+countLetters+ and \lstinline+testCountLetters+.}
+\caption{Data dependencies in the method-level \aclp{pdg} of \lstinline+countLetters+ and \lstinline+testCountLetters+.}
 \label{fig:graph_static}
 \end{figure*}
 
@@ -341,7 +354,7 @@ For reference, \cref{fig:graph_static} shows the data dependencies of the \acp{p
 
 The \acf{ddg} is built by combining the \acfp{pdg} with an execution trace.
 In the \ac{ddg}, every node is an event, a recorded execution of an instruction.
-Possible events are field and array accesses, variable assignments, and statements with non-local control flow, i.e., method calls, method returns, and exception throws and catches.
+Possible events are field and array accesses, variable assignments, and statements with non-local control flow, \ie, method calls, method returns, and exception throws and catches.
 
 The basic structure of the algorithm for building the initial slice is summarized in \cref{lst:slicealgo}.
 Initially, the slice is an empty set and the slicing criteria are a set of selected events.
@@ -423,7 +436,7 @@ As events are resolved and successively added to the result set, the slice is ev
 
 \begin{figure*}[tp]
 \centering
-\includegraphics[width=.95\linewidth, clip, trim=11mm 7mm 8mm 7mm]{img/graph_dynamic2}
+\includegraphics[width=\linewidth, clip, trim=11mm 7mm 8mm 7mm]{img/graph_dynamic2}
 \caption{A partial dynamic dependency graph of trace events, on top of static dependency graphs derived with Soot. For brevity, not all Soot units are shown, events related to the loop-variable "i" are omitted, and "split" and "trim" are summarized.}
 \label{fig:graph_dynamic}
 \end{figure*}
@@ -747,6 +760,8 @@ With the power to quickly modify the slice as needed and with currently relevant
 \section{Prototype Implementation}
 \label{sec:impl}
 
+\todo{reuse the pdg \cite{ottenstein84:the_program_dependence_graph}}
+
 The Slice Navigator is part of a set of debugging tools that we implemented as a plug-in for the Eclipse IDE\footnote{\url{http://eclipse.org}}.
 %
 %\subsection{Framework}
@@ -1039,7 +1054,7 @@ If a bug could not be located within 20 minutes, we aborted the task to advance 
 
 \begin{figure}
 	\centering
-		\includegraphics[width=\linewidth, clip, trim={20mm 104mm 20mm 114mm}]{img/chart-times3.pdf}
+		\includegraphics[width=\linewidth]{img/chart-times3.pdf}
 	\caption{Time for solving each debugging task with the regular Eclipse Debugger (DB), the omniscient debugger (ODB), and the Slice Navigator (SN)}
 	\label{fig:charttimes}
 \end{figure}

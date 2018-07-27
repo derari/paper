@@ -5,6 +5,8 @@
 \usepackage{silence}
 \WarningFilter{microtype}{Unknown slot number}
 
+%\usepackage[final]{microtype}
+
 
 %% === Language ===========================================
 \usepackage{csquotes}		%% \enquote, \blockquote
@@ -39,6 +41,10 @@
 		%doi=false,isbn=false,url=false,
 		]{biblatex}
 \usepackage{refcheck}
+\DeclareBibliographyCategory{cited}
+\AtEveryCitekey{\addtocategory{cited}{\thefield{entrykey}}}
+
+
 %
 %
 %%% === Colors =============================================
@@ -93,6 +99,7 @@
 	gobble=2,
 	escapeinside={/*@}{@*/},
 	numberbychapter=true,
+	keywordstyle=\bfseries\color{black!90!}
 }
 %%%   - Linebreaks -
 \lstset{
@@ -136,7 +143,7 @@
 	%sensitive=true,
 %}
 \lstdefinelanguage{HanaSQL}[]{SQL}{
-	morekeywords={replace,string,if,is,daysbetween,secondsbetween,weekday,adddays,addseconds,double, procedure,begin,declare,inout,call,return,returns},
+	morekeywords={replace,string,if,is,daysbetween,secondsbetween,weekday,adddays,addseconds,double, procedure,begin,declare,inout,call,return,returns,language,sqlscript,function},
 	moredelim=**[is][\slshape]{^}{^},
 	moredelim=**[is][\bfseries]{§}{§},
 }
@@ -233,6 +240,9 @@
 \AtEndPreamble{
 \usepackage[nameinlink, noabbrev]{cleveref}	%% \cref commands
 \usepackage[all]{hypcap}
+\hypersetup{
+	bookmarksdepth=5,
+}
 }
 
 %%\usepackage{caption}
@@ -247,6 +257,7 @@
 %
 %%% === Pdf Options =======================================
 %\hypersetup{
+	%bookmarksdepth=5,
 	%bookmarksopen,
 	%bookmarksnumbered,
 %%	pdfstartview={Fit},					%% Fit page

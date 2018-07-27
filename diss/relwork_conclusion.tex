@@ -1,7 +1,237 @@
 \chapter{Related Work}
+
+In this chapter, we present studies and debugging tools related to our contributions.
+In \cref{sec:rw_studies}, we examine studies on how developers debug and use debugging tools.
+\Cref{sec:rw_bit_debugging} discusses back-in-time debuggers.
+\Cref{sec:rw_dynamic_slicing} gives an overview over slicing algorithms.
+In \cref{sec:rw_slice_debugging}, we compare debugging tools that use slicing or related techniques to aide developers.
+\Cref{sec:rw_system_debugging} and 
+\cref{sec:rw_visualization}
+
+
+\section{Studies}
+\label{sec:rw_studies}
+
+Many studies examined how developers approach software maintenance tasks with and without specialized tools.
+The requirements we defined for the debugging approaches that form the contribution of this work, as described in \cref{sec:requirements}, "\nameref{sec:requirements}", are based on the outcomes of these studies.
+Here, we present a selection of notable studies in our field and their results.
+
+Gould let 10 experienced developers locate bugs in Fortran programs~\cite{gould75:some_psychological_evidence}.
+He found that developers can locate bugs up to three times faster when they were familiar with the code~
+Furthermore, developers were reluctant to use interactive debugging tools as along as they believed they could find the bug by just reading the code.
+
+Gugerty and Olson studied the difference between novice and expert programmers~\cite{gugerty86:comprehension_differences_in_debugging}.
+In the study, both experts and novices used the same strategies to approach fault localization.
+However, experts showed superior skills at program comprehension, as they not only required less time needed to form initial hypotheses, but also had initial hypotheses of significantly higher quality.
+The quality of program understanding strongly correlated with the quality of fixes.
+Novices not only took much longer to develop a fix, they also often introduced additional bugs in the process.
+
+Storey \etal explored the question of how program understanding tools change the way developers approach program comprehension~\cite{storey97:how_do_program_understanding}.
+Three software exploration tools that provide visual abstractions were used to solve high-level program understanding tasks.
+The study found that programmers approach program comprehension with a variety of strategies and tools were most effective if they supported the developer's preferred strategy instead of imposing a different approach.
+
+In a follow-up study, Storey \etal classified program comprehension strategies and design elements for supporting tools~\cite{storey99:cognitive_design_elements}.
+Experienced developers often used a hypothesis-driven top-down approach, but relied on bottom-up strategies to identify abstractions.
+In some cases, developers sought to fill only specific gaps in their knowledge of the program, increasing their understanding as needed to locate a bug.
+Meta-approaches combine multiple strategies into adaptable tools.
+Independently of the strategy, Storey \etal found that program comprehension tools should reduce developers' cognitive overhead by supporting easy navigation and providing orientation in the program.
+
+In two studies, Sillito \etal observed developers working on change tasks to identify their information needs~\cite{sillito06:questions_programmers_ask}.
+From this, 44 questions developers frequently ask were derived.
+These questions can be divided into four categories:
+Questions to "find an initial focus point" are most often asked by newcomers, searching for a "place to start looking".
+"Building on those points," developers ask questions to understand code in its immediate context.
+As the program understanding grows, developers ask questions about sub-graphs, seeking to understand the behavior and purpose of modules.
+Finally, developers ask questions over groups of sub-graphs, to understand how different modules interact or relate to each other.
+The second and third category contain many questions about program behavior and control flow that can not be easily answered with traditional debugging tools.
+
+While previous studies only look at individual developers, Ko \etal studied the information needs of developers work in collocated teams~\cite{ko07:information_needs_in_collocated}.
+By transcribing work sessions minute by minute, they identified 21 information needs.
+Developers often collaborated to find answers to their questions, relying on their coworkers knowledge but also causing interruptions.
+Ko \etal found that for many questions, better tool support could reduce the time and overhead needed to find an answer.
+In other cases, using better tools can enable better collaboration; for instance, post-mortem debuggers allow sharing a debug session on multiple computers.
+
+Weiser found that common approaches to code modularization often do not properly reflect how developers understand a program~\cite{weiser82:programmers_use_slices_when}.
+While code is often grouped in terms of functional relation, developers often prefer to understand code in sets of statements related by control flow, not matching the file or module structure.
+In the absence of aspect-oriented modularization, slicing techniques can identify such related sets of statements and thereby support program comprehension.
+
+Johnson \etal interviewed developers to study the usage of software analysis tools~\cite{johnson13:why_dont_software_developers}.
+While the study focused on static tools, many of the insights can be transferred to dynamic analysis tools as well.
+In the study, all developers reported the examined analysis tools to be useful, but were mostly reluctant to use them on a regular basis, due to multiple barriers.
+First, false positives and difficult-to-understand results imposed a high cognitive overhead on developers.
+Furthermore, a lack of integration into the regular development workflow (and into the IDE in particular) combined with slow responsiveness caused tools to be more of an interruption than actual help.
+This was exacerbated by a lack of customizability to the developers' needs.
+Finally, tools that did not support collaboration with coworkers were not adopted by the team as a whole, reducing the usefulness for each individual.
+
+\cite{perscheid17:studying_the_advancement}
+debugging techniques in practice
+
 \section{Back-in-Time Debugging}
+\label{sec:rw_bit_debugging}
+x
+\newpage
+x
+\newpage
+
+\cite{powell83:a_database_model}
+store debugging data such as call graph in a database
+
+\cite{feldman88:igor_a_system}
+IGOR, memory snapshots.
+Modification and re-execution from previous points in time.
+
+\cite{tolmach93:a_debugger_for_standard}
+%creates checkpoints as first-class continuations. This
+%allows a flexible mechanism to replace execution and to provide reverse execution for
+%the user and the interpreter.
+
+\cite{lieberman95:zstep_95_a_reversible}
+zstep back in time for lisp, with ui recording
+
+\cite{boothe00:efficient_algorithms_for_bidirectional}
+C,C++
+checkpoints and I/O logging for determinism
+reduce overhead through exponential checkpoint thinning
+
+\cite{cook02:reverse_execution_of_java}
+new operational semantics for stack-based bytecode language
+allow for reversal,
+no jumping
+
+\cite{lewis03:debugging_backwards_in_time}
+ODB, first omniscient debugger. for java
+
+\cite{hofer06:design_and_implementation}
+UNSTUCK trace-based bit for smalltalk
+IDE integration, highlight object occurrence by coloring variables
+
+\cite{pothier07:scalable_omniscient_debugging}
+distributed database system for storing large execution traces
+
+\cite{lienhard08:practical_object-oriented_back-in-time_debugging}
+extended squeak smalltalk vm to record object histories.
+gc to discard old state.
+
+\cite{barr14:tardis_affordable_time-travel_debugging}
+bit for .net runtime. integration 7\% overhead
+
+\cite{barr16:time-travel_debugging_for_javascriptnode}
+ Microsoft’s open-source ChakraCore JavaScript engine
+and the popular Node.js application framework
+Snapshots and post-mortem from logs
+
+\cite{ocallahan17:engineering_record_and_replay}
+RR, tracing based bit for arbitrary programs on linux.
+
 \section{Dynamic Slicing}
+\label{sec:rw_dynamic_slicing}
+x
+\newpage
+
+\cite{ottenstein84:the_program_dependence_graph}
+represent program as pdg, faster through reuse. better results.
+
+\cite{korel88:dynamic_program_slicing}
+executable dynamic slicing.
+
+\cite{agrawal90:dynamic_program_slicing}
+Dynamic slicing. Dynamic dependence graph. n algorithms
+
+
+\cite{venkatesh95:experimental_results_from_dynamic}
+C slicer, different algorithms for data, control, executable slices.
+
+\cite{venkatesh91:the_semantic_approach}!!!
+
+\cite{hall95:automatic_extraction_of_executable}
+dynamic, executable slice for multiple inputs
+
+\cite{hoffner95:evaluation_and_comparison}
+survey of slicing tools
+
+\cite{korel98:dynamic_program_slicing_methods}
+overview of slicing algorithms
+
+\cite{wang08:dynamic_slicing_on_java}
+JSlice for java bytecode traces
+
+\cite{wong16:a_survey_on_software}
+recent survey of automated fault localization
+
+
+\section{Slicing-based Debugging}
+\label{sec:rw_slice_debugging}
+x
+\newpage
+
+\cite{agrawal93:debugging_with_dynamic_slicing}
+SPYDER
+dynamic slicing with execution backtracking with checkpoints
+user can also choose only data or control
+
+\cite{ko08:debugging_reinvented_asking}
+why and why not questions. dynamic and static
+
+\cite{perscheid13:test-driven_fault_navigation}
+The Path tool suite and its Test-Driven Fault Navigation~\cite{perscheid2013} leverages reproducible test cases in order to distribute the tracing overhead over multiple runs depending on developers' needs.
+
+
+
+\cite{sakurai15:the_omission_finder}
+Using Traceglasses \cite{sakurai10:traceglasses_a_trace-based_debugger} trace-based bit for java,
+pointer assignment graphs and control flow graphs to locate omission bugs
+
+\section{System Debuggers}
+\label{sec:rw_system_debugging}
+x
+\newpage
+
+
+The idea of being able to debug backwards in time dates back to the 1960s with EXDAMS, a debugger for FORTRAN \cite{balzer_exdams_1969}.
+Since then, debuggers with back-in-time capabilities have been implemented for many programming languages \cite{agrawal_debugging_1993, feldman_igor_1988, lieberman_zstep_1997}.
+
+In 2003, Lewis introduced the concept of "omniscient debugging", a debugger that can not only rewind time, but has instant access to every point in past and future~\cite{lewis_debugging_2003}.
+Later work on omniscient debugging focused mostly on handling the large amounts of data such a debugger creates~\cite{pothier_scalable_2007, lienhard_practical_2008}.
+Perscheid et al. \cite{perscheid_testdriven_2013} combined omniscient debugging and spectrum-based fault analysis, analyzing a suite of unit tests with passing and failing test cases.
+%Perscheid et al. \cite{perscheid_test-driven_2013} combined omniscient debugging and dynamic code analysis similar to slicing to automatically identify likely locations for code defects by analyzing a suite of unit tests with passing and failing test cases.
+
+Lanza showed the importance of visualizations in software development~\cite{lanza2003program}.
+SHriMP views are one example how such visualizations can guide developers~\cite{storey2002shrimp}.
+Baecker et al. used visualizations to improve the debugging process by animating algorithms~\cite{baecker1997software}.
+Moher~\cite{moher1988provide} and Beguelin et al.~\cite{beguelin1993visualization} used visualizations to support the understanding of process interactions in heterogeneous environments.
+However, in both works the focus was set more on understanding and debugging applications on an architectural level, while we aim to integrate debugging of individual components as if the software was a single program.
+
+%SPYDER is a debugger with slicing and back-and-time capabilites \cite{agrawal_debugging_1993}.
+%With SPYDER, Agrawal et al. also proposed a new debugging workflow that is similar to our approach.
+%However, while Agrawal et al. proposed to create a new slice every time the programmers question changed, our approach focuses on iteratively modifying a single slice.
+%Furthermore, we present a new way of presenting aspects of the slice to developers.
+Our approach requires that searchable traces are available for all sub-systems of an application.
+Solutions for collecting and storing execution traces always depend on the underlying technology, nevertheless some general approaches exist.
+Mellor-Crummey and LeBlanc showed how to obtain instruction pointers in software when they are not provided by the system, which is a general requirement for tracing~\cite{mellor-crummey_software_1989}.
+With PQL, developers can search for the occurrence of code examples in program executions~\cite{martin_finding_2005}.
+Similarly, Recon is a debugging tool that allows to query the execution of distributed systems with SQL-like queries~\cite{lee_unified_2011}.
+Recon's query interface can not only provide all the information a debugger would need.
+O'Callahan et al. presented a generic approach for recording and replaying program executions~\cite{ocallahan_engineering_2017}.
+
+
+\section{Visualizations for Program Comprehension}
+\label{sec:rw_visualization}
+
+\cite{olsson91:sequential_debugging_at}
+Dalek, debugger with hierarchy events, events extracted from sequential code.
+
 
 \chapter{Conclusion}
 \section{Towards Full-System Debuggers}
+
+
 \section{Future Work}
+
+\newpage
+x
+\newpage
+x
+\newpage
+x
+\newpage
+x

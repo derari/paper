@@ -21,12 +21,14 @@
 \newcommand{\tmpEnd}{\color{Black}}
 %\newcommand{\tmpStart}{}
 %\newcommand{\tmpEnd}{}
-%\includeonly{introduction}
-\includeonly{odb_sql}
+%\includeonly{introduction, interactive_slicing}
+%\includeonly{odb_sql}
+%\includeonly{relwork_conclusion}
 
 
 \input{setup}
-\renewcommand{\baselinestretch}{1.2}
+\newcommand{\defaultbaselinestretch}{1.3}
+\renewcommand{\baselinestretch}{\defaultbaselinestretch}
 
 \iftrue
 \addbibresource{references.bib}
@@ -76,6 +78,7 @@ der Universität Potsdam}
 \newacronym{ddg}{DDG}{dynamic dependence graph}
 \newacronym{odb}{ODB}{omniscient debugger}
 \newacronym{orm}{ORM}{object-relational mapper}
+\newacronym{erp}{ERP}{enterprise resource planning}
 %\DeclareAcronym{afl}{short=AFL,long=automated fault-localization}
 %\DeclareAcronym{pdg}{short=PDG,long=program dependence graph}
 %\DeclareAcronym{ddg}{short=DDG,long=dynamic dependence graph}
@@ -83,6 +86,7 @@ der Universität Potsdam}
 %\acrodef{pdg}{program dependence graph}
 %\acrodef{ddg}{dynamic dependence graph}
 
+\nocite{*}
 \begin{document}
 
 \frontmatter
@@ -163,7 +167,11 @@ With omniscient debugging available in every component of an enterprise system, 
 
 %\defaultstatement
 
-%\nocite{*}
-%\printbibliography[]
+%\printglossaries
+
+\emergencystretch=3em
+\printbibliography[heading=bibintoc,category=cited]
+
+\printbibliography[title={TODO},notcategory=cited]
 
 \end{document}

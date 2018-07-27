@@ -1,4 +1,5 @@
 \chapter{Bringing Omniscient Debugging Down to the Database}
+\label{sec:db_odb}
 
 \newcommand{\tool}{TAR\-DISP}
 \newcommand{\SQLextension}{Back-in-time SQL}
@@ -155,9 +156,9 @@ With the ability to restore previous states of the database,
 \tmpStart
 all that is needed to reproduce the execution of a stored procedure is a sequence of execution steps.
 Each step represents an instruction that has side effects on the database or assigns a value or result set to a variable.
-As there is, conceptually, no concurrency in a stored procedure, we can use sequential numbering to track the order of steps.
+As there is, on the conceptual level, no concurrency in a stored procedure, we can use sequential numbering to track the order of steps.
 If applicable, a step has a target name, such as the name of a variable or stored procedure, and a string representation of the value, which can be shown to the user in the debug view.
-If the step involves a database statement, we also need a timestamp to be able to reproduce the query.
+If the step involves a database statement, we also need a time stamp to be able to reproduce the query.
 \tmpEnd
 
 \begin{figure}
@@ -168,8 +169,10 @@ If the step involves a database statement, we also need a timestamp to be able t
 \end{figure}
 
 \Cref{fig:model_odb} shows the relational data model we use to store the required information.
-We also explicitly record atomic arguments to each query.
-Even though these values can already be derived from the execution trace, storing them explicitly simplifies the process of restoring query results later on.
+On top of the minimal required data, we record some additional information to simplify interpreting the trace later on.
+
+Along with each query invocation, its atomic arguments are recorded.
+Even though these values can already be derived from the execution trace, storing them explicitly simplifies the process of restoring query results by removing the need to analyze code outside the query itself.
 Furthermore, we record the execution time and the number of rows in the result set for each query.
 This information, too, is not strictly needed and can be recovered by re-executing the query.
 However, we found that directly providing this information can be helpful to developers, especially for long-running queries.
@@ -183,13 +186,125 @@ The database query as an extra event type could also be added to the Java debugg
 \subsection{Reproducing Query Results}
 
 \tmpStart
-
 With the recorded trace data, the debugger has enough information available to replay the execution and to re-execute any query.
 However, the query will only yield the same results as long as the underlying data has not changed.
 
 In general, one can expect that debugging will take place on a development machine where no other data manipulation occurs, 
 but in cases where this assumption doesn't hold the debugger might end up showing wrong or misleading data the developer.
 Furthermore, the debugged stored procedure itself may change the data, which will cause a query to return different results at different points in time.
+\tmpEnd
+
+Thus, to fully support back-in-time debugging on a database, the debugger needs to support querying previous database states.
+Minimally, it should be possible to re-submit queries from the program against the database states at which they were originally run.
+In this case, it would not be necessary to manage intermediary states when multiple updates occur in a row, and only tables actually used by a query would need to be reverted.
+
+However, we believe it would be very helpful to allow developers to submit arbitrary ad-hoc queries against any previous database state.
+In a relational database schema, tables often contain ids that reference entries in other tables.
+To understand the outcome of a query, a developer might need to access such tables even when the program did not.
+In other cases, developers want to run entirely different queries to find specific records or verify certain properties of the data.
+We considered four different strategies for managing and querying old database state.
+
+%\paragraph{\emph{Application-level Logging}}
+\subsubsection*{\emph{Application-level Logging}}
+
+In many business applications, data is never deleted, at least in the short term.
+Legal reasons or business cases may require that all changes to an entity are tracked with time stamps.
+When the ability to restore old entries is already a requirement of the software, the debugger can re-use these mechanisms when replaying a stored procedure.
+
+\renewcommand{\baselinestretch}{1.0}
+\begin{table}
+	\centering
+	\begin{tabulary}{\textwidth}{rcrp{2cm}>{\centering}p{1.8cm}>{\centering}p{1.8cm}J}
+	\toprule
+	\multicolumn{7}{c}{\lstinline[language=HanaSQL]+SELECT * FROM products WHERE id = 17+} \\%[4pt]
+	\cmidrule(lr){1-7}%\midrule
+	id &	name	& price & description & created\_on & valid\_until & change\_reason \\ \midrule
+	17 &	Pen &	0.99	& Pen with \newline balck ink & 2018-06-01\newline 08:00:00 & 2018-06-01\newline 09:00:00 & Initial version \\[22pt]		
+	17 &	Pen &	0.99	& Pen with \newline black ink & 2018-06-01\newline 09:00:00 & 2018-06-15\newline 08:00:00 & Typo in description \\[22pt]	
+	17 &	Pen &	1.99	& Pen with \newline black ink & 2018-06-15\newline 08:00:00 & \emph{null} & Price changed \\		 \bottomrule
+	\end{tabulary}
+	\caption{An excerpt of a table containing product data, showing revisions of a single entity}
+	\label{tab:applogdata}
+\end{table}
+\renewcommand{\baselinestretch}{\defaultbaselinestretch}
+
+\Cref{tab:applogdata} shows multiple revisions of an entity in a table of product data. 
+When only the most recent revision is needed, which will probably be the case for many operations, developers have to explicitly add a filter condition to select the correct tuple.
+For instance, the following query selects the most recent version of the entity shown in \cref{tab:applogdata}:
+\begin{lstlisting}[language=HanaSQL,frame={},numbers=none]
+  SELECT * FROM products WHERE id = 17 AND valid_until IS NULL
+\end{lstlisting}
+When developers submit this query in the context of a back-in-time debug session the debugger has to rewrite the query to select the entity valid at the respective point in time:
+\begin{lstlisting}[language=HanaSQL,frame={},numbers=none]
+  SELECT * FROM products WHERE id = 17 
+	  AND created_on < :dbgtime 
+	  AND (valid_until >= :dbgtime OR valid_until IS NULL)
+\end{lstlisting}
+To simplify the process of query rewriting, especially when the validity columns ("created\_on" and "valid\_until") are used in more complex conditions, the debugger can generate back-in-time views that provide previous versions of the table.
+\Cref{lst:bitview} shows the declaration for a back-in-time view in SAP HANA.
+By using this view, instead of rewriting the where clause, the debugger only has to replace the table reference:
+\begin{lstlisting}[language=HanaSQL,frame={},numbers=none]
+  SELECT * FROM _BIT_products(:dbgtime) WHERE id = 17 AND valid_until IS NULL
+\end{lstlisting}
+
+\begin{lstlisting}[language=HanaSQL,float,caption={Definition statement for a parameterized view, showing a previous version of table "products", in SAP HANA's SQL dialect},label=lst:bitview,firstnumber=1,stepnumber=5]
+	CREATE FUNCTION _BIT_products(IN dbgtime TIMESTAMP)
+	RETURNS TABLE 
+	LANGUAGE SQLSCRIPT AS
+	BEGIN
+		RETURN 
+		  SELECT id, name, price, created_on, change_reason,
+						 (CASE WHEN valid_until < :dbgtime 
+							THEN valid_until ELSE NULL) AS valid_until
+			FROM products 
+			WHERE created_on < :dbgtime
+	END;
+\end{lstlisting}
+
+%float,caption={Query to select the most recent tuple},label=lst:selectrecent
+
+The main advantage of using application-level logging for debugging is that no additional memory and no specialized logging is required.
+The latter implies that this approach can be easily transferred to databases of different vendors, as only the SQL dialect for creating and calling back-in-time views needs to be changed.
+
+However, to use this approach the debugger needs to know exactly how logging is implemented, \ie a part of the debugging system must be specifically configured to work with the application's data schema.
+Furthermore, the debugger operates under the assumption that the application does not introduce errors in the log data.
+As a result, bugs that affect the log are especially hard to debug.
+
+In some cases, application-level logging may only be available for some of the tables.
+Luckily, this approach can be mixed with other strategies to manage old state.
+
+\subsubsection*{\emph{Debug-level Logging}}
+
+When the database schema does not support retaining old entities, the debugger can introduce additional tables to store such data.
+Then, as with application-level logging, the debugger generates views that combine the current and history data and rewrites back-in-time queries accordingly.
+
+To avoid copying entire tables, however, the debugger needs to know which tuples are affected by insert, update, or delete statements.
+While it is possible to obtain this information by running appropriate queries before and after the change, we expect the overhead and additional complexity to render this approach impractical.
+Instead, we looked at ways of using existing database features to implement logging more efficiently
+
+\subsubsection*{\emph{ACID Transactions}}
+
+Transaction are a database feature that allow multiple queries to be combined into one logical operation.
+While many users concurrently access the database, transactions enable reliable operation and valid data when they satisfy the ACID properties: atomicity, consistency, isolation, and durability.
+
+For debugging purposes, the isolation property can be used to support back-in-time functionality.
+By running data manipulation statements in a transaction, it is still possible to query the database from before the transaction started as long as it is not committed.
+Using nested transactions, as shown in \cref{fig:bit_transactions}, allows developers to query intermediate points in time.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.3\linewidth]{img/bit_transactions}
+\caption{Nested transactions allow reversing data manipulation queries.}
+\label{fig:bit_transactions}
+\end{figure}
+
+An additional advantage of running a debug session in a transaction is that developers can manually modify the data to explore how the program would behave under different conditions, without threatening data integrity.
+However, the success of applying transactions for back-in-time debugging depends on how transactions are implemented in the database.
+Transactions are not intended to be left uncommitted for several minutes and developers might accidentally lock important tables from access for others or find their debug session suddenly canceled by the database.
+
+\subsubsection*{\emph{Insert-only Databases}}
+
+\tmpStart
 
 We ensure consistency over time by following the insert-only approach of our in-memory database.
 If we require for all tables that data can never be changed or deleted and annotate all tuples with timestamps of when they have been created and invalidated, we can reconstruct the state of the database of any point in time.
