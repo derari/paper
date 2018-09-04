@@ -1,3 +1,8 @@
+% events:
+% tolmach
+% lewis?
+% boothe00
+
 \chapter{Related Work}
 
 In this chapter, we present studies and debugging tools related to our contributions.
@@ -17,7 +22,7 @@ The requirements we defined for the debugging approaches that form the contribut
 Here, we present a selection of notable studies in our field and their results.
 
 Gould let 10 experienced developers locate bugs in Fortran programs~\cite{gould75:some_psychological_evidence}.
-He found that developers can locate bugs up to three times faster when they were familiar with the code~
+He found that developers can locate bugs up to three times faster when they were familiar with the code.\todo{...}
 Furthermore, developers were reluctant to use interactive debugging tools as along as they believed they could find the bug by just reading the code.
 
 Gugerty and Olson studied the difference between novice and expert programmers~\cite{gugerty86:comprehension_differences_in_debugging}.
@@ -38,14 +43,14 @@ Independently of the strategy, Storey \etal found that program comprehension too
 
 In two studies, Sillito \etal observed developers working on change tasks to identify their information needs~\cite{sillito06:questions_programmers_ask}.
 From this, 44 questions developers frequently ask were derived.
-These questions can be divided into four categories:
+These questions were divided into four categories:
 Questions to "find an initial focus point" are most often asked by newcomers, searching for a "place to start looking".
 "Building on those points," developers ask questions to understand code in its immediate context.
 As the program understanding grows, developers ask questions about sub-graphs, seeking to understand the behavior and purpose of modules.
 Finally, developers ask questions over groups of sub-graphs, to understand how different modules interact or relate to each other.
 The second and third category contain many questions about program behavior and control flow that can not be easily answered with traditional debugging tools.
 
-While previous studies only look at individual developers, Ko \etal studied the information needs of developers work in collocated teams~\cite{ko07:information_needs_in_collocated}.
+While previous studies only look at individual developers, Ko \etal studied the information needs of developers working in collocated teams~\cite{ko07:information_needs_in_collocated}.
 By transcribing work sessions minute by minute, they identified 21 information needs.
 Developers often collaborated to find answers to their questions, relying on their coworkers knowledge but also causing interruptions.
 Ko \etal found that for many questions, better tool support could reduce the time and overhead needed to find an answer.
@@ -63,70 +68,80 @@ Furthermore, a lack of integration into the regular development workflow (and in
 This was exacerbated by a lack of customizability to the developers' needs.
 Finally, tools that did not support collaboration with coworkers were not adopted by the team as a whole, reducing the usefulness for each individual.
 
-\cite{perscheid17:studying_the_advancement}
-debugging techniques in practice
+Perscheid \etal studied the adoption of advanced debugging techniques by observing professional software developers and conducting an online survey~\cite{perscheid17:studying_the_advancement}.
+They found that while most developers are proficient using a symbolic debuggers, knowledge of more sophisticated debugging techniques is sparse.
+Furthermore, developers in the study reported a long distance between observed failure and root cause as the main difficulty of finding bugs and wished for more easily accessible debugging tools.
 
 \section{Back-in-Time Debugging}
 \label{sec:rw_bit_debugging}
-x
-\newpage
-x
-\newpage
 
-\cite{powell83:a_database_model}
-store debugging data such as call graph in a database
+%A symbolic debugger allows developers to inspect the program state at single points in time only.
+%Having access to a program's execution history can be beneficial to developers in multiple ways, for example to run analyses on the execution or to follow an infection chain backwards through time.
 
-\cite{feldman88:igor_a_system}
-IGOR, memory snapshots.
-Modification and re-execution from previous points in time.
+Reversing a program execution was for the first time made possible with the EXDAMS debugging system~\cite{balzer69:exdams_extendable_debugging}.
+Since then, many debuggers that use execution history or back-in-time operations have been developed and various approaches with different advantages and draw-backs were tested.
 
-\cite{tolmach93:a_debugger_for_standard}
+Powell and Linton developed a debugging environment that stores a program's code, state, and execution history in a relational database~\cite{powell83:a_database_model}.
+Using this system, developers can express questions about program behavior as database queries.
+This allows developers to formulate complex questions with high precision.
+
+IGOR is a snapshot-based back-in-time debugger by Feldman and Brown~\cite{feldman88:igor_a_system}.
+By delegating the creation and management of snapshots to the operating system, the performance overhead is kept low.
+IGOR supports reversing execution, searching the execution history, and substituting data and program parts during execution.
+
+Tolmach and Appel developed a snapshot-based back-in-time debugger that operates at the source level~\cite{tolmach93:a_debugger_for_standard}.
+The program code is pre-processed before compilation to facilitate back-in-time debugging without the need for changes to the compiler or runtime environment.
+Creating snapshots as first-class continuations reduces the complexity of the debugging system by reusing respective interpreter functionality to replace execution.
 %creates checkpoints as first-class continuations. This
 %allows a flexible mechanism to replace execution and to provide reverse execution for
 %the user and the interpreter.
 
-\cite{lieberman95:zstep_95_a_reversible}
-zstep back in time for lisp, with ui recording
+ZStep95 is a back-in-time debugger for LISP by Lieberman and Fry that keeps a full execution history to reverse control flow~\cite{lieberman95:zstep_95_a_reversible}.
+This way, individual instructions can be reversed faster than with a snapshot-based approach.
+Furthermore, ZStep95 records the screen to include the user interface in the debug session.
+Developers can jump to the previous or next UI change, debugging a program by its observable behavior.
 
-\cite{boothe00:efficient_algorithms_for_bidirectional}
-C,C++
-checkpoints and I/O logging for determinism
-reduce overhead through exponential checkpoint thinning
+Boothe developed a snapshot-based back-in-time debugger for C and C++~\cite{boothe00:efficient_algorithms_for_bidirectional}.
+I/O logging ensures the deterministic re-execution between checkpoints and a sequential numbering of events allows the debugger to identify events across multiple re-executions.
+Memory overhead is reduced through exponential checkpoint thinning, based on the idea that developers are more likely to reverse execution in small steps and that longer waiting times for larger steps are acceptable.
 
-\cite{cook02:reverse_execution_of_java}
-new operational semantics for stack-based bytecode language
-allow for reversal,
-no jumping
+Cook developed a semantic model for the reverse execution of stack-based bytecode languages~\cite{cook02:reverse_execution_of_java}.
+A prototype debugger using this model was implemented in a Java VM.
+The model retains information otherwise lost during state-changing operations.
+This allows the debugger to execute the program backwards, but not to jump to previous points in time or to search the execution history.
 
-\cite{lewis03:debugging_backwards_in_time}
-ODB, first omniscient debugger. for java
+In 2003, Lewis presented the Omniscient Debugger for Java~\cite{lewis03:debugging_backwards_in_time}.
+With an omniscient debugger, the entire execution history is searchable and state from any point-in-time can be restored in constant time.
+The latter is achieved using a post-mortem approach.
+Instead of rewinding the actual program, the debugger only presents the program state, as it was, in its user interface.
 
-\cite{hofer06:design_and_implementation}
-UNSTUCK trace-based bit for smalltalk
-IDE integration, highlight object occurrence by coloring variables
+UNSTUCK is an omniscient debugger for Smalltalk by Hofer \etal~\cite{hofer06:design_and_implementation}.
+It is directly integrated in the IDE and features searching and code highlighting.
 
-\cite{pothier07:scalable_omniscient_debugging}
-distributed database system for storing large execution traces
+To better support the large execution traces required by omniscient debuggers, Pothier \etal developed a distributed database to store and search traces~\cite{pothier07:scalable_omniscient_debugging}.
+While this system is very efficient, it has high requirements in terms of physical resources and set-up.
+Later, Pothier and Tanter developed an approach for summarizing and indexing traces that supports querying arbitrarily large traces efficiently~\cite{pothier11:summarized_trace_indexing}.
+Partial re-execution of program parts is used to retrieve information that was discarded to save memory.
+A similar approach was used by Perscheid to achieve efficient back-in-time debugging with the Path tool suite~\cite{perscheid13:test-driven_fault_navigation}.
 
-\cite{lienhard08:practical_object-oriented_back-in-time_debugging}
-extended squeak smalltalk vm to record object histories.
-gc to discard old state.
+Lienhard \etal developed a system for back-in-time debugging that reduces memory overhead by using the underlying VM's garbage collector~\cite{lienhard08:practical_object-oriented_back-in-time_debugging}.
+They extended the Squeak Smalltalk VM to store object history along with the regular object.
+When an object is no longer reachable, its history is considered irrelevant and will be discarded, too.
 
-\cite{barr14:tardis_affordable_time-travel_debugging}
-bit for .net runtime. integration 7\% overhead
+TARDIS by Barr and Marron is a back-in-time debugger for the .net runtime~\cite{barr14:tardis_affordable_time-travel_debugging}.
+TARDIS uses a combination of snapshots and logging and is integrated in the runtime environment, thereby achieving very low run-time and memory overhead.
+A similar debugger was developed for Microsoft’s open-source ChakraCore JavaScript engine and the Node.js application framework~\cite{barr16:time-travel_debugging_for_javascriptnode}.
+The debugger supports both live debugging with snapshots and post-mortem debugging from logs.
 
-\cite{barr16:time-travel_debugging_for_javascriptnode}
- Microsoft’s open-source ChakraCore JavaScript engine
-and the popular Node.js application framework
-Snapshots and post-mortem from logs
+RR is a debugger that can record and replay arbitrary programs in Linux without modifications to the program code, the compilation pipeline, the runtime environment, or the operating system~\cite{ocallahan17:engineering_record_and_replay}.
+This allows RR to be used as a general purpose debugger with low set-up and maintenance costs.
 
-\cite{ocallahan17:engineering_record_and_replay}
-RR, tracing based bit for arbitrary programs on linux.
-
-\section{Dynamic Slicing}
+\section{Dynamic Slicing Algorithms}
 \label{sec:rw_dynamic_slicing}
-x
-\newpage
+
+A history of different slicing approaches was already presented in \cref{sec:evolution_of_slicing}, "\nameref{sec:evolution_of_slicing}".
+In this section, we present
+
 
 \cite{ottenstein84:the_program_dependence_graph}
 represent program as pdg, faster through reuse. better results.
