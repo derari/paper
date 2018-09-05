@@ -1,11 +1,13 @@
 \chapter{Introduction}
 \label{sec:introduction}
 
-Twenty years ago, Lieberman described debugging as "the dirty little secret of computer science".
-He argued that the huge economic cost created by software bugs, resulting from the efforts to locate and fix bugs and the damages caused by bugs  not found in time, was not adequately matched by efforts to provide better debugging tools and establish better debugging practices.
+Twenty years ago, Lieberman 
+%described debugging as "the dirty little secret of computer science".
+%He 
+argued that the huge economic cost created by software bugs, resulting from the efforts to locate and fix bugs and the damages caused by bugs  not found in time, was not adequately matched by efforts to provide better debugging tools and establish better debugging practices.
 Lieberman called this the "Debugging Scandal"~\cite{lieberman97:the_debugging_scandal}.
 In his famous article, he urged the computer science community to stop ignoring this problem and outlines several directions in which debugging can be evolved.
-Twenty years later, computer science research has produced many new and advanced approaches to debugging; in practice, however, the situation has barely improved~\cite{yin11:debugging_scandal_the_next}.
+Twenty years later, computer science research has produced many new and advanced approaches to debugging; in practice, however, the situation has barely improved~\cite{yin11:debugging_scandal_the_next, perscheid17:studying_the_advancement}.
 
 \section{The Real Cost of Software Errors}
 
@@ -22,16 +24,16 @@ Software faults affect the operation of all professional and commercial software
 In 2002, the yearly economic cost of software errors was estimated to be above 60~billion dollars in the United States alone~\cite{tassey02:the_economic_impacts}. 
 These damages are accumulated from a variety of sources.
 Most obviously, errors need to be fixed and therefore increase the software development costs.
-However, before developers can even begin to work on a fix, the errors have to be reproduced, classified, and prioritized, all activities that cost time and resources~\cite{sahoo10:an_empirical_study, guo10:characterizing_and_predicting_which}.
+However, before developers can even begin to work on a fix, the errors have to be reproduced, classified, and prioritized; all activities that cost time and resources~\cite{sahoo10:an_empirical_study, guo10:characterizing_and_predicting_which}.
 
 Further damages are incurred when the increased workload delays the project's release, as the increased time to market can lead to lost opportunities.
 Usually, errors are most expensive when they manifest in production.
 Not only can they cause direct costs by interrupting business operations, they are also more expensive to repair and can cause long-term damage through loss of reputation and future business for the company.
-Additional billions of damage are created by failing software projects, where bugs are often part of the problem~\cite{charette05:why_software_fails}.
+Additional billions of damage are created by failing software projects, where bugs are often part of the problem~\cite{charette05:why_software_fails, zhivich09:the_real_cost}. \todo{move zhivich}
 
-Finally, it is not only the economic damage that is worrisome.
-When software failures occur in critical infrastructure, lives are endangered.
-While total numbers are difficult to determine, there are many reports of incidents where faulty software systems were at least partially responsible for loss of human life~\cite{zhivich09:the_real_cost}.
+%Finally, it is not only the economic damage that is worrisome.
+%When software failures occur in critical infrastructure, lives are endangered.
+%While total numbers are difficult to determine, there are many reports of incidents where faulty software systems were at least partially responsible for loss of human life~\cite{zhivich09:the_real_cost}.
 %\todo{section divider}
 
 \medskip\medskip\noindent
@@ -74,12 +76,12 @@ Because modifying and re-running a program was expensive and time-consuming, bug
 In the 1960s, the invention of operating systems with time-sharing capabilities allowed developers to use the "edit -- compile -- run" loop~\cite{linton90:the_evolution_of_dbx}.
 By experimenting with changes to the source code, it was much easier to get an understanding of the problem.
 Furthermore, interactive terminals allowed developers to insert trace statements into the code, which could report internal states and program flow.
-This practice is also known as "printf"-debugging and remains popular to this day~\cite{perscheid17:studying_the_advancement}.
+This practice is also known as "printf"-debugging and, although generally considered a bad practice~\cite{zeller09:why_programs_fail}, remains popular to this day~\cite{perscheid17:studying_the_advancement}.
 
 At the same time, with the "Dynamic Debugging Technique" (DDT) and later EXDAMS, the first tools were developed to facilitate stepwise executions of programs and to let developers examine program state~\cite{balzer69:exdams_extendable_debugging}\todo{source: ddt}.
 In the 1970s, debuggers moved to the command line and the introduction of the breakpoint allowed developers to pause the execution at predefined points.
 In 1975, the first debugger (for COBOL) integrated compiler information to translate identifiers from the source code into memory addresses and vice versa, alleviating developers from manually performing this task.
-Such symbolic debuggers are, when available, widely used today; unfortunately, as we will see, they are also the most recent innovation that found wide adoption in pracitce~\cite{perscheid17:studying_the_advancement}.
+Such symbolic debuggers are widely used today, unfortunately, as we will see, they are also the most recent innovation that found wide adoption in pracitce~\cite{perscheid17:studying_the_advancement}.
 
 In 1981, Weiser introduced the concept of slices, subsets of statements in a program that influence each other~\cite{weiser81:program_slicing}. 
 He showed that slices are a useful abstraction for programmers who think about code~\cite{weiser82:programmers_use_slices_when}.
@@ -100,71 +102,131 @@ As \cref{fig:tool-usage} shows, the same is true for many other modern debugging
 \label{fig:tool-usage}
 \end{figure*}
 
-\section{Are There Too Many Debugging Tools?}
+\section{Do We Need More Debugging Tools?}
 
 Comparing figures \ref{fig:debugging-timeline} and \ref{fig:tool-usage}, we can see that a disconnect between the state of the art in research and the application of debugging in practice began to occur around the 1980ies.
 Today, we can find a large number of debugging tools, techniques, and prototypes that are very good at what they do, but not widely used by developers.
 
 Consistently with debugging studies, talking to professional software developers we learned that many developers are not even aware that advanced debugging techniques (\ie anything beyond symbolic debugging) exist and may even be available for the programming languages they use.
-If developers know of an advanced debugging tool, they often cited a lack of documentation as the main reason for not using it.
-While locating a software fault, developers don't want to divert attention to learning a new tool.
+When developers told us they had heard of an advanced debugging methodology before, they knew not whether respective tools were available for their programming language and were surprised when told that such tools were available.
+%If developers know of an advanced debugging tool, they often cited a lack of documentation as the main reason for not using it.
+%While locating a software fault, developers don't want to divert attention to learning a new tool.
 %\todo{performance issues}
 
+%In the survey by Perscheid et al., developers rated IDE integration and installation less
+%important for the adaptation of new debugging tools than ease of use and documentation.
+%However, considering 1.2 and what developers told us, it seems that not knowing
+%that tools exist is the greatest obstacle.
+
+%These findings show that it is not enough for debugging research to propose new methods
+%to better find and repair software faults
 Based on these findings we conclude that it is not enough for debugging research to propose new methods to better find and fix bugs.
 Having a wide selection of options to tackle a problem is only an advantage if users know how to select the best option and can apply it correctly.
 Thus, researches need to consider the developer as a user of the tool or method, too.
 Debugging tools need to seamlessly integrate into the developer's workflow and tool chain, and allow the exploration of features instead of requiring a formal training of the user.
 
-\section{250 Million Lines of Code to Run a Business}
+\section{Million of Lines of Code to Run a Business}
 
-In our work, we focused on developers of enterprise applications as our target group;
+In our work, we focus on developers of enterprise applications as our target group;
 \ie while our results may be useful for developers of other types of applications as well, we consider only problems of developers in this particular field for our design and evaluation.
 
 Enterprise applications, \ie software that supports or automates business pro-\linebreak{}cesses~\cite{fowler02:patterns_of_enterprise_application}, are often large and complex.
 \Ac{erp} systems, for instance, have to manage large amounts of business data, interact with many other computer systems, and adhere to complex legal requirements~\cite{linthicum00:enterprise_application_integration}.
-SAP's popular \ac{erp} system was estimated to consist of 250 million lines of code~\cite{mallach15:information_systems_what_every}.
-Every single one of them was written and needs to be maintained by a developer.
+SAP’s business suite already consists of several million lines of code~\cite{mallach15:information_systems_what_every}. 
+On top of this, optional modules and custom extension are added to provide all required functionality.
 
 The size alone already makes it difficult to locate bugs efficiently.
-There much more code that developers need to understand and the average length of infection chains, the distance between observed failure and responsible code fault, grows accordingly.
-On top of that, there are structural barriers that slow down fault localization efforts.
+There is much more code that developers need to understand and the average length of infection chains, the distance between observed failure and responsible code fault, grows accordingly.
+On top of that, there is technical complexity that slows down fault localization efforts.
 
-Complex software systems often consist of multiple interoperating components written in different programming languages and running in different environments.
-Many enterprise applications, for example, follow a three-tier architecture~\cite{fowler02:patterns_of_enterprise_application}:
+\begin{figure}
+\centering
+\begin{minipage}{.56\textwidth}
+  \centering
+  \includegraphics[height=50mm]{img/s4hana}
+  \captionof{figure}[High-level architecture of S/4 HANA]{High-level architecture of an S/4 HANA installation with XS applications~\cite{sap17:setup_of_sap_fiori}\linebreak}
+  \label{fig:s4hana}
+\end{minipage}~~~%
+\begin{minipage}{.42\textwidth}
+  \centering
+  \includegraphics[height=50mm]{img/xsa}
+  \captionof{figure}[Architecture of the SAP HANA XS Advanced framework]{Architecture of the SAP HANA XS Advanced framework~\cite{subatin17:xs_advanced_for_not}}
+  \label{fig:xsa}
+\end{minipage}
+\end{figure}
 
+\Cref{fig:s4hana} shows the high-level architecture of SAP's business suite "S/4 HANA" from a technical perspective. 
+On the left, the two major components, the ABAP front-end and back-end servers, contain the majority of business logic.
+User clients, shown at the top, interact with the system using a browser with HTML5 support or the SAP GUI.
+At the bottom of the stack, the SAP HANA database stores and manages application data.
+On the right, additional reporting and analytics applications run in the SAP HANA Extended application Services (XS) Advanced framework.
+Each product of the business suite, such as the ERP or CRM system, can add modules to all components in this architecture.
+
+The architecture of the XS Advanced framework is shown in more detail in~\cref{fig:xsa}.
+Again, we find a browser-based client with a JavaScript UI library at the top and the SAP HANA database at the bottom.
+In the center, the XS Advanced application framework supports server-side applications written in JavaScript, Java, or C++.
+The dashed lines indicate communication across execution environment boundaries.
+
+%Complex software systems often consist of multiple interoperating components written in different programming languages and running in different environments.
+Both architectures match the three-tier application pattern~\cite{fowler02:patterns_of_enterprise_application}:
 A database layer handles persistence and data-intensive computations.
 On top, the application layer implements most of the business process logic and acts as a gateway to the client.
 In the client, the user interface layer provides a rich user experience and sends requests to the application back-end to trigger actions and obtain data.
 Because of the heterogeneous technologies, each layer typically comes with its own tool set and no tool can be used to work on all layers at once.
 
-Bugs can occur in any layer but often manifest themselves as failures in the user interface.
-Thus, developers first have to guess in which layer the error originated before choosing the appropriate debugging tool for that layer.
-If the guess turns out to be wrong, developers have to switch tools and context before continuing the bug hunt.
-Locating bugs in the interaction between two layers becomes even more difficult, as developers may have to switch tools several times to understand the fault.
+%Bugs can occur in any layer but often manifest themselves as failures in the user interface.
+%Thus, developers first have to guess in which layer the error originated before choosing the appropriate debugging tool for that layer.
+%If the guess turns out to be wrong, developers have to switch tools and context before continuing the bug hunt.
+%Locating bugs in the interaction between two layers becomes even more difficult, as developers may have to switch tools several times to understand the fault.
 
+%As these diagrams illustrate, enterprise applications consist of multiple interoperating components written in different programming languages and running in different environments.
+Software faults can occur in any component but often manifest themselves as failures in the user interface.
+Thus, developers first have to guess in which component the error originated before choosing the appropriate debugging tool for that component.
+If the guess turns out to be wrong, developers have to switch tools and context before continuing the bug hunt.
+
+To demonstrate the difficulty of localizing faults in complex systems, \ref{fig:worstcase} shows an example that is close to a worst-case scenario based on the S/4 HANA architecture.
+A fault in the ABAP Front-End server causes corrupted data to be passed down into the database.
+Later, the data is retrieved by an XSA application and causes a failure in the client.
+Dashed lines indicate boundaries of execution environments.
+As can be seen, to follow the infection chain from the failure to the fault, developers would have to switch debugging tools six times.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=.9\linewidth]{img/worstcase}
+\caption{Worst case}
+\label{fig:worstcase}
+\end{figure*}
+
+Locating faults in the interaction between two components becomes even more difficult, as developers may have to switch tools back and forth repeatedly to understand the fault.
 To efficiently debug a multi-tier application, developers would need a single debugger that is not only capable of debugging each layer but also aware of the interaction between layers at a meaningful level of abstraction.
+Additionally, the debugger needs to provide help
+navigating the large amounts of code that a long infection chain passes through
+and consider database tables as part of the program state.
+
 %Furthermore, the debugger needs to include the database
-Finally, to help developers handle the complexity and size of an enterprise application, the debugger should provide analysis features that integrate in the debugging process, instead of interrupting it.
+%Finally, to help developers handle the complexity and size of an enterprise application, the debugger should provide analysis features that integrate in the debugging process, instead of interrupting it.
+
+%Looking back at the history of debugging, we find that innovations in debugging were usually quickly adopted when they occurred alongside changes in how software was developed.
+%Recent trends in database technology and software engineering practices fundamentally affect how enterprise applications will be developed in the future~\cite{plattner15:the_in-memory_revolution_how}.
+%We looked at these trends to identify specific problems today's developers have to face when debugging their code that can not be adequately solved with existing tools. 
+
+\section{Research Question and Contributions} %(Research Questions \& Contributions) Our Approach
+
+%\newcommand{\RQ}[1]{\paragraph{\emph{#1}}}
+\newcommand{\RQ}[1]{\subsection*{\emph{#1}}}
+
+The overarching motivation of this work is to reduce the time and effort needed to locate faults in multi-tier enterprise applications.
+Omniscient debugging is a technique that can greatly improve fault localization, but is not widely used in practice.
+???. profit.
+From this, we defined the following research question:
+
+\RQ{How can omniscient debugging be adapted to be more useful\todo{say that in a better way}\ for developers of multi-tier enterprise applications?}
 
 Looking back at the history of debugging, we find that innovations in debugging were usually quickly adopted when they occurred alongside changes in how software was developed.
 Recent trends in database technology and software engineering practices fundamentally affect how enterprise applications will be developed in the future~\cite{plattner15:the_in-memory_revolution_how}.
 We looked at these trends to identify specific problems today's developers have to face when debugging their code that can not be adequately solved with existing tools. 
 
-\section{Research Questions and Contributions} %(Research Questions \& Contributions) Our Approach
-
-The overarching motivation of this work is to reduce the time and effort needed to locate faults in multi-tier enterprise applications. % to improve debugging;  
-This challenge will be approached from two directions.
-First, recent debugging innovations need to be made more available in practice.
-It is not enough to simply make more features available in debugging tools, the features need to be conveniently accessible and the cost of learning a new feature must not be too high at any point in time.
-Second, debugging tools need to move along with recent technology trends.
-Developers need better support debugging applications that handle large amounts of data and are composed of sub-systems with heterogeneous technology stacks.
-From this, we defined three research questions.
-
-%\newcommand{\RQ}[1]{\paragraph{\emph{#1}}}
-\newcommand{\RQ}[1]{\subsection*{#1}}
-% mtiier verbessern ; verfolgen
-
-\RQ{Research Question 1: How can debuggers help developers to navigate a program when following a long infection chain?}
+\RQ{Contribution 1: A method for the faster navigation of long infection chains}
 
 When developers debug a program, they are typically not just "browsing" the execution, but rather searching for something specific.
 In particular, when tracking an infection chain the most common operation is to find the origin of a potentially erroneous value.
@@ -185,7 +247,8 @@ A new slicing algorithm allows for incremental configuration of a slice.
 This way changes are applied instantly, without interrupting the debug session. 
 A new UI component, the \emph{Slice Navigator}, provides a unique view on the execution by combining relevant information from both the \ac{odb} and the slicing subsystem.
 
-\RQ{Research Question 2: How can programs handling large amounts of data be debugged and analyzed efficiently?}
+
+\RQ{Contribution 2: Back-in-time debugging on the database layer}
 
 Enterprise applications are very data-driven.
 Developers need direct access to the database not only to understand the context and evaluate the correctness of an operation, but the data itself, with erroneous or unexpected values, can be the source of software failures.
@@ -200,7 +263,7 @@ Our \emph{TARDISP} debugger allows developers to step queries backwards and insp
 With the help of a SQL extension, developers can express queries covering a period of execution time within a debugging session and handle large amounts of data with low overhead on performance and memory. 
 The entire approach has been evaluated within a development project at SAP and shows promising results with respect to the gathered developer feedback.
 
-\RQ{Research Question 3: How can developers debug complex systems without being impeded by control-flow crossing sub-system boundaries?}
+\RQ{Contribution 3: Seamless omniscient debugging across the layers of a 3-tier architecture}
 
 Even with back-in-time debugging available in every layer of the software stack, developers still have to switch tools when following an infection chain along requests between sub-systems.
 Switching tools imposes a significant cognitive overhead on developers and can break their productive flow.
@@ -210,6 +273,64 @@ we extended TARDISP to aggregate traces from multiple concurrent executions into
 We introduce hierarchical step numbering based on synchronization points between components to create a partial ordering of instructions in all concurrent executions.
 A visualization in the front-end shows developers which UI element is affected by which back-end operation, providing them with a top-down summary of the execution.
 A second visualization is shown in the debugger and helps developers to navigate the application flow.
+
+
+%% improve debugging;  
+%This challenge will be approached from two directions.
+%First, recent debugging innovations need to be made more available in practice.
+%It is not enough to simply make more features available in debugging tools, the features need to be conveniently accessible and the cost of learning a new feature must not be too high at any point in time.
+%Second, debugging tools need to move along with recent technology trends.
+%Developers need better support debugging applications that handle large amounts of data and are composed of sub-systems with heterogeneous technology stacks.
+%From this, we defined three research questions.
+%
+%% mtiier verbessern ; verfolgen
+%
+%\RQ{Research Question 1: How can debuggers help developers to navigate a program when following a long infection chain?}
+%
+%When developers debug a program, they are typically not just "browsing" the execution, but rather searching for something specific.
+%In particular, when tracking an infection chain the most common operation is to find the origin of a potentially erroneous value.
+%In large and complex systems, infection chains tend to be very long as well.
+%Thus, if a debugging tool can increase the speed with which developers can track infection chains, the overall time needed to locate a bug can be reduced.
+%
+%There are two major approaches to fault localization: manual debugging, \eg using \acfp{odb}, and \acf{afl}.
+%\Acp{odb} make it easier to freely navigate a program execution, but offer no specific help for tracking down relevant code locations.
+%Many \ac{afl} techniques, on the other hand, can identify code locations likely related to a failure, but do not provide a way to verify this relation.
+%Furthermore, the accuracy of \ac{afl} diminishes over longer distances.
+%By combining both approaches, however, we believe we can keep their advantage while reducing their drawbacks.
+%%The debugger's vast knowledge about the execution can be used for dynamic analyzes.
+%
+%We developed \emph{interactive dynamic slicing}, a new debugging workflow that combines omniscient debugging and dynamic slicing. 
+%The execution history available to the \ac{odb} can be used to quickly compute dynamic slices to help developers to identify relevant code.
+%While debugging the dynamic slice, at any point developers can add or adjust the slicing criteria.
+%A new slicing algorithm allows for incremental configuration of a slice. 
+%This way changes are applied instantly, without interrupting the debug session. 
+%A new UI component, the \emph{Slice Navigator}, provides a unique view on the execution by combining relevant information from both the \ac{odb} and the slicing subsystem.
+%
+%\RQ{Research Question 2: How can programs handling large amounts of data be debugged and analyzed efficiently?}
+%
+%Enterprise applications are very data-driven.
+%Developers need direct access to the database not only to understand the context and evaluate the correctness of an operation, but the data itself, with erroneous or unexpected values, can be the source of software failures.
+%In such cases, developers must not only identify the responsible data records, but also determine how they found their way into the database.
+%
+%With back-in-time debuggers, developers can explore what happened before observable failures by following infection chains back to their root causes. 
+%While there are several such debuggers for object-oriented programming languages, we do not know of any back-in-time capabilities at the database-level.
+%Thus, if failures are caused by components that interact with the database, developers have difficulties in understanding their unexpected behavior.
+%
+%We developed an approach for bringing back-in-time debugging down to the database.
+%Our \emph{TARDISP} debugger allows developers to step queries backwards and inspecting the database at previous and arbitrary points in time. 
+%With the help of a SQL extension, developers can express queries covering a period of execution time within a debugging session and handle large amounts of data with low overhead on performance and memory. 
+%The entire approach has been evaluated within a development project at SAP and shows promising results with respect to the gathered developer feedback.
+%
+%\RQ{Research Question 3: How can developers debug complex systems without being impeded by control-flow crossing sub-system boundaries?}
+%
+%Even with back-in-time debugging available in every layer of the software stack, developers still have to switch tools when following an infection chain along requests between sub-systems.
+%Switching tools imposes a significant cognitive overhead on developers and can break their productive flow.
+%
+%Assuming back-in-time debugging capabilities for each application tier, 
+%we extended TARDISP to aggregate traces from multiple concurrent executions into one continuous debug session.
+%We introduce hierarchical step numbering based on synchronization points between components to create a partial ordering of instructions in all concurrent executions.
+%A visualization in the front-end shows developers which UI element is affected by which back-end operation, providing them with a top-down summary of the execution.
+%A second visualization is shown in the debugger and helps developers to navigate the application flow.
 
 \section{Outline}
 
