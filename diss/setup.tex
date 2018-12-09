@@ -22,6 +22,7 @@
 %\usepackage{fancyhdr}			%% more header and footer configuration
 %\usepackage{pdflscape}			%% \begin{landscape} ... \end{landscape}
 \usepackage{afterpage}
+\usepackage{setspace}
 
 %% === Bibliography =======================================
 %% use biblatex if you know what you're doing
@@ -61,6 +62,8 @@
 %%\setupctable{doinside=\insidetable}
 %\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
 \usepackage{tabulary}
+\usepackage{multirow}
+%\usepackage{threeparttable}
 
 \makeatletter
 % see: http://tex.stackexchange.com/a/87543/34962
@@ -143,9 +146,10 @@
 	%sensitive=true,
 %}
 \lstdefinelanguage{HanaSQL}[]{SQL}{
-	morekeywords={replace,string,if,is,daysbetween,secondsbetween,weekday,adddays,addseconds,double, procedure,begin,declare,inout,call,return,returns,language,sqlscript,function},
+	morekeywords={replace,string,if,is,days_between,seconds_between,weekday,add_days,add_seconds,double, procedure,begin,declare,inout,call,return,returns,language,sqlscript,function,out,now},
 	moredelim=**[is][\slshape]{^}{^},
 	moredelim=**[is][\bfseries]{§}{§},
+	moredelim=[is][]{~}{~},
 }
 \lstdefinelanguage{algorithm}{
 	keywords={break, case, catch, continue, dec, default, delete, do, each, else, end, error, exists, finally, for, function, if, inc, is, new, return, switch, then, this, throw, try, typeof, until, void, while, with},

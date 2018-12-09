@@ -45,22 +45,109 @@ Such "slices" are often not contiguous and can contain code from many different 
 Here, tools can help to identify related statements, saving time and reducing the mental overhead for developers.
 
 \subsection{Configurable Slicing}
-
-Motivation: continue where \nameref{sec:evolution_of_slicing} stopped.
+%
+%Motivation: continue where \nameref{sec:evolution_of_slicing} stopped.
+%
+%~\cite{korel98:dynamic_program_slicing_methods, tip94:a_survey_of_program}. 
+%In our work, we used the popular approach of computing dependence graphs.
+%
+%Static slicing algorithms typically use \emph{\acp{pdg}}, where every node is statement or instruction and directed edges indicate dependency relations~\cite{weiser81:program_slicing}.
+%For dynamic slicing, the slice precision can be improved by using \emph{\acp{ddg}}, in which each node represents the execution of a statement.
+%To compute \acp{ddg}, Agrawal \etal\ and Zhang \etal\ developed algorithms that first compute a \ac{pdg} and then combine it with a recorded execution trace~\cite{agrawal90:dynamic_program_slicing,zhang03:precise_dynamic_slicing_algorithms}.
+%Then, from the \ac{ddg} the slice is derived as a sub-graph.
+%While this approach produces precise results, it typically takes a long time to complete.
+%Thus, they also developed multiple algorithms that provide different trade-offs between runtime and precision.
+%
+%
+%TODO: formal definition of configurable slicing,
 
 To determine which statements belong to a slice and which do not, the slicer has to perform a dependency analysis on the program.
-Many different approaches exist to conduct such analyses~\cite{korel98:dynamic_program_slicing_methods, tip94:a_survey_of_program}. 
-In our work, we used the popular approach of computing dependence graphs.
+Many different approaches exist to conduct such analyses
+\tmpStart
+%There a many different approaches to compute slices.
+One successful method is slicing based on dependence graphs \cite{korel98:dynamic_program_slicing_methods, tip94:a_survey_of_program}.
+A dependence graph-based slicing algorithm has to do three things, as illustrated in \cref{fig:graph-slicing}:
+first, compute a dependence graph, then, map the slicing criteria to nodes in the graph, and finally, collect the transitive dependencies of the initial nodes.
 
-Static slicing algorithms typically use \emph{\acp{pdg}}, where every node is statement or instruction and directed edges indicate dependency relations~\cite{weiser81:program_slicing}.
-For dynamic slicing, the slice precision can be improved by using \emph{\acp{ddg}}, in which each node represents the execution of a statement.
-To compute \acp{ddg}, Agrawal \etal\ and Zhang \etal\ developed algorithms that first compute a \ac{pdg} and then combine it with a recorded execution trace~\cite{agrawal90:dynamic_program_slicing,zhang03:precise_dynamic_slicing_algorithms}.
-Then, from the \ac{ddg} the slice is derived as a sub-graph.
-While this approach produces precise results, it typically takes a long time to complete.
-Thus, they also developed multiple algorithms that provide different trade-offs between runtime and precision.
+\begin{figure}
+	\centering
+		\includegraphics[width=\linewidth]{img/graph-slicing}
+	\caption[Deriving a slice from a dependence graph]{Deriving a slice from a dependence graph in three steps: compute the graph, map the criteria, and collect the dependencies.}
+	\label{fig:graph-slicing}
+\end{figure}
 
+Slicing algorithms do not necessarily perform these steps in a distinct order, but may already map nodes and collect dependencies while the graph is constructed~\cite{agrawal90:dynamic_program_slicing,zhang03:precise_dynamic_slicing_algorithms}.
+Nevertheless, each step of the algorithm fits one of these three purposes.
 
-TODO: formal definition of configurable slicing,
+Depending on the algorithm, different types of graphs can be used.
+For example, a static slicing algorithm would use a program or system dependence graph, where each node represents an instruction, whereas a dynamic slicing algorithm would use a dynamic dependence graph, where each node represents the execution of an instruction~\cite{weiser81:program_slicing, korel90:dynamic_slicing_of_computer}.
+Regardless of their type, dependence graphs can contain different types of dependency relations.
+Two dependency types commonly used are data dependencies to model the data flow of an application and control dependencies to model its control flow \cite{weiser81:program_slicing, agrawal90:dynamic_program_slicing, zhang03:precise_dynamic_slicing_algorithms, korel90:dynamic_slicing_of_computer}.
+\tmpEnd
+
+As already discussed in \cref{sec:evolution_of_slicing}, "\nameref{sec:evolution_of_slicing}",
+\tmpStart
+slicing algorithms have to balance between two conflicting requirements: 
+on the one hand, the slice should be as small as possible to reduce the search space for developers,
+on the other hand, it is crucial that the instruction the developers is looking for is not removed.
+It has been recognized that safely producing smaller slices requires additional knowledge about the developer's question beyond the pure slicing criteria.
+For some classes of questions, e.g, "how was this value computed", it can be helpful to construct a dependence graph with dependencies of only one type, such as data dependencies.
+Tools that can provide such reduced slices can improve debugging efficiency as less code has to be inspected by developers~\cite{agrawal93:debugging_with_dynamic_slicing, sridharan07:thin_slicing}.
+
+%Regarding slicing criteria, some algorithms are limited to criteria that can be directly mapped to nodes in the graph, such as value assignments, while other algorithms can map a wider range of criteria, such a variable value in a line where it is not used~\cite{korel_dynamic_1990, agrawal_dynamic_1990}.
+
+We propose to generalize this approach by moving the dependency type selection from the first step (dependence graph creation) to the third step (transitive dependency collection).
+We call this new way to collect dependencies "configurable slicing".
+Since it affects only the last step, it can be considered as an extension to all graph-based slicing approaches, regardless of the graph type and how criteria are mapped.
+
+\paragraph{Definitions} Let $N$ be the set of nodes in a dependence graph, $T$ the set of dependency types, $D \in N \times N \times T$ the set of typed dependency edges, and $DG = (N, D)$ the typed dependence graph. A slicing criterion is commonly defined as $c = (n, V, ...)$, where $n \in N$ is a node in the graph, $V$ is a set of variables whose values must be preserved at $n$, and "$...$" represents additional arguments that a specific approach might require.
+The concrete values of $N$ and $D$ can depend on the chosen criteria.
+Their values are defined by the underlying slicing approach and not further discussed here.
+
+Extending the existing definition, we define a configured slicing criterion \linebreak $c' = (n, V, ..., T_n)$, where $T_n \subseteq T$ is a subset of dependency types chosen for a specific node.
+The configured dependency set of a node is 
+\[dep_C(n) = \{n'\, |\, \exists\, t \in types_C(n)\mbox{: } (n, n', t) \in D\},
+\] 
+where $C$ is a set of slicing criteria and $types_C$ is a function that assigns dependency types to each node, defined as:
+	\[
+	types_C(n) = \begin{cases} 
+	T_n& \mbox{if } (n, V, ..., T_n) \in C \mbox{ exists}
+	\\
+	\{t \, |\, \exists\, n' \mbox{: } n \in dep_C(n') \wedge t \in types_C(n')\} & \mbox{otherwise.}
+	\end{cases}
+\]
+In other words, if a node is part of a slicing criterion, its dependency types are defined by that criterion, otherwise it inherits the dependency types from all nodes it is a dependency of.
+Finally, we define a configured slice as
+\[Slice(C) = \{n\, |\, types_C(n) \neq \varnothing\},
+\]
+i.e., as the set of all nodes with a non-empty set of dependency types.
+
+\begin{figure}
+	\centering
+		\includegraphics[width=0.60\linewidth]{img/configured-slice}
+	\caption[A configured slice]{A configured slice on a dependence graph with data (d) and control (c) dependencies.}
+	\label{fig:configured-slice}
+\end{figure}
+
+To illustrate, \cref{fig:configured-slice} shows an example dependence graph with data and control dependencies.
+Nodes \emph{C}, \emph{E}, and \emph{F} were chosen as slicing criteria.
+The chosen dependency types are shown inside each node.
+As can be seen, nodes \emph{C} and \emph{F} pass their respective dependency type along the according dependency edges.
+Node \emph{B} inherits both dependency types and passes both to node \emph{A}, the type of the edge does not matter in this regard.
+Node \emph{E} is a \emph{negative slicing criterion}.
+Because its type set was chosen to be empty, not only is it excluded from the slice, it also prevents node \emph{D} from transitively inheriting the control dependency type from node \emph{F}.
+The final slice is shown in gray.
+
+It should be noted that configured slices are no longer correct with respect to the correctness definition of the underlying slicing approach.
+This is acceptable as the "incorrectness" is introduced at the specific request of the developer to reduce the size of the slice.
+In particular, using negative slicing criteria allows developers to exclude entire sub-graphs, for example to remove the history of values that are known to be correct.
+
+Configurable slicing gives developers very fine-grained control over the resulting slices.
+However, to utilize this control developers need to specify more detailed criteria, it is no longer sufficient to just select code locations of interest.
+We do not expect developers to know beforehand which criteria configuration will yield the best slice for their purposes.
+Instead, with Interactive Dynamic Slicing, we propose a method how developers can refine a slice as often as needed.
+
+\tmpEnd
 
 \subsection{An Efficient Incrementally Configurable Slicing Algorithm}
 
@@ -73,7 +160,8 @@ Instead of tediously computing a \ac{pdg} of the entire program, small \acp{pdg}
 Furthermore, the \ac{ddg} and the slice are built together, constructing only as much of the \ac{ddg} as is required to compute the slice.
 This allows the algorithm to work very efficiently, especially when computing small slices in large programs.
 
-Secondly, developers can specify more detailed slicing criteria.
+Secondly, our algorithm supports configurable slicing. 
+%developers can specify more detailed slicing criteria.
 Instead of just selecting statements as a starting point for the slicing, developers can choose to include or exclude different dependency types.
 This allows them to narrow down the slice for specific questions, such as "How was this value computed?" or "Why was this line reached?".
 Furthermore, disabling all dependency types for a node turns it into a negative criterion.
@@ -97,34 +185,6 @@ This not only increases the overall usefulness of slicing for debugging, but it 
 
 In the next subsection, we describe how the method-level \acp{pdg} are computed.
 After that, we show how they are combined with an execution trace to build the \ac{ddg} and the slice, and how incremental changes are applied.
-Throughout the remainder of this section, we use a small example to illustrate the slicing algorithm.
-\Cref{lst:countLetters} shows a Java method that counts the length of words in a comma-separated word list.
-The test in \cref{lst:testCountLetters} checks if the resulting ´long´ array contains correct values.
-The code contains no bugs; nevertheless, a developer might choose to slice on the ´assertEquals´ invocation in line 8 to understand how the given input leads to the expected values.
-
-\begin{lstlisting}[float,caption={A method to count letters in a word list.},stepnumber=2,numberfirstline=false,label=lst:countLetters,language=Java]
-    public long[] countLetters(String wordList) {
-        String[] words = wordList.split(",");
-        long[] result = new long[words.length];
-        for (int i = 0; i < words.length; i++) {
-            String trimmed = words[i].trim();
-						result[i] = trimmed.length();
-        }
-        return result;
-    }
-\end{lstlisting}
-
-\begin{lstlisting}[float,caption={A test for countLetters.},stepnumber=2,numberfirstline=false,label=lst:testCountLetters,language=Java]
-    public void testCountLetters() {
-        String input = " hello , all ";
-        long expected1 = 5;
-        long expected2 = 3;
-        long[] result = countLetters(input);
-        assertEquals(2, result.length);
-        assertEquals(expected1, result[0]);
-        assertEquals(expected2, result[1]);
-    }
-\end{lstlisting}
 
 %
 %\begin{lstlisting}[firstnumber=54,float,caption={A test in TimeIntervalParserTest.java},stepnumber=2,label=lst:test]
@@ -233,6 +293,35 @@ However, as we will discuss in more detail in \todo{reference}, including this d
 
 The algorithm to build the method-level \acp{pdg} was implemented in Soot, using a \emph{forward flow analysis}~\cite{lam11:the_soot_framework}.
 The analysis algorithm has two major operations, the visit and the merge.
+Throughout the remainder of this section, we use a small example to illustrate the slicing algorithm.
+\Cref{lst:countLetters} shows a Java method that counts the length of words in a comma-separated word list.
+The test in \cref{lst:testCountLetters} checks if the resulting ´long´ array contains correct values.
+The code contains no bugs; nevertheless, a developer might choose to slice on the ´assertEquals´ invocation in line 8 to understand how the given input leads to the expected values.
+
+\begin{lstlisting}[float,caption={A method to count letters in a word list.},stepnumber=2,numberfirstline=false,label=lst:countLetters,language=Java]
+    public long[] countLetters(String wordList) {
+        String[] words = wordList.split(",");
+        long[] result = new long[words.length];
+        for (int i = 0; i < words.length; i++) {
+            String trimmed = words[i].trim();
+						result[i] = trimmed.length();
+        }
+        return result;
+    }
+\end{lstlisting}
+
+\begin{lstlisting}[float,caption={A test for countLetters.},stepnumber=2,numberfirstline=false,label=lst:testCountLetters,language=Java]
+    public void testCountLetters() {
+        String input = " hello , all ";
+        long expected1 = 5;
+        long expected2 = 3;
+        long[] result = countLetters(input);
+        assertEquals(2, result.length);
+        assertEquals(expected1, result[0]);
+        assertEquals(expected2, result[1]);
+    }
+\end{lstlisting}
+
 
 In Soot, a method is represented by three-address-code instructions, called "units".
 A flow analysis "flows through" (i.e., visits) every unit in a method and allows to pass state in a "flow set" from one instruction to the next.
@@ -415,7 +504,7 @@ However, scanning the execution trace reveals that the element was assigned by a
 \begin{figure*}[tp]
 \centering
 \includegraphics[width=.8\linewidth, clip, trim=6mm 7mm 19mm 7mm]{img/graph_dynamic_array}
-\caption{Dependencies of an array-read event, one is resolved using the method-level \aclp{pdg}, the other using the execution trace.}
+\caption[Dependencies of an array-read event]{Dependencies of an array-read event, one is resolved using the method-level \aclp{pdg}, the other using the execution trace.}
 \label{fig:graph_dynamic_array}
 \end{figure*}
 
@@ -427,7 +516,7 @@ The invocation event itself is not a data dependency to any event, as it has no 
 \begin{figure*}[tp]
 \centering
 \includegraphics[width=.8\linewidth, clip, trim=6mm 7mm 16mm 7mm]{img/graph_dynamic_method}
-\caption{A method call result transitively depends on the method call arguments if and only if analysis of the method reveals such a relation.}
+\caption[Dynamic dependencies of a method call]{A method call result transitively depends on the method call arguments if and only if analysis of the method reveals such a relation.}
 \label{fig:graph_dynamic_method}
 \end{figure*}
 
@@ -437,7 +526,7 @@ As events are resolved and successively added to the result set, the slice is ev
 \begin{figure*}[tp]
 \centering
 \includegraphics[width=\linewidth, clip, trim=11mm 7mm 8mm 7mm]{img/graph_dynamic2}
-\caption{A partial dynamic dependency graph of trace events, on top of static dependency graphs derived with Soot. For brevity, not all Soot units are shown, events related to the loop-variable "i" are omitted, and "split" and "trim" are summarized.}
+\caption[A partial dynamic dependency graph of trace events]{A partial dynamic dependency graph of trace events, on top of static dependency graphs derived with Soot. For brevity, not all Soot units are shown, events related to the loop-variable "i" are omitted, and "split" and "trim" are summarized.}
 \label{fig:graph_dynamic}
 \end{figure*}
 
@@ -947,6 +1036,7 @@ We repeated every measurement 10 times, all charts show the average values.
 	\label{fig:chartinitial}
 \end{figure}
 
+\todo{explain in more detail}
 We previously observed that our approach differs from other slicing implementations insofar as that the run-time of the algorithm does not depend on the total length or run-time of the sliced program, but only on the size of the resulting slice~\cite{treffer14:dynamic_slicing_with_soot}.
 Our current measurements confirm that slicing time is linear to the result size.
 
@@ -997,167 +1087,433 @@ For interactive changes of slicing criteria, our experiments have shown that the
 In particular, the most common operation -- removing events by narrowing the slicing criteria -- completes in less than a second even for large numbers of events.
 From this we conclude that our debugging approach, based on the Slice Navigator and on iterative slice refinements, is generally feasible.
 
+
 \subsection{User Study}
 
-To gather empirical data on the usefulness of our approach, we conducted an experiment where we let developers locate bugs using a regular debugger, the omniscient debugger from our debugging framework, and the Slice Navigator, and compared their experiences.
+To gather empirical data on the usefulness of Interactive Dynamic Slicing, we conducted an experiment where we let developers locate bugs using the regular debugger in the Eclipse IDE, the omniscient debugger from our debugging framework, and the Slice Navigator, and compared their experiences.
 
 \subsubsection{Setup}
 
 We used Defects4J, a database of actual bugs from various open-source projects~\cite{just14:defects4j_a_database}, to find suitable debugging tasks.
 For each bug, Defects4J also provides at least one failing test case and the fix.
+We selected bugs from the projects Joda Time, Mockito, and Apache Commons Lang.
 
-We chose to conduct the experiment with \emph{Joda Time}\footnote{\url{http://www.joda.org/joda-time/}}, a date and time library for Java, because it has a domain that everyone is already familiar with.
-In the version we used for the study, the project contains 68 thousand lines of code in 157 files.
-On top of that, there is a test suite of four thousand tests in 154 files, with 69 thousand lines of code.
-From the Defects4J bug database, we selected Joda Time bugs 10, 19, and 27.
+Joda Time\footnote{\url{http://www.joda.org/joda-time/}} is a date and time library for Java.
+In the version that contained the Defects4J bugs, the project contains 68 thousand lines of code in 157 files.
+On top of that, there is a test suite of four thousand tests in 154 files, with 69 thousand lines of test code.
+Mockito\footnote{\url{http://site.mockito.org/}} is a Java mocking framework.
+The project consists of 14 thousand lines of code in 199 files, and 17 thousand lines of tests in 200 files.
+Finally, Apache Commons Lang\footnote{\url{https://commons.apache.org/proper/commons-lang/}} is a library that provides a wide range of commonly needed utility functions that are not implement by the JDK classes.
+The library contains 74 files with 48 thousand lines of code, and a test suite of 118 files with 39 thousand lines of code.
 
-The bugs were selected because they can be fixed with a small change at a single code location and do not require too much knowledge of the technical details of Joda Time.
-Furthermore, all bugs are from different parts of the project, so that the order of the bugs will have no impact on the developers' familiarity with the code in our experiment.
+
+%For Mockito and Apache Commons Lang, we selected Defects4J bugs 16 and 53, respectively.
+
+From the Defects4J bug database, we selected Joda Time bugs 10, 19, and 27, Mockito bug 16, and Apache Commons Lang bug 53.
+All bugs were selected because they can be fixed with a small change at a single code location and do not require too much knowledge of the technical details of each project.
+The three Joda Time bugs affect different parts of the project, so that the order of the bugs will have no impact on the developers' familiarity with the code in our experiment.
 Finally, each bug is caused by a different kind of defect.
 We expect that the usefulness of each debugging tool varies depending on the nature of the bug.
 
 The first bug is caused by a wrong hard-coded constant value and documented by a test case that fails with an exception.
 From an incorrect variable in the \emph{if}-statement that guards the failure-causing \emph{throw}-statement, developers need to follow the infection chain up to the wrong constant.
-The slice for the variable initially contains 324 of the test's 2260 steps.
+%The slice for the variable initially contains 324 of the test's 2260 steps.
 
-The second bug is caused by wrongly skipped code, i.e., a too restrictive \textit{if}-condition, and is documented by a test case with a failing assertion.
+The second bug is caused by code being missed because of a too restrictive \textit{if}-condition, and is documented by a test case with a failing assertion.
 Again, developers must follow the infection chain, but at some point need to realize the state is now entirely correct and conclude that a value should have been changed at some point.
-Slicing on the assertion arguments retains 145 of 465 steps.
+%Slicing on the assertion arguments retains 145 of 465 steps.
 
 The root cause of the third bug is code that gets executed although it should be skipped.
-A missing \textit{if}-statement causes a field to be overwritten with a wrong object reference, which leads to wrong code being called via virtual method calls.
-Thus, while following the infection chain developers need to realize that wrong code is executed, conclude that a wrong object is used, and then understand why the wrong object was assigned.
+A missing \textit{if}-statement causes a field to be overwritten with am incorrect object reference, which leads to wrong code being called via virtual method calls.
+Thus, while following the infection chain developers need to realize that wrong code is executed, conclude that a wrong object is used, and then understand why it was assigned to that field.
 Like with the first bug, the test case for bug 3 fails with an exception.
-From the incorrect value in the guardian condition of the throw clause, the slice contains 762 of 3190 steps.
+%From the incorrect value in the guardian condition of the throw clause, the slice contains 762 of 3190 steps.
 
-We recruited 24 participants for our experiment:
+The fourth bug is again a missing \textit{if}-statement that causes a field to be nulled.
+However, in this scenario the affected method is executed several times and only in one case nulling the field is an error.
+The illegal state is later detected by Mockito's internal validation and causes the test to fail with an exception.
+
+In the fifth bug, wrongly nested \textit{if}-statements cause a method to produce an incorrect return value.
+The test checks the value and fails with an assertion error.
+
+We recruited 2 groups of participants for our experiment.
+The first group consisted of
 twelve full-time software developers with at least 15 years of programming experience, 
 four PhD students in computer science with at least 10 years of programming experience,
 and eight computer science graduate students with at least 5 years of programming experience who also worked as programmers in a part-time job for at least one year.
-Ages of participants ranged between 25 and 36; two professional developers, one PhD student, and two graduate students were female, all other participants were male.
-No participant had previous experience with Joda Time, although 18 participants were aware of its existence.
+The second group consisted of 5 graduate students and 5 full-time software developers with the same levels of experience as in group one, respectively.
+Programming experience was self-reported and may include working on software projects in university courses, we asked participants to exclude simple coding exercise in their estimate.
+All participants also had experience using the Eclipse IDE for developing Java projects.
+%Ages of participants ranged between 25 and 41; two professional developers, one PhD student, and three graduate students were female, all other participants were male.
 
-Every participant was tasked to find the location of each bug by debugging the failing test case with one of the tools.
-With the Slice Navigator, we specifically asked the participants not to use the other features of the omniscient debugger and reminded them during the task if necessary.
-In the end, every participant had used each tool and every bug was examined with each tool eight times.
+Every participant was tasked to find the location of a bug by debugging the failing test case with one of the tools.
+\Cref{tab:study} shows a summary of all bugs and which tools were tested.
+The participants of group one worked on the Joda Time bugs.
+No participant had previous experience with Joda Time, although 18 were aware of its existence.
+The second group worked on the Mockito and Apache Commons Lang bugs.
+Two students had used Mockito before, but not looked into Mockito's internal code.
+All participants knew of Mockito's and Apache Commons' existence and general purpose.
 
-For each debugging task, the procedure was as follows:
-First, the participant was shown a passing test case similar to the test case they would later have to debug.
-We explained the purpose of the test and started the debugging tool to be used.
-Then, we let the participant debug the test case, while we explained both the application code and the tool.
+For each debugging task, a participant was assigned a bug and a debugging tool.
+To prepare for the task, the participant was shown a passing test case similar to the test case they would later have to debug.
+We explained the purpose of the test, started the debugging tool to be used,
+and let the participant debug the test case, while we explained both the application code and the tool.
 When the participant had no more questions, we presented the failing test case and explained the semantics of the failure.
 Then we asked the participant to locate the bug using the respective tool and started the timer.
-During the debug session, we provided tool support when needed.
+During the debugging session, we provided tool support when needed.
 If a bug could not be located within 20 minutes, we aborted the task to advance the experiment.
+
+In the end, in group one every participant had used each tool and every bug was examined with each tool eight times; in group two, because of its smaller size, only the omniscient debugger and the Slice Navigator were used.
+With the Slice Navigator, we specifically asked the participants not to use the other features of the omniscient debugger and reminded them during the task if necessary.
+This decision was made to prevent participants from ignoring the Slice Navigator and using only the tools they were more familiar with.
+
+% row: 14pt
+%\newcommand{\strutA}{\rule[-28pt]{0pt}{28pt}}
+% 10 19 27, 16 53
+%\begin{table}%
+	%\begin{tabulary}{\textwidth}{ccJ>{\raggedleft}p{1.5cm}>{\raggedright}p{1.5cm}}
+%%	Bug Nr. & Defects4J ID & \centering Description & \multicolumn{2}{>{\centering}p{3cm}}{Participants\linebreak\small{(Students;Professionals)}} \\ \midrule
+	%Bug Nr. & Defects4J ID & \centering Description & \multicolumn{2}{>{\centering}p{2cm}}{Participants} \\ \midrule
+	%
+	%1 & Time 10 & 
+	%Wrong hard-coded constant
+	%& DB\linebreak ODB\linebreak SN 
+	%& 8 \linebreak 8 \linebreak 8 \cr \midrule
+	%
+	%2 & f & d & x & 1 \\
+	%\end{tabulary}
+	%\caption{Relative average time taken for debugging tasks with each tool.}
+	%\label{tab:study}
+%\end{table}
+
+%\renewcommand{\baselinestretch}{1}
+\begin{table}%
+	\begin{tabulary}{0.97\textwidth}{clC>{\raggedleft}p{1.25cm}p{0.75cm}}
+	Bug Nr. & Defects4J ID & Description & \multicolumn{2}{>{\centering}p{2cm}}{Participants} \\ \toprule
+	
+	\multirow{3}{*}{1}	& \multirow{3}{*}{Time 10} & 
+	\multirow{3}{=}{Wrong hard-coded constant} 
+	& DB & 8 \\
+	&	&	& ODB & 8 \\
+	&	&	& SN & 8 \\ \midrule
+
+	\multirow{3}{*}{2}	& \multirow{3}{*}{Time 19} & 
+	\multirow{3}{=}{If-condition too restrictive} 
+	& DB & 8 \\
+	&	&	& ODB & 8 \\
+	&	&	& SN & 8 \\ \midrule
+	
+	\multirow{3}{*}{3}	& \multirow{3}{*}{Time 27} & 
+	\multirow{3}{=}{Missing if-statement,\linebreak executed once} 
+	& DB & 8 \\
+	&	&	& ODB & 8 \\
+	&	&	& SN & 8 \\ \midrule
+	
+	\multirow{2}{*}{4}	& \multirow{2}{*}{Mockito 16} & 
+	\multirow{2}{=}{Missing if-statement,\linebreak executed multiple times} 
+	& ODB & 5 \\
+	&	&	& SN & 5 \\ \midrule
+	
+	\multirow{2}{*}{5}	& \multirow{2}{*}{Lang 53} & 
+	\multirow{2}{=}{Wrongly nested if-statements} 
+	& ODB & 5 \\
+	&	&	& SN & 5 \\ %\midrule
+	
+	
+	\end{tabulary}
+	%\begin{tablenotes}
+    %\item[\textdagger] (Students; Professionals)
+    %\end{tablenotes}
+	\caption{Summary of the tests in our study and number of participants debugging each test with the Eclipse debugger (DB), an omniscient debugger (ODB), and the Slice Navigator (SN).}
+	\label{tab:study}
+\end{table}
+%\renewcommand{\baselinestretch}{\defaultbaselinestretch}
 
 \subsubsection{Comparison of Tool Usage}
 
 \begin{figure}
-	\centering
-		\includegraphics[width=\linewidth]{img/chart-times3.pdf}
-	\caption{Time for solving each debugging task with the regular Eclipse Debugger (DB), the omniscient debugger (ODB), and the Slice Navigator (SN)}
+	\centering %clip, trim={20mm 104mm 20mm 114mm}
+		\includegraphics[width=\linewidth]{img/chart-times3}
+	\caption{Time to solve each debugging task with the regular Eclipse Debugger (DB), the omniscient debugger (ODB), and the Slice Navigator (SN)}
 	\label{fig:charttimes}
 \end{figure}
 
 \Cref{fig:charttimes} shows the time taken for each debugging task in a box plot chart.
 Compared to the regular debugger, the Slice Navigator significantly improved the debugging time for each bug.
-Relative to the omniscient debugger, developers using the Slice Navigator were faster with two of the three bugs and performed similarly on the third.
+Relative to the omniscient debugger, developers using the Slice Navigator were faster with all but one bugs and performed similarly on bug 3.
 Furthermore, we observed changes in developer behavior when using different tools.
 
 With the Eclipse debugger, eight participants made heavy use of the "inspect" feature, which evaluates any expression from the source without further executing the program.
 In particular, when contemplating whether to step into or over a method invocation, these participants used "inspect" to preview the invocation result.
-The participants who used "inspect" had to restart the debugger on average 3.3($\pm0.8$) times, while the other participants restarted on average 8.4($\pm2.3$) times, and accidentally stepped over a method 2.6($\pm0.9$) times per task.
+The participants who used "inspect" had to restart the debugger on average 3.3($\pm0.8$) times, while the other participants restarted on average 8.4($\pm2.3$) times, and noticed they should have stepped into a method immediately after stepping over it 2.6($\pm0.9$) times per task.
 
-Furthermore, 10 participants stopped using the debugger entirely for more than a minute, and spent an average of 4.5($\pm1.9$) minutes with pure code reading and mentally simulating the program.
+Furthermore, 10 participants stopped using the debugger entirely for more than a minute and spent an average of 4.5($\pm1.9$) minutes with pure code reading and mentally simulating the program.
 Such behavior was observed with neither of the other two tools.
 
-The omniscient debugger was particularly effective for the third bug, where all but one participants found that a valid field value was overridden by inspecting the object history.
+The omniscient debugger was particularly effective for the third bug, where all but one participants found that a valid field value was overwritten by inspecting the object history.
 This allowed them to form a good theory about the nature of the bug very early.
 However, the method containing the bug is invoked at two different points in time and each time also calls itself recursively.
 The bug occurs only in one of the four executions.
 With the omniscient debugger, it took developers a while to notice and distinguish the different invocations as they jumped through time.
-Overall, with the omniscient debugger developers felt \emph{lost in time} 5.3($\pm1.9$) times per debug session.
+Whenever participants expressed confusion related to their current position in the execution time line,
+for instance questioning whether an expected operation was already performed or wondering if the debugger jumped to a different invocation of a method, we noted this as being \emph{lost in time}.
+Overall, with the omniscient debugger developers felt lost in time 5.4($\pm1.2$) times per debugging session.
 
-Finally, while all developers used the omniscient debugger to step back and forth repeatedly to understand the side effects of a piece of code, 20 of the 24 developers spend most of their time following the infection chain backwards, while four developers mostly debugged forwards in time, like they would with a regular debugger.
+Finally, while all developers used the omniscient debugger to step back and forth repeatedly to understand the side effects of a piece of code, 30 of the 34 developers spend most of their time following the infection chain backwards, while four developers mostly debugged forwards in time, like they would with a regular debugger.
 
 With the Slice Navigator, all developers followed the infection chain backwards.
-Compared to using only the omniscient debugger, developers were able to reach the end of the infection chain faster, felt lost in time similarly often (on average 5.3($\pm1.9$) times), but took longer to recover from being lost as they had spent less time understanding the code.
-However, with the Slice Navigator, developers spent only 1($\pm0.8$) minute per task reading code entirely unrelated to the bug, compared to 4.8($\pm1.5$) minutes with the regular debugger and 3.6($\pm1.6$) minutes with the omniscient debugger.
+Compared to using only the omniscient debugger, developers were able to reach the end of the infection chain faster, felt lost in time similarly often (on average 5.3($\pm1.9$) times), but took slightly longer to recover from being lost as they had spent less time understanding the code.
+However, this draw-back was mitigated by improvements in other areas.
+Excluding bug 4, which covered only a small amount of code, developers spent an average of 4.8($\pm1.5$) minutes per task with the regular debugger and 3.4($\pm1.6$) minutes per task with the omniscient debugger, reading code entirely unrelated to the bug.
+With the Slice Navigator, this time went down to 1($\pm0.6$) minute per task, leading to better total times.
 
 \subsubsection{Developer Experiences}
 
 After the experiments, we asked the participants how they experienced working with the different tools.
 
 With the omniscient debugger, all participants reported that they found it very helpful to be able to go back and forth in time and felt that they could use it more effectively with more experience, as being used to regular debuggers limited their way of thinking.
-Twenty participants said they were at times overwhelmed with the amount of available options and would probably use more of the more advanced features with more experience.
-Furthermore, 19 participants expected they would end up lost in time less often with code that they are more familiar with.
+Thirty participants said they were at times overwhelmed with the amount of available options and would probably use more of the more advanced features with more experience.
+Furthermore, 27 participants expected they would end up lost in time less often with code that they were more familiar with.
 
-For the Slice Navigator, we received similar feedback about moving freely trough time.
+For the Slice Navigator, we received similar feedback about moving freely through time.
 Furthermore, all participants liked how the Slice Navigator helped to identify relevant program state.
-17 participants perceived this as an improvement in particular to the omniscient debugger, as it was less overwhelming.
+26 participants perceived this as an improvement in particular to the omniscient debugger, as it was less overwhelming.
 
-However, 11 participants found the overarching dependencies shown in gray to be unnecessary and distracting and emphasized the usefulness of being able to double-click an entry to improve the focus of the slice.
-On the other hand, 4 participants said they generally liked the idea of seeing relevant state and would probably find it more useful with code they were more familiar with.
+However, 20 participants found the overarching dependencies shown in gray to be unnecessary and distracting and emphasized the usefulness of being able to double-click an entry to improve the focus of the slice.
+On the other hand, 6~participants said they generally liked the idea of seeing relevant state and would probably find it more useful with code they were more familiar with.
 
 Every participant wrongly clicked or double-clicked an entry at least once and was then unable to recover quickly from the mistake.
 Thus, an undo-button was requested by all participants.
 
-Finally, 7 participants reported that while the information provided by the Slice Navigator was very useful, they found it distracted from the actual code.
+Finally, 11 participants reported that while the information provided by the Slice Navigator was very useful, they found it distracted from the actual code.
 They liked that with a regular debugger they would rarely have to look away from the code and wished for the slicing context to be visualized within the IDE's code editor.
 
 \subsubsection{Discussion}
 
-Developers that used "inspect" to look ahead in the regular debugger had to restart their debug session less often.
+In our study, we evaluated two contributions: 
+First, Interactive Dynamic Slicing, a debugging workflow combining back-in-time debugging and slicing, and second, the Slice Navigator, a debugging tool to support this workflow.
+
+Developers that used "inspect" to look ahead in the regular debugger had to restart their debugging session less often.
 This indicates a general need for moving more freely in time.
+The addition of slicing was welcomed by all participants, which shows that debugging tools should support not only the navigation of code, but also its understanding.
 
-While all participants reported they enjoyed working with the Slice Navigator, we received many suggestions for improvement.
-Most, like the undo-button or a toggle to hide overarching dependencies, are easily implemented UI features.
+All criticisms and suggestions for improvement we received concerned only the Slice Navigator, but not the general workflow.
+Most suggestions, like the undo-button or a toggle to hide overarching dependencies, are easily implemented UI features.
+Even though the user interface still has room for improvements, developers perceived the presented information as helpful for their tasks.
 
-Developers getting lost in time reveal a problem that needs further investigation.
-This seems to indicate a direction where back-in-time debugging in general can be improved.
+We found a significant improvement in the time needed to locate bugs 1, 2, 4, and 5.
+For bug 3, we note that the time needed with the Slice Navigator did not get worse relative to the omniscient debugger, even though we barred users from using the object history view that proved to be very effective for locating this bug.
+While the Slice Navigator was not helpful for understanding the root cause in this particular case, it still helped developers to reach the end of the infection chain faster.
+Developers wasted less time and, more importantly, less of their memory with reading and understanding unrelated code, leading to similar total times.
+
+Developers getting lost in time reveal a problem that needs further investigation. 
+We are not aware of any mentioning of this issue in related literature.
+However, it does not seem to be specific to our approach, but rather to indicate a direction where back-in-time debugging in general can be improved.
 The idea of showing the information from the Slice Navigator directly in the code may also help developers to recover from being lost more quickly.
 
-Even though the user interface has still room for improvements, we found a significant improvement in the time needed to locate bugs 1 and 2.
-
-For bug 3, we note that the time needed with the Slice Navigator did not get worse relative to the omniscient debugger, even though we barred users from using the object history view that proved to be very effective for locating this bug.
-
-While the Slice Navigator was not helpful for understanding the root cause in this particular case, it still helped developers to reach the end of the infection chain faster.
-Less time and, more importantly, memory was wasted with reading and understanding unrelated code, leading to similar total times.
-
-Overall, the data suggests that the Slice Navigator can make debugging more efficient in many cases.
+On average, using the Slice Navigator developers were 37\% ($\pm9\%$) faster than with the Eclipse debugger and 15\% ($\pm13\%$) faster than with the omniscient debugger.
+This suggests that Interactive Dynamic Slicing with the Slice Navigator can make debugging more efficient in many cases.
 
 \subsubsection{Threats to Validity}
 
 External validity is mostly threatened by the size of the study. 
-The small number of participants makes it difficult generalize the results.
+The small number of participants makes it difficult to generalize the results.
 
-Likewise, we only considered three bugs from one library.
+Likewise, we only considered five bugs from three libraries.
 Although they are real bugs, they all could be tracked down to one location.
 For more complex bugs, or bugs in different types of applications, such as web applications, the usefulness of each tool can differ.
 To improve the variation, we chose bugs with different characteristics, representing different classes of bugs.
 
 Furthermore, all participants were unfamiliar with the code they had to work with.
 Although each participant received an introduction to the code to be debugged, many argued they would have used the tools differently with more familiar code.
-A follow-up study should observe programmers using the tools in practice.
+A follow-up study should observe programmers using the tools in practice, with full access to all debugging tools at the same time.
 
 Threats to internal validity include the composition of our participant group, which was very heterogeneous with respect to programming experience.
 To mitigate this problem, we ensured that participants from each subgroup were distributed evenly across the different debugging tasks.
 As \cref{tab:groupresult} shows, students were on average slightly slower using the omniscient debugger and Slice Navigator, but the difference is within the standard deviation of results.
 Studies found that computer science students behave very similar to professionals when confronted with new concepts and are therefore suitable for user studies~\cite{host00:using_students_as_subjects, salman15:are_students_representatives}.
-However, industry participants appear to use more intuition when identifying important code elements, so some limitations apply~\cite{mcmeekin09:the_significance_of_participant}.
+However, experienced participants from industry appear to use more intuition when identifying important code elements, so some limitations apply~\cite{mcmeekin09:the_significance_of_participant}.
 
+%\renewcommand{\baselinestretch}{1}
 \begin{table}%
 	\begin{tabulary}{\textwidth}{LRRR}
-		& Eclipse Debugger & Omniscient Debugger & Slice Navigator \\ \midrule
-Students & 98\% ($\pm11\%$) & 105\% ($\pm12\%$) & 105\% ($\pm16\%$) \\
-Professionals & 102\% ($\pm07\%$) & 95\% ($\pm13\%$) & 95\% ($\pm15\%$) \\
+		& Eclipse Debugger & Omniscient Debugger & Slice Navigator \\ \toprule
+Students & 98\% ($\pm9\%$) & 79\% ($\pm11\%$) & 66\% ($\pm9\%$) \\
+Professionals & 102\% ($\pm7\%$) & 72\% ($\pm\enspace{}9\%$) & 60\% ($\pm7\%$) \\
 	\end{tabulary}
-	\caption{Relative average time taken for debugging tasks with each tool.}
+	\caption{Average time taken for debugging tasks in group one with each tool, normalized by the average time using the Eclipse debugger on each bug.}
 	\label{tab:groupresult}
 \end{table}
+%\renewcommand{\baselinestretch}{\defaultbaselinestretch}
 
 Internal validity is further threatened by developers gaining experience with the code base throughout the experiment.
-We accounted for this by choosing all bugs from different parts of the library, thus achieving the same level of initial knowledge for each task.
+We accounted for this by choosing all bugs from different parts of the library in group one and entirely different projects in group two, thus achieving the same level of initial knowledge for each task.
 
+
+%\subsection{User Study}
+%
+%To gather empirical data on the usefulness of our approach, we conducted an experiment where we let developers locate bugs using a regular debugger, the omniscient debugger from our debugging framework, and the Slice Navigator, and compared their experiences.
+%
+%\subsubsection{Setup}
+%
+%We used Defects4J, a database of actual bugs from various open-source projects~\cite{just14:defects4j_a_database}, to find suitable debugging tasks.
+%For each bug, Defects4J also provides at least one failing test case and the fix.
+%
+%We chose to conduct the experiment with \emph{Joda Time}\footnote{\url{http://www.joda.org/joda-time/}}, a date and time library for Java, because it has a domain that everyone is already familiar with.
+%In the version we used for the study, the project contains 68 thousand lines of code in 157 files.
+%On top of that, there is a test suite of four thousand tests in 154 files, with 69 thousand lines of code.
+%From the Defects4J bug database, we selected Joda Time bugs 10, 19, and 27.
+%
+%The bugs were selected because they can be fixed with a small change at a single code location and do not require too much knowledge of the technical details of Joda Time.
+%Furthermore, all bugs are from different parts of the project, so that the order of the bugs will have no impact on the developers' familiarity with the code in our experiment.
+%Finally, each bug is caused by a different kind of defect.
+%We expect that the usefulness of each debugging tool varies depending on the nature of the bug.
+%
+%The first bug is caused by a wrong hard-coded constant value and documented by a test case that fails with an exception.
+%From an incorrect variable in the \emph{if}-statement that guards the failure-causing \emph{throw}-statement, developers need to follow the infection chain up to the wrong constant.
+%The slice for the variable initially contains 324 of the test's 2260 steps.
+%
+%The second bug is caused by wrongly skipped code, i.e., a too restrictive \textit{if}-condition, and is documented by a test case with a failing assertion.
+%Again, developers must follow the infection chain, but at some point need to realize the state is now entirely correct and conclude that a value should have been changed at some point.
+%Slicing on the assertion arguments retains 145 of 465 steps.
+%
+%The root cause of the third bug is code that gets executed although it should be skipped.
+%A missing \textit{if}-statement causes a field to be overwritten with a wrong object reference, which leads to wrong code being called via virtual method calls.
+%Thus, while following the infection chain developers need to realize that wrong code is executed, conclude that a wrong object is used, and then understand why the wrong object was assigned.
+%Like with the first bug, the test case for bug 3 fails with an exception.
+%From the incorrect value in the guardian condition of the throw clause, the slice contains 762 of 3190 steps.
+%
+%We recruited 24 participants for our experiment:
+%twelve full-time software developers with at least 15 years of programming experience, 
+%four PhD students in computer science with at least 10 years of programming experience,
+%and eight computer science graduate students with at least 5 years of programming experience who also worked as programmers in a part-time job for at least one year.
+%Ages of participants ranged between 25 and 36; two professional developers, one PhD student, and two graduate students were female, all other participants were male.
+%No participant had previous experience with Joda Time, although 18 participants were aware of its existence.
+%
+%Every participant was tasked to find the location of each bug by debugging the failing test case with one of the tools.
+%With the Slice Navigator, we specifically asked the participants not to use the other features of the omniscient debugger and reminded them during the task if necessary.
+%In the end, every participant had used each tool and every bug was examined with each tool eight times.
+%
+%For each debugging task, the procedure was as follows:
+%First, the participant was shown a passing test case similar to the test case they would later have to debug.
+%We explained the purpose of the test and started the debugging tool to be used.
+%Then, we let the participant debug the test case, while we explained both the application code and the tool.
+%When the participant had no more questions, we presented the failing test case and explained the semantics of the failure.
+%Then we asked the participant to locate the bug using the respective tool and started the timer.
+%During the debug session, we provided tool support when needed.
+%If a bug could not be located within 20 minutes, we aborted the task to advance the experiment.
+%
+%\subsubsection{Comparison of Tool Usage}
+%
+%\begin{figure}
+	%\centering
+		%\includegraphics[width=\linewidth]{img/chart-times3.pdf}
+	%\caption{Time for solving each debugging task with the regular Eclipse Debugger (DB), the omniscient debugger (ODB), and the Slice Navigator (SN)}
+	%\label{fig:charttimes}
+%\end{figure}
+%
+%\Cref{fig:charttimes} shows the time taken for each debugging task in a box plot chart.
+%Compared to the regular debugger, the Slice Navigator significantly improved the debugging time for each bug.
+%Relative to the omniscient debugger, developers using the Slice Navigator were faster with two of the three bugs and performed similarly on the third.
+%Furthermore, we observed changes in developer behavior when using different tools.
+%
+%With the Eclipse debugger, eight participants made heavy use of the "inspect" feature, which evaluates any expression from the source without further executing the program.
+%In particular, when contemplating whether to step into or over a method invocation, these participants used "inspect" to preview the invocation result.
+%The participants who used "inspect" had to restart the debugger on average 3.3($\pm0.8$) times, while the other participants restarted on average 8.4($\pm2.3$) times, and accidentally stepped over a method 2.6($\pm0.9$) times per task.
+%
+%Furthermore, 10 participants stopped using the debugger entirely for more than a minute, and spent an average of 4.5($\pm1.9$) minutes with pure code reading and mentally simulating the program.
+%Such behavior was observed with neither of the other two tools.
+%
+%The omniscient debugger was particularly effective for the third bug, where all but one participants found that a valid field value was overridden by inspecting the object history.
+%This allowed them to form a good theory about the nature of the bug very early.
+%However, the method containing the bug is invoked at two different points in time and each time also calls itself recursively.
+%The bug occurs only in one of the four executions.
+%With the omniscient debugger, it took developers a while to notice and distinguish the different invocations as they jumped through time.
+%Overall, with the omniscient debugger developers felt \emph{lost in time} 5.3($\pm1.9$) times per debug session.
+%
+%Finally, while all developers used the omniscient debugger to step back and forth repeatedly to understand the side effects of a piece of code, 20 of the 24 developers spend most of their time following the infection chain backwards, while four developers mostly debugged forwards in time, like they would with a regular debugger.
+%
+%With the Slice Navigator, all developers followed the infection chain backwards.
+%Compared to using only the omniscient debugger, developers were able to reach the end of the infection chain faster, felt lost in time similarly often (on average 5.3($\pm1.9$) times), but took longer to recover from being lost as they had spent less time understanding the code.
+%However, with the Slice Navigator, developers spent only 1($\pm0.8$) minute per task reading code entirely unrelated to the bug, compared to 4.8($\pm1.5$) minutes with the regular debugger and 3.6($\pm1.6$) minutes with the omniscient debugger.
+%
+%\subsubsection{Developer Experiences}
+%
+%After the experiments, we asked the participants how they experienced working with the different tools.
+%
+%With the omniscient debugger, all participants reported that they found it very helpful to be able to go back and forth in time and felt that they could use it more effectively with more experience, as being used to regular debuggers limited their way of thinking.
+%Twenty participants said they were at times overwhelmed with the amount of available options and would probably use more of the more advanced features with more experience.
+%Furthermore, 19 participants expected they would end up lost in time less often with code that they are more familiar with.
+%
+%For the Slice Navigator, we received similar feedback about moving freely trough time.
+%Furthermore, all participants liked how the Slice Navigator helped to identify relevant program state.
+%17 participants perceived this as an improvement in particular to the omniscient debugger, as it was less overwhelming.
+%
+%However, 11 participants found the overarching dependencies shown in gray to be unnecessary and distracting and emphasized the usefulness of being able to double-click an entry to improve the focus of the slice.
+%On the other hand, 4 participants said they generally liked the idea of seeing relevant state and would probably find it more useful with code they were more familiar with.
+%
+%Every participant wrongly clicked or double-clicked an entry at least once and was then unable to recover quickly from the mistake.
+%Thus, an undo-button was requested by all participants.
+%
+%Finally, 7 participants reported that while the information provided by the Slice Navigator was very useful, they found it distracted from the actual code.
+%They liked that with a regular debugger they would rarely have to look away from the code and wished for the slicing context to be visualized within the IDE's code editor.
+%
+%\subsubsection{Discussion}
+%
+%Developers that used "inspect" to look ahead in the regular debugger had to restart their debug session less often.
+%This indicates a general need for moving more freely in time.
+%
+%While all participants reported they enjoyed working with the Slice Navigator, we received many suggestions for improvement.
+%Most, like the undo-button or a toggle to hide overarching dependencies, are easily implemented UI features.
+%
+%Developers getting lost in time reveal a problem that needs further investigation.
+%This seems to indicate a direction where back-in-time debugging in general can be improved.
+%The idea of showing the information from the Slice Navigator directly in the code may also help developers to recover from being lost more quickly.
+%
+%Even though the user interface has still room for improvements, we found a significant improvement in the time needed to locate bugs 1 and 2.
+%
+%For bug 3, we note that the time needed with the Slice Navigator did not get worse relative to the omniscient debugger, even though we barred users from using the object history view that proved to be very effective for locating this bug.
+%
+%While the Slice Navigator was not helpful for understanding the root cause in this particular case, it still helped developers to reach the end of the infection chain faster.
+%Less time and, more importantly, memory was wasted with reading and understanding unrelated code, leading to similar total times.
+%
+%Overall, the data suggests that the Slice Navigator can make debugging more efficient in many cases.
+%
+%\subsubsection{Threats to Validity}
+%
+%External validity is mostly threatened by the size of the study. 
+%The small number of participants makes it difficult generalize the results.
+%
+%Likewise, we only considered three bugs from one library.
+%Although they are real bugs, they all could be tracked down to one location.
+%For more complex bugs, or bugs in different types of applications, such as web applications, the usefulness of each tool can differ.
+%To improve the variation, we chose bugs with different characteristics, representing different classes of bugs.
+%
+%Furthermore, all participants were unfamiliar with the code they had to work with.
+%Although each participant received an introduction to the code to be debugged, many argued they would have used the tools differently with more familiar code.
+%A follow-up study should observe programmers using the tools in practice.
+%
+%Threats to internal validity include the composition of our participant group, which was very heterogeneous with respect to programming experience.
+%To mitigate this problem, we ensured that participants from each subgroup were distributed evenly across the different debugging tasks.
+%As \cref{tab:groupresult} shows, students were on average slightly slower using the omniscient debugger and Slice Navigator, but the difference is within the standard deviation of results.
+%Studies found that computer science students behave very similar to professionals when confronted with new concepts and are therefore suitable for user studies~\cite{host00:using_students_as_subjects, salman15:are_students_representatives}.
+%However, industry participants appear to use more intuition when identifying important code elements, so some limitations apply~\cite{mcmeekin09:the_significance_of_participant}.
+%
+%\begin{table}%
+	%\begin{tabulary}{\textwidth}{LRRR}
+		%& Eclipse Debugger & Omniscient Debugger & Slice Navigator \\ \midrule
+%Students & 98\% ($\pm11\%$) & 105\% ($\pm12\%$) & 105\% ($\pm16\%$) \\
+%Professionals & 102\% ($\pm07\%$) & 95\% ($\pm13\%$) & 95\% ($\pm15\%$) \\
+	%\end{tabulary}
+	%\caption{Relative average time taken for debugging tasks with each tool.}
+	%\label{tab:groupresult}
+%\end{table}
+%
+%Internal validity is further threatened by developers gaining experience with the code base throughout the experiment.
+%We accounted for this by choosing all bugs from different parts of the library, thus achieving the same level of initial knowledge for each task.
 
 \tmpEnd
+
+\ParSep
+
+TODO: next chapter

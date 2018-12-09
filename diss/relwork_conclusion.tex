@@ -15,7 +15,7 @@ In \cref{sec:rw_slice_debugging}, we compare debugging tools that use slicing or
 \cref{sec:rw_visualization}
 
 
-\section{Studies}
+\section{Studies on Debugging and Program Comprehension}
 \label{sec:rw_studies}
 
 Many studies examined how developers approach software maintenance tasks with and without specialized tools.
@@ -23,7 +23,7 @@ The requirements we defined for the debugging approaches that form the contribut
 Here, we present a selection of notable studies in our field and their results.
 
 Gould let 10 experienced developers locate bugs in Fortran programs~\cite{gould75:some_psychological_evidence}.
-He found that developers can locate bugs up to three times faster when they were familiar with the code.\todo{...}
+He found that developers can locate bugs up to three times faster when they were familiar with the code.\todo{...need to support novices}
 Furthermore, developers were reluctant to use interactive debugging tools as along as they believed they could find the bug by just reading the code.
 
 Gugerty and Olson studied the difference between novice and expert programmers~\cite{gugerty86:comprehension_differences_in_debugging}.
@@ -153,10 +153,11 @@ They presented an algorithm that computes executable dynamic slices.
 Agrawal and Horgan used a different approach to compute dynamic slices~\cite{agrawal90:dynamic_program_slicing}.
 They presented multiple algorithms based on execution traces and \acfp{ddg} that produces slices with higher accuracy, but are not guaranteed to be executable.
 
+Venkatesh proposed more formal definitions for non-executable slices based on dependence graphs~\cite{venkatesh91:the_semantic_approach}.
+We extended this idea to formally define incomplete slices with configurable slicing.
+
 SLICE is a tool for computing dynmic slices of C programs~\cite{venkatesh95:experimental_results_from_dynamic}.
 It allows users to choose between different algorithms to compute data, data and control, and executable slices.
-
-\cite{venkatesh91:the_semantic_approach}!!!
 
 Hall proposed simultaneous dynamic slicing, a technique to compute dynamic slices for multiple inputs~\cite{hall95:automatic_extraction_of_executable}.
 Hall describes an abstract algorithm that can be applied in any slicing framework satisfying a few "mild" assumptions.
@@ -199,8 +200,13 @@ Solutions for collecting and storing execution traces always depend on the under
 Mellor-Crummey and LeBlanc showed how to obtain instruction counters in software when they are not provided by the system~\cite{mellor-crummey89:a_software_instruction_counter}.
 Their solution imposes a 10\% overhead and can be used to implement run-time analysis and reverse execution.
 
-RR uses a generic approach for recording and replaying program executions~\cite{ocallahan_engineering_2017}.
+RR uses a generic approach for recording and replaying program executions~\cite{ocallahan17:engineering_record_and_replay}.
 Deterministic replay is achieved by recording system calls and no modifications of the operating system or the program's compiler are required.
+
+Dalek is a high-level debugger that builds dataflow graphs from hierarchical events that extracted from sequential code~\cite{olsson91:sequential_debugging_at}.
+A custom language allows developers to define events and breakpoints and to replace code at run time.
+A history search is possible at the event level.
+Dalek supports debugging only a single program; however, the event definition mechanism can be useful to detect interactions between components at a higher level of abstraction.
 
 Many approaches were developed to support debugging of distributed systems.
 However, most of these systems require technological homogeneity, if not the same program running on every node.
@@ -210,57 +216,198 @@ Friday is a replay-based debugger for distributed applications that extends the 
 %With PQL, developers can search for the occurrence of code examples in program executions~\cite{martin05:finding_application_errors}.
 
 D3S is a checking framework that can detect runtime errors in distributed systems~\cite{liu08:d3s_debugging_deployed_distributed}.
+Logging allows D3S to provide an execution history when a problem was found, but only on a high level of abstraction.
 
 Recon is a debugging tool that allows developers to query the execution of distributed systems with SQL-like queries~\cite{lee11:unified_debugging_of_distributed}.
 Queries are evaluated at run-time, with instrumentation code being compiled into the program as needed. 
-Recon's query interface can provide all the information a debugger would need.
+Recon's query interface can provide all the information a post-mortem back-in-time debugger would need, but the query-based implementation does not lend itself for this approach.
 
 
-Magpie [5], Pinpoint [6], and Pip [23] are projects based
-on log mining. In other words, they try to identify problems
-by looking at event logs. These techniques are quite effective
-in debugging performance problems, but less so for faults. In
-
-
-[29], Xin et al. present a technique to analyze distributed systems
-by building task graphs from event log files. 
-
-Logging
-and replay [7], [9], [26], [21] is an important strategy
-for pervasive debugging. Existing work focuses on single
-node replay, which is insufficient for pervasive debugging.
-
-
+%Magpie [5], Pinpoint [6], and Pip [23] are projects based
+%on log mining. In other words, they try to identify problems
+%by looking at event logs. These techniques are quite effective
+%in debugging performance problems, but less so for faults. In
+%
+%
+%[29], Xin et al. present a technique to analyze distributed systems
+%by building task graphs from event log files. 
 
 
 
 \section{Visualizations for Program Comprehension}
 \label{sec:rw_visualization}
 
-\cite{olsson91:sequential_debugging_at}
-Dalek, debugger with hierarchy events, events extracted from sequential code.
+When debugging a complex system, visualizations on some appropriate abstraction level can help developers to navigate large code bases or even spot errors earlier using a top-down approach.
+Lanza has shown the importance of visualizations in software development~\cite{lanza03:program_visualization_support}
+and Storey \etal have shown that visualizations can impact how developers approach program understanding~\cite{storey97:how_do_program_understanding}.
 
 
-Lanza showed the importance of visualizations in software development~\cite{lanza2003program}.
-SHriMP views are one example how such visualizations can guide developers~\cite{storey2002shrimp}.
-Baecker et al. used visualizations to improve the debugging process by animating algorithms~\cite{baecker1997software}.
-Moher~\cite{moher1988provide} and Beguelin et al.~\cite{beguelin1993visualization} used visualizations to support the understanding of process interactions in heterogeneous environments.
+SHriMP views are one example how such visualizations can guide developers~\cite{storey02:shrimp_views_an_interactive}.
+These hierarchical views support a top-down approach of program comprehension that is preferred by many developers.
+
+Baecker et al. argued that debugging tools need to support powerful visualizations that must be customizable for specific problems~\cite{baecker97:software_visualization_for_debugging}.
+As examples, algorithm animations, code presentation, and control flow audification were discussed.
+
+
+Moher~\cite{moher88:provide_a_process_visualization} and Beguelin et al.~\cite{beguelin93:visualization_and_debugging} used visualizations to support the understanding of process interactions in heterogeneous environments.
 However, in both works the focus was set more on understanding and debugging applications on an architectural level, while we aim to integrate debugging of individual components as if the software was a single program.
+
+Theia shows visual signatures of map-reduce programs in a Hadoop cluster~\cite{garduno12:theia_visual_signatures}.
+These interactive visualizations provide a high-level summary of various aspects of a system's behavior and can be used to detect both application-level and hardware problems.
+
+ShiViz is a visualization tool that displays interactions of distributed executions as interactive  diagrams~\cite{beschastnikh16:debugging_distributed_systems}. 
+Interactions between components are derived from execution logs and ordered with a distributed ordering scheme.
+ShiViz provides multiple visualizations that help to understand interaction patterns, some of which are similar to the graph view of our extended TARDISP debugger.
+There is, however, no integration with any low-level debugging systems.
 
 
 \chapter{Conclusion}
 \label{sec:conclusion}
 
-\section{Towards Full-System Debuggers}
+This chapter concludes the thesis.
+We summarize our contributions in \cref{sec:summary} and relate the results to our research question.
+In \cref{sec:future_work}, we discuss further research opportunities that can extend our solutions.
 
+\section{Summary}
+\label{sec:summary}
+
+%The goal of our work is to reduce the time and effort needed to locate software faults in multi-tier enterprise applications.
+%This, we want to achieve not by developing new approaches to debugging, but by adapting existing approaches to be more accessible for developers of such applications.
+
+In our work, we developed ways of adapting advanced debugging techniques to be more accessible for developers of multi-tier enterprise applications.
+%Software development is big cost factor for many modern companies in all business sectors, not just companies selling software.
+%Software developers spend up to 60\% of their time on maintenance-related tasks, many of which involve fault localization and repair.
+%Reducing the time needed for these tasks can greatly improve developer productivity, as more time can be spent on delivering business value.
+%
+Many modern debugging techniques were developed to improve the debugging process, but are barely used in practice.
+\Acfp{odb}, for instance, allow developers to move freely through execution time~\cite{lewis03:debugging_backwards_in_time}, which makes them particularly useful for tracking infection chains, a task that inherently requires moving backwards.
+Developers often do not know that such techniques exist or how to use them, or the available tools can not be effectively applied in their specific context.
+While the former can be addressed through additional debugging education, the latter has no generalizable solution.
+
+We can, however, look at specific types of software, such as enterprise applications.
+%Here, developers frequently work with large and complex software systems and can benefit greatly from better debugging tools.
+Enterprise applications are often large and complex software systems, which creates a demand for better debugging support, and have well-studied characteristics, which allows to design specialized tools.
+Thus, with a set scope, we summarize our research question as follows:
+"How can we adapt omniscient debugging to reduce the time and effort needed to track long infection chains across sub-system boundaries in multi-tier enterprise applications?"
+
+
+We examined the needs of developers debugging modern enterprise applications and identified three limitations of existing debugging techniques that impede their usefulness in this particular field.
+We found that to locate the root cause of a software failures, developers need not only track infection chains over very long distances in the code, but also across multiple application layers, each built on different technology stacks.
+Modern debugging tools often become less effective with longer infection chains, because of increasing code complexity and tool overhead, and usually stop at system boundaries.
+
+\subsection{Interactive Dynamic Slicing}
+
+We proposed \emph{Interactive Dynamic Slicing}, a new debugging workflow that was designed to reduce the time needed to track long infection chains.
+Omniscient debugging is augmented with dynamic slicing to reduce the amount of code and program state developers have to examine to identify and follow corrupted state.
+
+Where the accuracy of regular slicing algorithms deteriorates over long distances, using our approach developers can refine the slice while they debug.
+We proposed \emph{configurable slicing}, a new slicing formalism that can produce incomplete slices at the user's request.
+This allows developers to exclude program parts from the debug session if they are unrelated to the fault.
+
+We implemented a prototype debugger for our approach as a plug-in for the Eclipse IDE.
+We developed the \emph{Slice Navigator}, a UI component that provides control over the omniscient debugger and the dynamic slicer and supports all operations needed to apply Interactive Dynamic Slicing during debugging.
+Beyond providing only a slice, the Slice Navigator also assists program comprehension by using additional data from the slicer to show a summary of relevant program state and relations between statements.
+
+Performance evaluations show that our slicing implementation is fast enough to not cause an interruption in the workflow.
+Because slicing can run concurrently to the user interface and and the most relevant parts of the slice are computed first, quickly provided intermediate results allow developers to continue working with little delay.
+
+We conducted a study where we let developers locate real examples of faults in open source software.
+In this study, developers using the Slice Navigator needed 40\% less time to locate faults than with a regular debugger and 15\% less time than with an omniscient debugger.
+Interviews after the experiment indicated that developers perceive Interactive Dynamic Slicing as a useful debugging approach and suggested new directions in which omniscient debugging can be improved.
+
+\subsection{Omniscient Debugging with a Database}
+
+To address the importance of databases in enterprise applications, we developed a method for bringing omniscient debugging down to the database.
+Regular \acp{odb} focus on reversing execution of the program code only and consider databases as out-of-scope external resources.
+In our model, database interactions are recorded explicitly such that an \ac{odb} with direct database access can reproduce query results and past database states.
+
+Our \emph{TARDISP} debugger is an implementation of our approach for the SAP HANA in-memory database that allows developers to step forwards and backwards through executions of stored procedures.
+We leverage the insert-only approach of the HANA database to reproduce previous database states.
+
+We proposed \emph{Back-in-time SQL}, an SQL extension that allows developers to execute queries on data from previous points in time, compare data from multiple points in time, and search directly for changes in the data.
+A query console in the debugger accepts Back-in-time SQL queries and transforms them into regular SQL before they are submitted to the database.
+
+A performance evaluation with an SAP project using real-world data has shown that the runtime overhead caused by execution tracing is small enough to let TARDISP be the default choice for debugging stored procedures. 
+Because we let the database handle its own history and trace only atomic values, the overhead is independent of the amount of the row counts of tables and query results.
+Furthermore, we found that reproducing query results and comparing data from different points in time is not significantly slower than a regular execution of the query, 
+indicating that Back-in-time SQL is a feasible approach for debugging purposes.
+\tmpStart
+Interviews with developers have confirmed the usefulness of back-in-time debugging for finding root causes in database programs.
+\tmpEnd
+
+\subsection{Omniscient Debugging of Software Stacks}
+
+Even with omniscient debugging available in every layer of a multi-tier application, developers still need to switch tools when control flow crosses layer boundaries.
+We developed an approach for integrating multiple recorded executions from different systems into one omniscient debugging session.
+Messages sent between layers allow the debugger to reconstruct a high-level view of the full application
+Based on these synchronization points, hierarchical step numbering creates a partial ordering of events in concurrent executions.
+
+We extended our TARDISP debugger to implement this approach for SAP HANA XS Engine applications,
+making it possible to seamlessly follow control flow along requests and responses from the user interface down to the database.
+%Furthermore, the ability to map points in time from different layers increases the 
+% query data changes between ui actions
+
+Two visualizations help developers to get a high-level understanding of the interaction and to navigate complex interaction patterns.
+Showing related back-end components for each UI element directly in the user interface allows developers to identify sources of erroneous data at a glance,
+while a detailed graph view of requests and responses in the debugger provides the full picture.
+\tmpStart
+We showed our prototype to developers and received promising feedback regarding the usefulness of the visualizations and their integration with a debugger.
+\tmpEnd
+
+\todo{summary-conclusion}
 
 \section{Future Work}
+\label{sec:future_work}
 
-\newpage
-x
-\newpage
-x
-\newpage
-x
-\newpage
-x
+\subsection{Dynamic Analysis Across Sub-system Boundaries}
+
+In \cref{sec:ids} we have shown how dynamic analysis can be used to accelerate debugging, in \cref{sec:stack_odb} we presented a new approach for seamless debugging across sub-system boundaries.
+The next step will be to combine both approaches, allowing to conduct dynamic analysis over multiple layers.
+
+In the current version, our stack debugger can rebuild control flow jumping between multiple independently recorded executions from request and response events.
+For proper dynamic analysis this is not yet enough, as the logical connection between values in structured data has to be restored.
+
+If, for example, an object of the server-language is passed from the application layer to the front-end, it might be encoded as a JSON string, which is then embedded in a HTTP response, which is then decoded into JavaScript objects in the browser.
+To effectively analyze this code, the right level of abstraction has to be found to avoid analyzing the encoding and HTTP handling logic.
+
+\subsection{Useful Dependency Types for Interactive Dynamic Slicing}
+
+Throughout \cref{sec:ids}, we mentioned that configurable slicing can benefit from using dependency types that are useful to the user, but did not discuss what such types could be. 
+In our prototype, we used data and control dependencies, which followed naturally from the underlying algorithms and seem to model developers’ understanding of a program quite well. 
+Additionally, we introduced choice dependencies, where we believe to have identified an edge case
+where developers' understanding of data flow deviates from the formal definitions, and thus more fine-grained control is beneficial. 
+
+However, evaluating this claim was not part of our user study.
+Choice dependencies should therefore be considered only an example of potential new useful dependency types.
+Following up, further research is needed to evaluate our claim and identify other dependency relations that can be used to better tailor slices to developers' needs.
+
+\subsection{Configurable Relevant Slicing}
+
+As discussed in the evaluation of the user study, slicing is not particularly useful for finding omission bugs, \ie faults in conditionals that cause relevant code to be skipped.
+Relevant slicing is an approach that locates such un-executed statements and includes them in the slice~\cite{agrawal93:incremental_regression_testing}.
+
+To implement relevant slicing, the entire code base has to be scanned for relevant statements~\cite{gyimothy99:an_efficient_relevant_slicing}.
+In large applications, this can consume significant processing time and would remove one of the main advantages of our slicing approach: producing quick results by analyzing only as much code as needed.
+Studies suggest that relevant slicing might not be useful enough to always justify this overhead~\cite{zhang07:a_study_of_effectiveness}.
+
+This problem can be addressed by introducing relevant dependencies as a new dependency type.
+Having it disabled by default allows the normal and interruption free usage of slicing for debugging.
+When developers identify a wrong value whose occurrence is not properly explained by the slice, they can enable relevant slicing.
+Enabling relevant slicing only for specific values can also greatly reduce its overhead.
+
+%\subsection{Improving or Replacing the Slice Navigator}
+
+\subsection{Developers Getting Lost in Time}
+
+One unexpected outcome of the user study evaluating Interactive Dynamic Slicing was how frequently developers got lost in time.
+We have not seen this issue being addressed in related literature, however, 
+it seems to be relevant for the adoption of omniscient debugging in practice.
+
+Further research is needed to better understand how frequently lost-in-time situations would occur in practice, how much it is affected by developer experience, and how fast developers can recover.
+If it is shown to be a significant problem, strategies or visualizations to prevent or rover getting lost in time need to be investigated.
+
+\section{Closing Remark}
+\label{sec:closing}
+
+
+

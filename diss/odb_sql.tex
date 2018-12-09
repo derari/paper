@@ -49,7 +49,7 @@ It seems unfeasible to use a back-in-time debugger on top of a database script t
 Second, current back-in-time debugging concepts cannot handle side-effects outside their system that usually happen in writing operations during INSERT and UPDATE statements. 
 
 %Significance: Especially, in business software much development is based on database scripts. 
-Due to high performance requirements of handling big data in business applications, companies like SAP have not only a strong demand to move code closer to data~\cite{plattner15:the_in-memory_revolution_how} but also the need to improve development tools at the database-level. 
+Due to high performance requirements of handling big data in business applications, there is not only a strong demand to move code closer to data~\cite{plattner15:the_in-memory_revolution_how} but also the need to improve development tools at the database-level. 
 As existing tools mostly work on the application level, are limited to specific points in time, or work only on an abstract query plan, developers are often left alone when it comes to debug and understand the results of their queries and stored procedures.
 We argue that a back-in-time debugger at the bottom of the technology stack is able to close this gap and can support developers in developing and maintaining their queries more efficiently. 
 \tmpEnd
@@ -131,7 +131,7 @@ This does not limit the general validity of our results, as a debugger for store
 
 \subsection{Replaying a Stored Procedure}
 
-An application using a database to manage its state create several problems for debugging tools.
+An application using a database to manage its state creates several problems for debugging tools.
 However, giving the debugger direct access to the database can open up new possibilities.
 
 The most immediate advantage is that the database persists state beyond the program execution.
@@ -140,10 +140,10 @@ Especially in big-data applications, most operations do not change large parts o
 Depending on the problem scope and length of the debug session, most of the program state likely remains unchanged.
 Knowing that the state will still be available, it can be excluded from the execution trace.
 
-Furthermore, programs that rely on the database for data processing have on fundamental difference compared to other programs:
+Furthermore, programs that rely on the database for data processing have one fundamental difference compared to other programs:
 all instructions handling large data sets (i.e., SQL statements) are declarative.
 Instead of providing a concrete algorithm for performing the operation, an SQL statement describe the outcome on an abstract, logical level.
-At this level a statement can be analyzed without knowing how it is physically executed.
+At this level a statement can be analyzed without knowing -- or even caring -- how it is physically executed.
 Even if the database later decides to execute a query using a different query plan, this has no impact for a developer trying to understand the functional correctness of a program.
 Thus, there is no need to trace the internals of a query's execution like the processing of an array would have to be traced.
 As long as the underlying data does not change, the query results need not be recorded either.
@@ -156,6 +156,7 @@ With the ability to restore previous states of the database,
 \tmpStart
 all that is needed to reproduce the execution of a stored procedure is a sequence of execution steps.
 Each step represents an instruction that has side effects on the database or assigns a value or result set to a variable.
+Additionally, we keep track of high-level control flow events, such as procedure calls.
 As there is, on the conceptual level, no concurrency in a stored procedure, we can use sequential numbering to track the order of steps.
 If applicable, a step has a target name, such as the name of a variable or stored procedure, and a string representation of the value, which can be shown to the user in the debug view.
 If the step involves a database statement, we also need a time stamp to be able to reproduce the query.
@@ -163,7 +164,7 @@ If the step involves a database statement, we also need a time stamp to be able 
 
 \begin{figure}
 	\centering
-		\includegraphics[width=0.9\linewidth]{img/model_sqlodb}
+		\includegraphics[width=0.7\linewidth]{img/model_sqlodb}
 	\caption{Data model of the Stored Procedure debugger.}
 	\label{fig:model_odb}
 \end{figure}
@@ -171,15 +172,17 @@ If the step involves a database statement, we also need a time stamp to be able 
 \Cref{fig:model_odb} shows the relational data model we use to store the required information.
 On top of the minimal required data, we record some additional information to simplify interpreting the trace later on.
 
-Along with each query invocation, its atomic arguments are recorded.
-Even though these values can already be derived from the execution trace, storing them explicitly simplifies the process of restoring query results by removing the need to analyze code outside the query itself.
-Furthermore, we record the execution time and the number of rows in the result set for each query.
-This information, too, is not strictly needed and can be recovered by re-executing the query.
+Along with each query invocation, 
+%its atomic arguments are recorded.
+%Even though these values can already be derived from the execution trace, storing them explicitly simplifies the process of restoring query results by removing the need to analyze code outside the query itself.
+%Furthermore, 
+we record the execution time and the number of rows in the result set for each query.
+This information is not strictly needed and can be recovered by re-executing the query.
 However, we found that directly providing this information can be helpful to developers, especially for long-running queries.
-Lastly, we record the name of a view than can be used to later reproduce the query result.
-The view is specifically generated by the debugger, as will be explained in the next subsection.
+Furthermore, we record the name of a view than can be used to later reproduce the query result.
+The view is specifically generated by the debugger, as will be explained in \cref{sec:tracing_stored_procedures}.
 
-Because the runtime model of SQLScript is much simpler than that of Java and it was not our goal to create a fully featured debugger for the imperative part of the language, the data model of this debugger is much simpler than that of the Java back-in-time debugger~(\cf \cref{fig:model}, \cpageref{fig:model}), respectively.
+Because the runtime model of SQLScript is much simpler than that of Java and it was not our goal to create a fully featured debugger for the imperative part of the language, the data model of this debugger is much simpler than that of the Java back-in-time debugger~(\cf~\cref{fig:model}, \cpageref{fig:model}), respectively.
 This does not limit the general validity of our approach.
 The database query as an extra event type could also be added to the Java debugger's trace model and the debugger would handle these queries in just the same way.
 
@@ -211,7 +214,7 @@ In many business applications, data is never deleted, at least in the short term
 Legal reasons or business cases may require that all changes to an entity are tracked with time stamps.
 When the ability to restore old entries is already a requirement of the software, the debugger can re-use these mechanisms when replaying a stored procedure.
 
-\renewcommand{\baselinestretch}{1.0}
+%\renewcommand{\baselinestretch}{1.0}
 \begin{table}
 	\centering
 	\begin{tabulary}{\textwidth}{rcrp{2cm}>{\centering}p{1.8cm}>{\centering}p{1.8cm}J}
@@ -226,7 +229,7 @@ When the ability to restore old entries is already a requirement of the software
 	\caption{An excerpt of a table containing product data, showing revisions of a single entity}
 	\label{tab:applogdata}
 \end{table}
-\renewcommand{\baselinestretch}{\defaultbaselinestretch}
+%\renewcommand{\baselinestretch}{\defaultbaselinestretch}
 
 \Cref{tab:applogdata} shows multiple revisions of an entity in a table of product data. 
 When only the most recent revision is needed, which will probably be the case for many operations, developers have to explicitly add a filter condition to select the correct tuple.
@@ -312,16 +315,7 @@ Adding timestamp filters to select queries does not cause a significant slowdown
 Our prototype was built using this approach.
 \todo{HANA hat seit neustem "History tables" die das direkt können, wir benutzen aber explizite timestamps weil das momentan noch praktischer ist }
 
-%Thus, SQL queries don't have to be traced at all, although for some purposes it will be helpful to record some meta information, such as the execution time or the number of results.
-%\todo{MP: This is not clear to me, yet.}
-%Third, the database can be used to efficiently manage old state.
-%In-memory databases with insert-only storage automatically retain old data~\cite{plattner09:a_common_database_approach}.
-%With insert-only, older versions of the database can be easily reproduced.
-%For other databases, insert-only can be achieved by adding validity columns.
-%For many business applications, such columns already exist where no data may be deleted for legal reasons.
-
-
-\subsection{Prototype and Tracing Code Generation}
+\subsection{Prototype Implementation}
 
 We developed \tool\ as a prototype implementation of our approach.
 Our back-in-time debugger runs in the SAP HANA XS-Engine, a framework for web-applications that is part of the SAP HANA platform.
@@ -341,7 +335,6 @@ For variables containing result tables, a separate view is generated for each qu
 Each view contains the original code of its query.
 Arguments to the query are initialized using their respective views.
 On top of that, a master view is generated that chooses the appropriate query view by looking up the requested step in the recorded trace.
-%\todo{AT: How much detail?}
 
 \begin{figure}
 	\centering
@@ -361,6 +354,113 @@ Arrow buttons allow to jump to the previous or next assignment of the variable.
 For variables containing a query result, the size of the result is shown.
 Clicking the variable opens a query window that shows the variable's content and allows the developer to submit time-travel queries, which will be explained in the next section.
 
+
+\subsection{Tracing Stored Procedures}
+\label{sec:tracing_stored_procedures}
+
+To obtain an execution trace, instructions in the store procedure need to be recorded as they are executed.
+The natural solution for this would be to integrate tracing into the execution engine.
+However, such an integration was not in the scope of our project.
+Instead, we developed a pre-processor that inserts necessary tracing statements directly in the stored procedure code.
+
+\begin{lstlisting}[language=HanaSQL,float,caption={Stored procedure example with two queries and a procedure call.},label=lst:spexample,firstnumber=1,stepnumber=5]
+	PROCEDURE pay_open_orders(IN department VARCHAR(10), OUT orders T_ORDERS)
+	LANGUAGE SQLSCRIPT AS
+	BEGIN
+			DECLARE department_id INTEGER := SELECT id FROM departments 
+																			 WHERE name = :department;
+			
+			orders = SELECT po.id, po.project_id FROM purchase_orders po
+							WHERE po.department_id = :department_id AND po.status = "open";
+
+			CALL pay_orders(:orders);
+	END;
+\end{lstlisting}
+
+\Cref{lst:spexample} shows a short stored procedure.
+For a given department name, it selects open purchase orders from the department's projects and calls another stored procedure, to trigger their payment.
+The table of selected orders is also returned as an out parameter.
+Using this example, we demonstrate that all information to replay a stored procedure and reproduce its intermediate query results is easily obtained, \ie no complex modifications in the database's internals are needed.
+
+To avoid corruping application code, our pre-processor creates a copy of the stored procedure with tracing code under a new name.
+The generated code is shown in \cref{lst:spexample_tracing}.
+ ´asd´
+
+\begin{lstlisting}[language=HanaSQL,float,caption={Example procedure with tracing code.},label=lst:spexample_tracing,firstnumber=1,stepnumber=5]
+	CREATE PROCEDURE _T__pay_open_orders (IN __t_id INT, IN __cs_id INT, INOUT __s_id INT, IN department VARCHAR(10), OUT orders T_ORDERS) AS
+	BEGIN
+			DECLARE __e_id INT := __s_id+1;
+			DECLARE __ts TIMESTAMP;
+			DECLARE __count INT;
+
+			DECLARE department_id INTEGER := SELECT id FROM departments 
+																			 WHERE name = :department;
+	/*  1*/ INSERT INTO Tardisp.ControlFlows (trace_id,step,entry_step,type,~value~,line) VALUES (:__t_id,:__s_id+1,:__cs_id,'ENTER','pay_open_orders',1);
+	/*  1*/ INSERT INTO Tardisp.Variables (trace_id,step,entry_step,target,~value~,line) VALUES (:__t_id,:__s_id+1,:__e_id,'department',:department,1);
+	/*  4*/ INSERT INTO Tardisp.Variables (trace_id,step,entry_step,target,~value~,line) VALUES (:__t_id,:__s_id+2,:__e_id,'department_id',:department_id,4);
+	__s_id := __s_id + 3;
+	/*   */ __ts := NOW();
+			orders = SELECT po.id, po.project_id FROM purchase_orders po
+							WHERE po.department_id = :department_id AND po.status = "open";
+	/*   */ SELECT COUNT(*) INTO __count FROM :orders;
+	/*  7*/ INSERT INTO Tardisp.Queries (trace_id,step,entry_step,target, query,~timestamp~,duration,result_size,tt_view,line) VALUES (:__t_id,:__s_id,:__e_id,'orders','SELECT po.id, po.project_id FROM purchase_orders po WHERE po.department_id = :department_id AND po.status = "open";',:__ts,SECONDS_BETWEEN(:__ts,NOW()), :__count,'_orders_7_pay_open_orders',7);
+	__s_id := __s_id + 1;
+	/* 10*/ INSERT INTO Tardisp.ControlFlows (trace_id,step,entry_step,type,target,~value~,line) VALUES (:__t_id,:__s_id,:__e_id,'CALL','pay_orders',10);
+			CALL _T__pay_orders(__t_id,__s_id, :orders);
+	END;
+\end{lstlisting}
+
+To call the tracing procedure with the additional parameters from regular code, a wrapper method, shown in \cref{lst:spexample_entry}, is generated.
+The wrapper creates a new trace and calls the tracing procedure, passing the trace id and zero as the initial step counter.
+
+\begin{lstlisting}[language=HanaSQL,float,caption={Example procedure with tracing code.},label=lst:spexample_entry,firstnumber=1,stepnumber=5]
+	CREATE PROCEDURE _TE_pay_open_orders (IN department VARCHAR(10), OUT orders T_ORDERS) AS
+	BEGIN
+			DECLARE __t_id INT;
+			DECLARE __s_id INT DEFAULT 0;
+			SELECT COALESCE(MAX(id),0)+1 INTO __t_id FROM Quid_Accidit.Traces;
+			INSERT INTO Tardisp.Traces(id, name) VALUES (:__t_id, 'pay_open_orders');
+			CALL _T__pay_open_orders (:__t_id,0,:__s_id,department,orders);
+	END;
+\end{lstlisting}
+
+With the recorded trace data, it is possible to replay the steps of the execution.
+A parameterized view provides, given a trace id and point in time, for each variable its current atomic value or the name of the time travel view to reproduce its result.
+
+The time travel views are also generated by the pre-processor.
+As shown in \cref{lst:spexample_query}, the view obtains the timestamp of the orginial query execution (\cf line 4), initializes the query arguments (\cf line 6), and then executes the original query with a time-travel modifier (\cf line 10).
+In this example, `AS OF UTCTIMESTAMP` is a syntax for accessing previous versions of HANA history tables.
+If we use application-level logging, this line has to be replaced with an additional where-condition to filter for the correct entities.
+
+\begin{lstlisting}[language=HanaSQL,float,caption={Example procedure with tracing code.},label=lst:spexample_query,firstnumber=1,stepnumber=5]
+	CREATE FUNCTION _Q__pay_open_orders_orders_8_ (IN trace_id INT, IN curstep INT)
+	RETURNS T_ORDERS LANGUAGE SQLSCRIPT AS
+	BEGIN
+		DECLARE __ts TIMESTAMP := SELECT ~timestamp~ FROM Tardisp.Snapshot(:trace_id,:curstep)
+					 WHERE target = 'orders';
+		DECLARE department_id INTEGER := SELECT §TO_INTEGER§( _V__pay_open_orders_department_id_(:trace_id,:curstep))        FROM §DUMMY§;
+		RETURN SELECT po.id, po.project_id FROM purchase_orders po
+							WHERE po.department_id = :department_id AND po.status = "open"
+							§AS OF UTCTIMESTAMP§ :__ts;
+	END;
+\end{lstlisting}
+
+
+%\Cref{lst:spexample_var} shows a function that returns the value of an atomic variable at a given point in time from the trace.
+%
+%\begin{lstlisting}[language=HanaSQL,float,caption={Example procedure with tracing code.},label=lst:spexample_var,firstnumber=1,stepnumber=5]
+	%CREATE FUNCTION _V__pay_open_orders_department_id_ (IN trace_id INT, IN curstep INT)
+	%RETURNS INTEGER LANGUAGE SQLSCRIPT AS
+	%BEGIN
+		%SELECT ~value~ INTO RESULT FROM Tardisp.Snapshot(:trace_id,:curstep)
+					 %WHERE target = 'department_id';
+	%END;
+%\end{lstlisting}
+%
+%%To allow to access results of queries from the stored procedure later on, additional functions are generated.
+%
+
+
 \section{Back-in-Time SQL}
 
 
@@ -368,6 +468,7 @@ Clicking the variable opens a query window that shows the variable's content and
 \newcommand{\red}[1]{\textcolor{DarkRed}{#1}}
 \newcommand{\gr}[1]{\textcolor{Green}{#1}}
 \newcommand{\timediffresult}{
+%\renewcommand{\baselinestretch}{1.0}
 \begin{table}%
 	\begin{tabulary}{\textwidth}{RRRRRRR} \toprule %rlrrrlr
 	%pr.id & pr.name 	& pr.budget  & total & po2.id & po2.status & po2.total \\ \midrule
@@ -386,6 +487,7 @@ Clicking the variable opens a query window that shows the variable's content and
 	\caption{Result of a time-diff query, with multiple values in some columns. Red indicates a different value at the \emph{before} step, green indicates a different value at the \emph{after} step.}
 	\label{tab:diffresult}
 \end{table}
+%\renewcommand{\baselinestretch}{\defaultbaselinestretch}
 %\ctable[caption={Result of a time-diff query, with multiple values in some columns. Red indicates a different value at the \emph{before} step, green indicates a different value at the \emph{after} step.},label=tab:diffresult,doinside={\small}]
 				%{rlrrrlr}{}{
 	%pr.id & pr.name 	& pr.budget  & total & po2.id & po2.status & po2.total \ML
@@ -548,6 +650,7 @@ When possible, the tuple creation timestamps are used to allow developers to jum
 			 %&	(c) &	1.69 s		& 1.80 s		& 1.63 s		\ML
 %}
 
+%\renewcommand{\baselinestretch}{1.0}
 \begin{table}
 	\centering
 	\begin{tabulary}{\textwidth}{lcRRR}
@@ -583,6 +686,7 @@ Query 2& (b)	&	81 ms		& 100 ms	\\
 	\caption{Average execution times for queries executed normally or as time-diff query.}
 	\label{tab:measure2}
 \end{table}
+%\renewcommand{\baselinestretch}{\defaultbaselinestretch}
 
 %\ctable[caption={Average execution times for queries executed normally or as time-diff query.},label=tab:measure2,doinside={\small},width=\linewidth]
 				%{lcRR}{}{

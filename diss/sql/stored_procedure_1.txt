@@ -1,0 +1,13 @@
+PROCEDURE get_open_orders(IN department VARCHAR(10), OUT orders T_ORDERS)
+LANGUAGE SQLSCRIPT AS
+BEGIN
+    DECLARE departmentId INTEGER := SELECT id FROM deparments 
+                                    WHERE name = :department;
+    
+    orders = SELECT po.id, po.project_id, 
+                    SUM(pi.quantity * pi.itemPrice) AS total
+			FROM purchase_orders po
+			JOIN purchase_item pi ON pi.order_id = po.id
+			WHERE po.approved = 1 AND po.status = "open"
+			GROUP BY po.id, po.project_id;
+END;

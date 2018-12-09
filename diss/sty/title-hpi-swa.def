@@ -240,6 +240,8 @@
 }
 \renewcommand*{\makemaintitle}{%
   \begin{titlepage}
+    \phantomsection
+    \pdfbookmark[0]{Title}{toc:title}
     \ifcsundef{if@titlepageiscoverpage}{\global\let\if@titlepageiscoverpage\iffalse}
     \if@titlepageiscoverpage
       \edef\titlepage@restore{%
